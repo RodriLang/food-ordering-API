@@ -1,0 +1,168 @@
+@startuml
+
+
+' === Main entities ===
+
+class User {
+    - name : String
+    - lastName : String
+    - email : String
+    - password : String
+    - birthDate : LocalDate
+    - phone: String
+    - createdAt : LocalDate
+    - removedAt : LocalDate
+    - role: RoleType
+}
+
+class Client {
+    - nickname : String
+}
+
+class Employee {
+    - position : String
+}
+
+class FoodVenue {
+    - name : String
+    - address : String
+    - email : String
+    - phone : String
+    - imageUrl : String
+}
+
+class Table {
+    - number : String
+    - capacity : Integer
+    - status : TableStatus
+}
+
+class TableSession {
+    - startTime : LocalDateTime
+    - endTime : LocalDateTime
+}
+
+class Menu {
+    - name : String
+    - validFrom : LocalDate
+    - validUntil : LocalDate
+    - active : Boolean
+}
+
+class MenuItem {
+    - actualPrice : BigDecimal
+    - displayName : String
+    - displayDescription : String
+    - available : Boolean
+}
+
+class Product {
+    - name : String
+    - description : String
+    - price : BigDecimal
+    - imageUrl : String
+    - available : Boolean
+    - stock : Integer
+}
+
+class Category {
+    - name : String
+}
+
+class Tag {
+    - label : String
+}
+
+class Order {
+    - orderNumber : String
+    - status : OrderStatus
+    - totalPrice : BigDecimal
+    - createdAt : LocalDateTime
+    - updatedAt : LocalDateTime
+    - specialRequirements : String
+}
+
+class OrderDetail {
+    -quantity : Integer
+    -price : BigDecimal
+    -specialInstructions : String
+}
+
+class Payment {
+    - amount : BigDecimal
+    - paymentMethod : PaymentMethod
+    - status : PaymentStatus
+    - paidAt : LocalDateTime
+}
+
+
+' === Enums ===
+package enums {
+    enum TableStatus {
+        AVAILABLE
+        OCCUPIED
+        RESERVED
+        OUT_OF_SERVICE
+    }
+
+    enum RoleType {
+        ADMIN
+        CLIENT
+        GUEST
+    }
+
+    enum OrderStatus {
+        NOT_APPROVED
+        PENDING
+        IN_PROGRESS
+        COMPLETED
+        SERVED
+        CANCELLED
+    }
+
+    enum PaymentStatus {
+        PENDING
+        COMPLETED
+        FAILED
+    }
+
+    enum PaymentMethod {
+      CASH
+      CREDIT_CARD
+      DEBIT_CARD
+      MOBILE_PAYMENT
+    }
+}
+
+' === Relations ===
+FoodVenue "1" <-up-> "1..*" Table : has
+FoodVenue "1" <-left-> "1..*" Menu : has
+FoodVenue "1" <-up-> "0..*" TableSession : has
+FoodVenue "1" <-left-> "   1..*" Product : has
+FoodVenue "1" <-left- "0..*" Order : has
+FoodVenue "1" <-right-> "1..*" Employee : has
+Menu "1" --> "1..*" MenuItem : has
+MenuItem "1" --> "1" Product : has
+MenuItem "1" -left-> "1" Category : has
+Product "1" -left-> "0..*" Tag : has
+TableSession "1" -left-> "0..*" Order : has
+TableSession "1" <-up-> "1..*" Client : has
+TableSession "1" --> "1" Client : hostClient
+TableSession "1" -down-> "1" Table : has
+Payment "1" <-right-> "1..*" Order : has
+Client "1" <-left-> "0..* " Order : has
+Order "1" -down-> "1..*" OrderDetail : has
+OrderDetail "1" -down-> "1" MenuItem : has
+Client "1" -down-> "0..1" User : has?
+Employee "1" -up-> "1" User : has
+
+User -[hidden]left- MenuItem
+
+
+TableStatus -right[hidden]- PaymentMethod
+TableStatus -left[hidden]- OrderStatus
+PaymentMethod -right[hidden]- RoleType
+RoleType -right[hidden]- PaymentStatus
+TableStatus -up[hidden]- Product
+
+@enduml
