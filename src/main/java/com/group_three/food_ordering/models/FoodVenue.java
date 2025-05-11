@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,17 +36,22 @@ public class FoodVenue {
     private String imageUrl;
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Employee> employees;
+    @Builder.Default
+    private List<Employee> employees = new ArrayList<>();
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Product> products;
+    @Builder.Default
+    private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Menu> menus;
+    @Builder.Default
+    private List<Menu> menus = new ArrayList<>();
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Table> tables;
+    @Builder.Default
+    private List<Table> tables = new ArrayList<>();
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TableSession> tableSessions;
+    @Builder.Default
+    private List<TableSession> tableSessions = new ArrayList<>();
 }
