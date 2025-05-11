@@ -11,18 +11,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderCreateDto {
+public class OrderResponseDto {
 
-    @NotNull(message = "Order number is required")
-    @Size(max = 20, message = "Order number must be 20 characters or less")
     private String orderNumber;
 
-    @Size(max = 255, message = "Special requirements must be 255 characters or less")
     private String specialRequirements;
 
-    @NotNull(message = "Food venue is required")
     private FoodVenueRequestDto foodVenue;
 
-    @NotNull(message = "Client is required")
     private ClientRequestDto client;
 }
