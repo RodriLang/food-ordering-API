@@ -2,7 +2,7 @@ package com.group_three.food_ordering.services;
 
 
 import com.group_three.food_ordering.models.Order;
-import com.group_three.food_ordering.dtos.OrderCreateDto;
+import com.group_three.food_ordering.dtos.OrderRequestDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import com.group_three.food_ordering.dtos.OrderUpdateDto;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
@@ -22,8 +22,8 @@ public class OrderService implements IOrderService {
     private final OrderMapper orderMapper;
 
     @Override
-    public OrderResponseDto create(OrderCreateDto orderCreateDto) {
-        Order order = orderMapper.toEntity(orderCreateDto);
+    public OrderResponseDto create(OrderRequestDto orderRequestDto) {
+        Order order = orderMapper.toEntity(orderRequestDto);
 
         return orderMapper.toDTO(orderRepository.save(order));
     }

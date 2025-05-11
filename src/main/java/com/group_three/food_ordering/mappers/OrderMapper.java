@@ -2,7 +2,7 @@ package com.group_three.food_ordering.mappers;
 
 
 import com.group_three.food_ordering.models.Order;
-import com.group_three.food_ordering.dtos.OrderCreateDto;
+import com.group_three.food_ordering.dtos.OrderRequestDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -12,11 +12,11 @@ public interface OrderMapper {
 
     OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
 
-    OrderResponseDto toDTO(OrderCreateDto orderCreateDto);
+    OrderResponseDto toDTO(OrderRequestDto orderRequestDto);
 
     OrderResponseDto toDTO(Order order);
 
     Order toEntity(OrderResponseDto orderDTO);
 
-    Order toEntity(OrderCreateDto orderDTO);
+    Order toEntity(OrderRequestDto orderDTO);
 }

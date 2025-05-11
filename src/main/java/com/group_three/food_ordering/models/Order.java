@@ -1,10 +1,6 @@
 package com.group_three.food_ordering.models;
 
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.models.Client;
-import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.OrderDetail;
-import com.group_three.food_ordering.models.Payment;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import lombok.AllArgsConstructor;
@@ -14,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,8 +50,9 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     private Client client;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "order_id")
+    private List<OrderDetail> orderDetails = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {

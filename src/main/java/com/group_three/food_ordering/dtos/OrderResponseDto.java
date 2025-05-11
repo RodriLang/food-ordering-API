@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,7 +19,7 @@ public class OrderResponseDto {
 
     private String specialRequirements;
 
-    private FoodVenueRequestDto foodVenue;
+    private String clientAlias;
 
-    private ClientRequestDto client;
+    private List<OrderDetailRequestDto> orderDetails;
 }

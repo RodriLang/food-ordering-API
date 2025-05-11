@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
-import com.group_three.food_ordering.dtos.OrderCreateDto;
+import com.group_three.food_ordering.dtos.OrderRequestDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import com.group_three.food_ordering.dtos.OrderUpdateDto;
 import com.group_three.food_ordering.services.IOrderService;
@@ -20,7 +20,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> create(
-            @RequestBody OrderCreateDto order) {
+            @RequestBody OrderRequestDto order) {
         return ResponseEntity.ok(orderService.create(order));
     }
 
