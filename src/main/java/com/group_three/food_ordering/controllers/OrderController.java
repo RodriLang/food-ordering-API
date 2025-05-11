@@ -3,7 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.dtos.OrderRequestDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import com.group_three.food_ordering.dtos.OrderUpdateDto;
-import com.group_three.food_ordering.services.IOrderService;
+import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
