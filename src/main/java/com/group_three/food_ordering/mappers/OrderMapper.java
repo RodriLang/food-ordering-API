@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.mappers;
 
 
-import com.group_three.food_ordering.Order;
+import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.dtos.OrderCreateDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import org.mapstruct.Mapper;

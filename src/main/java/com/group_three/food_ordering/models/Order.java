@@ -1,4 +1,4 @@
-package com.group_three.food_ordering;
+package com.group_three.food_ordering.models;
 
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.models.Client;
