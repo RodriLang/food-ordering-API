@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.dtos;
+package com.group_three.food_ordering.dtos.create;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,9 +16,9 @@ public class OrderCreateDto {
     @Size(max = 255, message = "Special requirements must be 255 characters or less")
     private String specialRequirements;
 
-    @NotNull(message = "Food venue is required")
+    /*@NotNull(message = "Food venue is required")
     private FoodVenueRequestDto foodVenue;
 
     @NotNull(message = "Client is required")
-    private ClientRequestDto client;
+    private ClientRequestDto client;*/
 }

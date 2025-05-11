@@ -1,7 +1,5 @@
-package com.group_three.food_ordering.dtos;
+package com.group_three.food_ordering.dtos.response;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +15,7 @@ public class OrderResponseDto {
 
     private String specialRequirements;
 
-    private FoodVenueRequestDto foodVenue;
+    /*private FoodVenueRequestDto foodVenue;
 
-    private ClientRequestDto client;
+    private ClientRequestDto client;*/
 }

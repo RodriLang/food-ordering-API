@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.dtos;
+package com.group_three.food_ordering.dtos.create;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,11 +9,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FoodVenueResponseDto {
+public class FoodVenueCreateDto {
 
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
@@ -25,7 +27,6 @@ public class FoodVenueResponseDto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be a valid email address")
-    @Size(min = 5, max = 50, message = "Email must be between 5 and 50 characters")
     private String email;
 
     @NotBlank(message = "Phone is required")
@@ -39,4 +40,12 @@ public class FoodVenueResponseDto {
     @NotBlank(message = "Image URL is required")
     @Size(min = 5, max = 200, message = "Image URL must be between 5 and 200 characters")
     private String imageUrl;
+
+    private List<EmployeeCreateDto> employees;
+
+    private List<ProductCreateDto> products;
+
+    private List<TableCreateDto> tables;
+
+    private List<MenuCreateDto> menus;
 }

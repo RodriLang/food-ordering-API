@@ -1,10 +1,10 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dtos.FoodVenueCreateDto;
-import com.group_three.food_ordering.dtos.FoodVenueResponseDto;
-import com.group_three.food_ordering.dtos.FoodVenueUpdateDto;
+import com.group_three.food_ordering.dtos.create.FoodVenueCreateDto;
+import com.group_three.food_ordering.dtos.response.FoodVenueResponseDto;
+import com.group_three.food_ordering.dtos.update.FoodVenueUpdateDto;
 import com.group_three.food_ordering.exceptions.FoodVenueNotFoundException;
-import com.group_three.food_ordering.mappers.IFoodVenueMapper;
+import com.group_three.food_ordering.mappers.FoodVenueMapper;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
 import com.group_three.food_ordering.services.interfaces.IFoodVenueService;
@@ -19,7 +19,7 @@ import java.util.UUID;
 public class FoodVenueServiceImpl implements IFoodVenueService {
 
     private final IFoodVenueRepository foodVenueRepository;
-    private final IFoodVenueMapper foodVenueMapper;
+    private final FoodVenueMapper foodVenueMapper;
 
     @Override
     public FoodVenueResponseDto create(FoodVenueCreateDto foodVenueCreateDto) {

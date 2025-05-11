@@ -1,9 +1,9 @@
 package com.group_three.food_ordering.services.interfaces;
 
 
-import com.group_three.food_ordering.dtos.OrderCreateDto;
-import com.group_three.food_ordering.dtos.OrderResponseDto;
-import com.group_three.food_ordering.dtos.OrderUpdateDto;
+import com.group_three.food_ordering.dtos.create.OrderCreateDto;
+import com.group_three.food_ordering.dtos.response.OrderResponseDto;
+import com.group_three.food_ordering.dtos.update.OrderUpdateDto;
 
 import java.util.List;
 import java.util.UUID;
