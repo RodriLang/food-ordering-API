@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "food_venues")
+@Entity(name = "food_venues")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
