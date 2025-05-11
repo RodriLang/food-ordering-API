@@ -1,7 +1,6 @@
-package com.group_three.food_ordering.models;
+package com.group_three.food_ordering.services;
 
 
-import com.group_three.food_ordering.Order;
 import com.group_three.food_ordering.dtos.OrderCreateDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import com.group_three.food_ordering.dtos.OrderUpdateDto;
