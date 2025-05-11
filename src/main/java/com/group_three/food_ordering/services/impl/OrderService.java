@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.services;
+package com.group_three.food_ordering.services.impl;
 
 
 import com.group_three.food_ordering.models.Order;
@@ -8,6 +8,7 @@ import com.group_three.food_ordering.dtos.OrderUpdateDto;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
 import com.group_three.food_ordering.repositories.IOrderRepository;
+import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
