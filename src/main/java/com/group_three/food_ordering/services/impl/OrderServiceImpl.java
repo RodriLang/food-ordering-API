@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService implements IOrderService {
+public class OrderServiceImpl implements IOrderService {
 
     private final IOrderRepository orderRepository;
     private final OrderMapper orderMapper;
@@ -40,7 +40,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public OrderResponseDto getById(UUID id) {
-        Order order = orderRepository.findByOrderIdAndVenueId(id, UUID.randomUUID())
+        Order order = orderRepository.findOrderByIdAndFoodVenueId(id, UUID.randomUUID())
                 .orElseThrow(OrderNotFoundException::new);
         return orderMapper.toDTO(order);
     }
@@ -61,7 +61,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public OrderResponseDto updateStatus(UUID id, OrderStatus orderStatus) {
-        Order existingOrder = orderRepository.findByOrderIdAndVenueId(id, UUID.randomUUID())
+        Order existingOrder = orderRepository.findOrderByIdAndFoodVenueId(id, UUID.randomUUID())
                 .orElseThrow(OrderNotFoundException::new);
 
         existingOrder.setStatus(orderStatus);
