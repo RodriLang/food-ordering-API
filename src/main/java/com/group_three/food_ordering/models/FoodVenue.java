@@ -20,14 +20,14 @@ public class FoodVenue {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String name;
-
-    @Column(nullable = false, unique = true, length = 100)
-    private String address;
 
     @Column(nullable = false, unique = true, length = 50)
     private String email;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String address;
 
     @Column(nullable = false, length = 20)
     private String phone;
