@@ -3,7 +3,6 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.dtos.update.OrderUpdateDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
@@ -46,12 +45,15 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public OrderResponseDto update(UUID id, OrderUpdateDto orderUpdateDto) {
-        Order order = new Order();
-        orderRepository.save(order);
-        return new OrderResponseDto();
+    public OrderResponseDto updateSpecialRequirements(UUID id, String specialRequirements) {
+        Order existingOrder = orderRepository.findById(id)
+                .orElseThrow(OrderNotFoundException::new);
 
-    }
+        existingOrder.setSpecialRequirements(specialRequirements);
+
+        orderRepository.save(existingOrder);
+
+        return new OrderResponseDto();    }
 
 
     @Override

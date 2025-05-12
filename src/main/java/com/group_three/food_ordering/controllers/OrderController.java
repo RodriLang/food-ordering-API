@@ -2,10 +2,10 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.dtos.update.OrderUpdateDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,10 +38,10 @@ public class OrderController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderResponseDto> update(
+    public ResponseEntity<OrderResponseDto> updateRequirements(
             @PathVariable UUID id,
-            @RequestBody @Valid OrderUpdateDto order) {
-        return ResponseEntity.ok(orderService.update(id,order));
+            @RequestParam @Size(max = 255) String requirements) {
+        return ResponseEntity.ok(orderService.updateSpecialRequirements(id, requirements));
     }
 
     @PatchMapping("/{id}/status")
@@ -60,7 +60,6 @@ public class OrderController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(
-            @PathVariable UUID venueId,
             @PathVariable UUID id) {
 
         orderService.delete(id);

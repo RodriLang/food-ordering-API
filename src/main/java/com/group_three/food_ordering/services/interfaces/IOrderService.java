@@ -3,7 +3,6 @@ package com.group_three.food_ordering.services.interfaces;
 
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.dtos.update.OrderUpdateDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 
 
@@ -15,7 +14,7 @@ public interface IOrderService {
     OrderResponseDto create(OrderRequestDto orderRequestDto);
     List<OrderResponseDto> getAll();
     OrderResponseDto getById(UUID id);
-    OrderResponseDto update(UUID id, OrderUpdateDto orderUpdateDto);
+    OrderResponseDto updateSpecialRequirements(UUID id, String specialRequirements);
     void delete(UUID id);
     OrderResponseDto updateStatus(UUID orderId, OrderStatus orderStatus);
 }
