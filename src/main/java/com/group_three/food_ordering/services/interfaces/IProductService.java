@@ -1,0 +1,16 @@
+package com.group_three.food_ordering.services.interfaces;
+
+import com.group_three.food_ordering.dtos.create.ProductCreateDto;
+import com.group_three.food_ordering.dtos.response.ProductResponseDto;
+import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
+import com.group_three.food_ordering.models.Product;
+
+import java.util.List;
+
+public interface IProductService {
+    ProductResponseDto create(ProductCreateDto productCreateDto);
+    ProductResponseDto update(ProductUpdateDto productUpdateDto);
+    ProductResponseDto getById(Long id);
+    void delete(Long id);
+    List<ProductResponseDto> getAll();
+}
