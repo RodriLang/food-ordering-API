@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
 
 @Data
@@ -33,3 +34,21 @@ public class OrderDetail {
     private MenuItem menuItem;
 
 }
+=======
+import java.util.UUID;
+
+@Entity(name = "order_details")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class OrderDetail {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+}
+>>>>>>> 51b6d069bf85c3e1a3fade8bf7a763a32e77820e
