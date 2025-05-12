@@ -9,11 +9,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface FoodVenueMapper {
 
-    FoodVenueResponseDto toDTO(FoodVenueCreateDto foodVenueCreateDto);
-
+    FoodVenue toEntity(FoodVenueCreateDto foodVenueDto);
     FoodVenueResponseDto toDTO(FoodVenue foodVenue);
-
-    FoodVenue toEntity(FoodVenueResponseDto orderDTO);
-
-    FoodVenue toEntity(FoodVenueCreateDto orderDTO);
 }

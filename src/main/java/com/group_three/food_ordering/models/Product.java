@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity(name = "products")
 @Data
@@ -15,11 +18,41 @@ import java.util.UUID;
 @Builder
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
+
+    @Column
+    private String name;
+
+    @Column(length = 255)
+    private String description;
+
+    @Column
+    private BigDecimal price;
+
+    @Column
+    private String imageUrl;
+
+    @Column
+    private Boolean available;
+
+    @Column
+    private Integer stock;
+
+    @OneToMany(mappedBy= "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags= new ArrayList<>();
+
+    @PrePersist
+    public void onCreate()
+    {
+        this.available = true;
+        if (this.price == null){ this.price = BigDecimal.ZERO;
+        }
+        if (this.stock == null){ this.stock = 0;}
+    }
 
 }

@@ -4,22 +4,24 @@ import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.response.TableResponseDto;
 import com.group_three.food_ordering.dtos.update.TableUpdateDto;
 import com.group_three.food_ordering.services.interfaces.ITableService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/food-venues/{venueId}/tables")
+@RequestMapping("/api/v1/tables")
 @RequiredArgsConstructor
 public class TableController {
 
     private final ITableService tableService;
 
     @PostMapping
-    public ResponseEntity<TableResponseDto> createTable(@RequestBody TableCreateDto tableCreateDto) {
-        return ResponseEntity.ok(tableService.create(tableCreateDto));
+    public ResponseEntity<TableResponseDto> createTable(@RequestBody @Valid TableCreateDto tableCreateDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(tableService.create(tableCreateDto));
     }
 
     @GetMapping
@@ -33,12 +35,12 @@ public class TableController {
     }
 
     @PutMapping
-    public ResponseEntity<TableResponseDto> update(@RequestBody TableUpdateDto tableUpdateDto) {
+    public ResponseEntity<TableResponseDto> update(@RequestBody @Valid TableUpdateDto tableUpdateDto) {
         return ResponseEntity.ok(tableService.update(tableUpdateDto));
     }
 
     @PatchMapping
-    public ResponseEntity<TableResponseDto> patch(@RequestBody TableUpdateDto tableUpdateDto) {
+    public ResponseEntity<TableResponseDto> patch(@RequestBody @Valid TableUpdateDto tableUpdateDto) {
         return ResponseEntity.ok(tableService.update(tableUpdateDto));
     }
 

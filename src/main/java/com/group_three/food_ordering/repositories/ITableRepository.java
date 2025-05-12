@@ -4,6 +4,12 @@ import com.group_three.food_ordering.models.Table;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 public interface ITableRepository extends JpaRepository<Table, Long> {
+    List<Table> findByFoodVenueId(UUID foodVenueId);
+    Optional<Table> findByFoodVenueIdAndNumber(UUID foodVenueId, int number);
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/food-venues")
+@RequestMapping("/api/v1/food-venues")
 @RequiredArgsConstructor
 public class FoodVenueController {
 
@@ -24,7 +24,6 @@ public class FoodVenueController {
     public ResponseEntity<FoodVenueResponseDto> createFoodVenue(@RequestBody @Valid FoodVenueCreateDto foodVenueCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(foodVenueService.create(foodVenueCreateDto));
     }
-
 
     @GetMapping
     public ResponseEntity<List<FoodVenueResponseDto>> getFoodVenues() {
