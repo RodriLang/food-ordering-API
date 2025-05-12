@@ -25,7 +25,6 @@ public class FoodVenueUpdateDto {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be a valid email address")
-    @Size(min = 5, max = 50, message = "Email must be between 5 and 50 characters")
     private String email;
 
     @NotBlank(message = "Phone is required")
