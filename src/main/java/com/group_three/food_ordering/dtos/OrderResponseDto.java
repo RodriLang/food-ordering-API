@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.dtos;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,5 +20,5 @@ public class OrderResponseDto {
 
     private String clientAlias;
 
-    private List<OrderDetailRequestDto> orderDetails;
+    private List<OrderDetailResponseDto> orderDetails;
 }

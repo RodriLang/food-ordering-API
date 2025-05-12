@@ -3,7 +3,9 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.dtos.OrderRequestDto;
 import com.group_three.food_ordering.dtos.OrderResponseDto;
 import com.group_three.food_ordering.dtos.OrderUpdateDto;
+import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -20,7 +22,7 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponseDto> create(
-            @RequestBody OrderRequestDto order) {
+            @RequestBody @Valid OrderRequestDto order) {
         return ResponseEntity.ok(orderService.create(order));
     }
 
@@ -35,20 +37,30 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getById(id));
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<OrderResponseDto> update(
-            @RequestBody OrderUpdateDto order) {
-        return ResponseEntity.ok(orderService.update(order));
+            @PathVariable UUID id,
+            @RequestBody @Valid OrderUpdateDto order) {
+        return ResponseEntity.ok(orderService.update(id,order));
     }
 
-    @PatchMapping
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<OrderResponseDto> updateStatus(
+            @PathVariable UUID id,
+            @RequestParam OrderStatus status){
+        return ResponseEntity.ok(orderService.updateStatus(id, status));
+    }
+
+    @PatchMapping("/{id}/")
     public ResponseEntity<OrderResponseDto> patch(
-            @RequestBody OrderUpdateDto order){
-        return ResponseEntity.ok(orderService.update(order));
+            @PathVariable UUID id,
+            @RequestParam OrderStatus status){
+        return ResponseEntity.ok(orderService.updateStatus(id, status));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(
+            @PathVariable UUID venueId,
             @PathVariable UUID id) {
 
         orderService.delete(id);

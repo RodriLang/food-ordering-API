@@ -28,6 +28,8 @@ public class OrderDetail {
     @Column (length = 255)
     private String specialInstructions;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_item_id", nullable = false)
     private MenuItem menuItem;
+
 }

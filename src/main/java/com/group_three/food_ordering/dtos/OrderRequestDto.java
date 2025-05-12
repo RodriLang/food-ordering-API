@@ -23,9 +23,6 @@ public class OrderRequestDto {
     @Size(max = 255, message = "Special requirements must be 255 characters or less")
     private String specialRequirements;
 
-    @NotNull(message = "Food venue is required")
-    private UUID foodVenueId;
-
     @NotNull(message = "Client is required")
     private UUID clientId;
 
