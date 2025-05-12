@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.dtos;
+package com.group_three.food_ordering.dtos.create;
 
 
 import jakarta.validation.constraints.Min;

@@ -1,15 +1,9 @@
 package com.group_three.food_ordering.controllers;
 
-<<<<<<< HEAD
-import com.group_three.food_ordering.dtos.OrderRequestDto;
-import com.group_three.food_ordering.dtos.OrderResponseDto;
-import com.group_three.food_ordering.dtos.OrderUpdateDto;
-import com.group_three.food_ordering.enums.OrderStatus;
-=======
-import com.group_three.food_ordering.dtos.create.OrderCreateDto;
+import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.dtos.update.OrderUpdateDto;
->>>>>>> 51b6d069bf85c3e1a3fade8bf7a763a32e77820e
+import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
