@@ -15,6 +15,4 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
         Optional<Order> findOrderByIdAndFoodVenueId(UUID orderId, UUID venueId);
 
-
-
     }

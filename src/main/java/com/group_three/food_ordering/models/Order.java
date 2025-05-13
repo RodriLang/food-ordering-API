@@ -58,7 +58,7 @@ public class Order {
     public void onCreate() {
         this.creationDate = LocalDateTime.now();
         this.updateDate = LocalDateTime.now();
-        if (this.status == null) this.status = OrderStatus.NOT_APPROVED;
+        if (this.status == null) this.status = OrderStatus.PENDING;
         if (this.totalPrice == null) this.totalPrice = BigDecimal.ZERO;
     }
 

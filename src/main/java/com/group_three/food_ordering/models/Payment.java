@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.models;
 
+import com.group_three.food_ordering.enums.PaymentStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,4 +21,6 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    private PaymentStatus paymentStatus;
 }

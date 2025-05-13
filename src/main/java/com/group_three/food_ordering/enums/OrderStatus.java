@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.enums;
 
 public enum OrderStatus {
-    NOT_APPROVED,
     PENDING,
+    APPROVED,
     IN_PROGRESS,
     COMPLETED,
     SERVED,
