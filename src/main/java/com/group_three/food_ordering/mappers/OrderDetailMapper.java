@@ -1,15 +1,15 @@
 package com.group_three.food_ordering.mappers;
 
 
-import com.group_three.food_ordering.dtos.create.OrderRequestDto;
-import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.models.Order;
+import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
+import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
+import com.group_three.food_ordering.models.OrderDetail;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface OrderMapper {
+public interface OrderDetailMapper {
 
-    OrderResponseDto toDTO(Order order);
+    OrderDetailResponseDto toDTO(OrderDetail orderDetail);
 
-    Order toEntity(OrderRequestDto orderDTO);
+    OrderDetail toEntity(OrderDetailRequestDto orderDetailDTO);
 }

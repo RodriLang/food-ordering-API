@@ -2,25 +2,25 @@ package com.group_three.food_ordering.exceptions;
 
 import java.util.UUID;
 
-public class OrderNotFoundException extends RuntimeException {
+public class MenuItemNotFoundException extends RuntimeException {
 
-    public OrderNotFoundException(String message) {
+    public MenuItemNotFoundException(String message) {
         super(message);
     }
 
-    public OrderNotFoundException() {
-        super("Order not found");
+    public MenuItemNotFoundException() {
+        super("Menu item not found");
     }
 
-    public OrderNotFoundException(String message, Throwable cause) {
+    public MenuItemNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public OrderNotFoundException(UUID id) {
-        super("Order not found with ID: " + id);
+    public MenuItemNotFoundException(Long id) {
+        super("Menu item not found with ID: " + id);
     }
 
-    public OrderNotFoundException(UUID id, Throwable cause) {
-        super("Order not found with ID: " + id, cause);
+    public MenuItemNotFoundException(Long id, Throwable cause) {
+        super("Menu item not found with ID: " + id, cause);
     }
 }
