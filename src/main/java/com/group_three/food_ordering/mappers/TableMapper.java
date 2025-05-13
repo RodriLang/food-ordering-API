@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface TableMapper {
+
     TableResponseDto toDTO(Table table);
     Table toEntity(TableCreateDto tableDTO);
 }
-

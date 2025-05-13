@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
+
+import static com.group_three.food_ordering.services.impl.MyFoodVenueServiceImpl.HARDCODED_FOOD_VENUE_ID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,38 +27,30 @@ public class TableServiceImpl implements ITableService {
 
     @Override
     public TableResponseDto create(TableCreateDto tableCreateDto) {
-        // Mapeamos el DTO a la entidad Table
         Table table = tableMapper.toEntity(tableCreateDto);
 
-        // Asignamos el foodVenueId si no se ha hecho en el mapper
-        if (tableCreateDto.getFoodVenueId() != null) {
-            FoodVenue foodVenue = new FoodVenue();
-            foodVenue.setId(tableCreateDto.getFoodVenueId());
-            table.setFoodVenue(foodVenue);
-        }
+        FoodVenue foodVenue = new FoodVenue();
+        foodVenue.setId(HARDCODED_FOOD_VENUE_ID);
+        table.setFoodVenue(foodVenue);
 
-        // Asignamos el valor por defecto de status si no está presente
         if (table.getStatus() == null) {
             table.setStatus(TableStatus.AVAILABLE);
         }
 
-        // Guardamos la entidad en el repositorio
         Table savedTable = tableRepository.save(table);
-
-        // Mapeamos la entidad guardada a un DTO para devolverlo
         return tableMapper.toDTO(savedTable);
     }
 
     @Override
     public List<TableResponseDto> getAll() {
-        return tableRepository.findAll().stream()
+        return tableRepository.findByFoodVenueId(HARDCODED_FOOD_VENUE_ID).stream()
                 .map(tableMapper::toDTO)
                 .toList();
     }
 
     @Override
     public TableResponseDto getById(Long id) {
-        Table table = tableRepository.findById(id)
+        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
     }

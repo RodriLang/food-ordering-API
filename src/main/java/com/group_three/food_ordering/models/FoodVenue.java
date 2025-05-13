@@ -47,7 +47,7 @@ public class FoodVenue {
     @Builder.Default
     private List<Menu> menus = new ArrayList<>();
 
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Table> tables = new ArrayList<>();
 }
