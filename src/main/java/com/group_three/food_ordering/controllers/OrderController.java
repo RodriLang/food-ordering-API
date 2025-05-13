@@ -27,7 +27,7 @@ public class OrderController {
     // ========== ORDER ENDPOINTS ==========
 
     @PostMapping
-    public ResponseEntity<OrderResponseDto> create(
+    public ResponseEntity<OrderResponseDto> createOrder(
             @RequestBody @Valid OrderRequestDto order) {
         return ResponseEntity.ok(orderService.create(order));
     }
@@ -37,31 +37,31 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getAll());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponseDto> getOrderById(
-            @PathVariable UUID id) {
-        return ResponseEntity.ok(orderService.getById(id));
+            @PathVariable UUID orderId) {
+        return ResponseEntity.ok(orderService.getById(orderId));
     }
 
-    @PatchMapping("/{id}/requirements")
-    public ResponseEntity<OrderResponseDto> updateRequirements(
-            @PathVariable UUID id,
+    @PatchMapping("/{orderId}/requirements")
+    public ResponseEntity<OrderResponseDto> updateOrderRequirements(
+            @PathVariable UUID orderId,
             @RequestParam @Size(max = 255) String requirements) {
-        return ResponseEntity.ok(orderService.updateSpecialRequirements(id, requirements));
+        return ResponseEntity.ok(orderService.updateSpecialRequirements(orderId, requirements));
     }
 
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponseDto> updateStatus(
-            @PathVariable UUID id,
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(
+            @PathVariable UUID orderId,
             @RequestParam OrderStatus status) {
-        return ResponseEntity.ok(orderService.updateStatus(id, status));
+        return ResponseEntity.ok(orderService.updateStatus(orderId, status));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{orderId}")
     public ResponseEntity<Void> deleteOrder(
-            @PathVariable UUID id) {
+            @PathVariable UUID orderId) {
 
-        orderService.delete(id);
+        orderService.delete(orderId);
 
         return ResponseEntity.noContent().build();
     }
@@ -70,20 +70,20 @@ public class OrderController {
     // ========== ORDER DETAIL ENDPOINTS ==========
 
     @PostMapping(ApiPaths.ORDER_DETAIL_URI)
-    public ResponseEntity<OrderResponseDto> addOrderDetail(
+    public ResponseEntity<OrderResponseDto> addOrderDetailToOrder(
             @PathVariable UUID orderId,
             @RequestBody @Valid OrderDetailRequestDto orderDetailRequestDto) {
         return ResponseEntity.ok(orderService.addOrderDetail(orderId, orderDetailRequestDto));
     }
 
     @GetMapping(ApiPaths.ORDER_DETAIL_URI)
-    public ResponseEntity<List<OrderDetailResponseDto>> getOrderDetails(
+    public ResponseEntity<List<OrderDetailResponseDto>> getOrderDetailsByOrderId(
             @PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetailsByOrderId(orderId));
     }
 
     @DeleteMapping(ApiPaths.ORDER_DETAIL_URI + "/{orderDetailId}")
-    public ResponseEntity<OrderResponseDto> removeOrderDetail(
+    public ResponseEntity<OrderResponseDto> removeOrderDetailFromOrder(
             @PathVariable UUID orderId,
             @PathVariable Long orderDetailId) {
         return ResponseEntity.ok(orderService.removeOrderDetail(orderId, orderDetailId));
