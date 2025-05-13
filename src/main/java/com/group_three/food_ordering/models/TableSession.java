@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity(name = "table_sessions")
@@ -18,8 +19,16 @@ public class TableSession {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "food_venue_id") // nombre de la columna FK en la tabla Employee
-    private FoodVenue foodVenue;
+    @Column(name = "start_time", nullable = false)
+    private LocalDateTime startTime;
 
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
+    @ManyToOne
+    @JoinColumn(name = "table_id", nullable = false)
+    private Table table;
+
+    @Column(name = "food_venue_id", nullable = false)
+    private UUID foodVenueId;
 }

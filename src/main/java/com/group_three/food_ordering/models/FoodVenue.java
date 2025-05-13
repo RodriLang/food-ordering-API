@@ -50,8 +50,4 @@ public class FoodVenue {
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Table> tables = new ArrayList<>();
-
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<TableSession> tableSessions = new ArrayList<>();
 }

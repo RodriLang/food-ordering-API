@@ -3,8 +3,10 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.response.TableResponseDto;
 import com.group_three.food_ordering.dtos.update.TableUpdateDto;
+import com.group_three.food_ordering.enums.TableStatus;
 import com.group_three.food_ordering.exceptions.TableNotFoundException;
 import com.group_three.food_ordering.mappers.TableMapper;
+import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Table;
 import com.group_three.food_ordering.repositories.ITableRepository;
 import com.group_three.food_ordering.services.interfaces.ITableService;
@@ -22,9 +24,26 @@ public class TableServiceImpl implements ITableService {
 
     @Override
     public TableResponseDto create(TableCreateDto tableCreateDto) {
+        // Mapeamos el DTO a la entidad Table
         Table table = tableMapper.toEntity(tableCreateDto);
 
-        return tableMapper.toDTO(tableRepository.save(table));
+        // Asignamos el foodVenueId si no se ha hecho en el mapper
+        if (tableCreateDto.getFoodVenueId() != null) {
+            FoodVenue foodVenue = new FoodVenue();
+            foodVenue.setId(tableCreateDto.getFoodVenueId());
+            table.setFoodVenue(foodVenue);
+        }
+
+        // Asignamos el valor por defecto de status si no está presente
+        if (table.getStatus() == null) {
+            table.setStatus(TableStatus.AVAILABLE);
+        }
+
+        // Guardamos la entidad en el repositorio
+        Table savedTable = tableRepository.save(table);
+
+        // Mapeamos la entidad guardada a un DTO para devolverlo
+        return tableMapper.toDTO(savedTable);
     }
 
     @Override

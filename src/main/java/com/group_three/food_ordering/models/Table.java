@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity(name = "tables")
 @Data
 @NoArgsConstructor
@@ -24,7 +27,10 @@ public class Table {
     private Integer capacity;
 
     @Enumerated(EnumType.STRING)
-    private TableStatus status;
+    private TableStatus status = TableStatus.AVAILABLE;
+
+    @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TableSession> tableSessions = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "food_venue_id", nullable = false)

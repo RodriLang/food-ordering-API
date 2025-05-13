@@ -16,8 +16,8 @@ public class FoodVenueResponseDto {
 
     private UUID id;
     private String name;
-    private Address address;
     private String email;
     private String phone;
     private String imageUrl;
+    private Address address;
 }
