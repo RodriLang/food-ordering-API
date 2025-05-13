@@ -21,22 +21,28 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 50)
     private String name;
 
+    @Column(length = 50)
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true, length = 50)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private LocalDate birthDate;
 
+    @Column(nullable = false, length = 20)
     private String phone;
 
+    @Column(nullable = false)
     private LocalDate createdAt;
 
+    @Column(nullable = false)
     private LocalDate removedAt;
 
     @Enumerated(EnumType.STRING)
