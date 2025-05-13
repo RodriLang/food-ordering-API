@@ -22,8 +22,4 @@ public class Tag {
     @Column
     private String label;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
-
 }

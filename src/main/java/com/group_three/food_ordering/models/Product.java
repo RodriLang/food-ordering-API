@@ -43,7 +43,12 @@ public class Product {
     @Column
     private Integer stock;
 
-    @OneToMany(mappedBy= "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany
+    @JoinTable(
+            name = "products_by_tags",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<Tag> tags= new ArrayList<>();
 
     @PrePersist
