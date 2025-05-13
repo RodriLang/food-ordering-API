@@ -41,8 +41,7 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate createdAt;
-
-    @Column(nullable = false)
+    
     private LocalDate removedAt;
 
     @Enumerated(EnumType.STRING)
