@@ -26,8 +26,8 @@ public class FoodVenue {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String address;
+    @Column(nullable = false, unique = true)
+    private Address address;
 
     @Column(nullable = false, length = 20)
     private String phone;
