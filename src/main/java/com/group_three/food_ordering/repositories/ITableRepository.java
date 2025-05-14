@@ -13,5 +13,7 @@ import java.util.UUID;
 public interface ITableRepository extends JpaRepository<Table, Long> {
     List<Table> findByFoodVenueId(UUID foodVenueId);
     Optional<Table> findByFoodVenueIdAndId(UUID foodVenueId, Long id);
+    Optional<Table> findByFoodVenueIdAndNumber(UUID foodVenueId, Integer number);
     List<Table> findByFoodVenueIdAndStatus(UUID foodVenueId, TableStatus status);
+
 }

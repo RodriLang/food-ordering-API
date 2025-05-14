@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 import static com.group_three.food_ordering.services.impl.MyFoodVenueServiceImpl.HARDCODED_FOOD_VENUE_ID;
 
@@ -49,17 +48,39 @@ public class TableServiceImpl implements ITableService {
     }
 
     @Override
+    public List<TableResponseDto> getAllByStatus(TableStatus status) {
+        return tableRepository.findByFoodVenueIdAndStatus(HARDCODED_FOOD_VENUE_ID, status).stream()
+                .map(tableMapper::toDTO)
+                .toList();
+    }
+
+    @Override
     public TableResponseDto getById(Long id) {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
     }
 
+
     @Override
-    public TableResponseDto update(TableUpdateDto tableUpdateDto) {
-        Table table = new Table();
-        tableRepository.save(table);
-        return new TableResponseDto();
+    public TableResponseDto getByNumber(Integer number) {
+        Table table = tableRepository.findByFoodVenueIdAndNumber(HARDCODED_FOOD_VENUE_ID, number)
+                .orElseThrow(TableNotFoundException::new);
+        return tableMapper.toDTO(table);
+    }
+
+    @Override
+    public TableResponseDto update(TableUpdateDto tableUpdateDto, Long id) {
+        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+                .orElseThrow(TableNotFoundException::new);
+
+        table.setNumber(tableUpdateDto.getNumber());
+        table.setCapacity(tableUpdateDto.getCapacity());
+        table.setStatus(tableUpdateDto.getStatus());
+
+        Table updatedTable = tableRepository.save(table);
+
+        return tableMapper.toDTO(updatedTable);
     }
 
     @Override
