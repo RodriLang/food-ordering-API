@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dtos.create;
 
+import com.group_three.food_ordering.dtos.response.TagResponseDto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,4 +30,6 @@ public class ProductCreateDto {
 
     @Min(value = 0, message = "stock must be 0 or more")
     private Integer stock;
+
+    private List<Long> tagsId;
 }

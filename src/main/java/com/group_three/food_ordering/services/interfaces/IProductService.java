@@ -6,11 +6,15 @@ import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
 import com.group_three.food_ordering.models.Product;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IProductService {
     ProductResponseDto create(ProductCreateDto productCreateDto);
-    ProductResponseDto update(ProductUpdateDto productUpdateDto);
+    ProductResponseDto update(Long id, ProductUpdateDto productUpdateDto);
     ProductResponseDto getById(Long id);
     void delete(Long id);
     List<ProductResponseDto> getAll();
+
+    List<ProductResponseDto> getAllAvailable();
+
 }
