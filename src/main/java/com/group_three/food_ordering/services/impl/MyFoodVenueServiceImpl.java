@@ -20,7 +20,7 @@ public class MyFoodVenueServiceImpl implements IMyFoodVenueService {
     private final FoodVenueMapper foodVenueMapper;
 
     // Cambiar por el id del food venue que se quiere mostrar dinámicamente cuando se implemente la autenticación
-    public static final UUID HARDCODED_FOOD_VENUE_ID = UUID.fromString("200eb65d-1d0f-4344-9d6e-ea3f29702c55");
+    public static final UUID HARDCODED_FOOD_VENUE_ID = UUID.fromString("da83359f-3a91-4a36-ac89-cd07d9499958");
 
     @Override
     public FoodVenueResponseDto get() {

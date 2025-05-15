@@ -4,13 +4,13 @@ import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
 import com.group_three.food_ordering.mappers.ProductMapper;
+import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Product;
 import com.group_three.food_ordering.models.Tag;
 import com.group_three.food_ordering.repositories.ICategoryRepository;
 import com.group_three.food_ordering.repositories.IProductRepository;
 import com.group_three.food_ordering.repositories.ITagRepository;
-import com.group_three.food_ordering.services.interfaces.ICategoryService;
 import com.group_three.food_ordering.services.interfaces.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,6 +42,11 @@ public class ProductService implements IProductService {
 
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
 
+        if (productCreateDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productCreateDto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            product.setCategory(category);
+        }
 
         if (productCreateDto.getTagsId() != null && !productCreateDto.getTagsId().isEmpty()) {
             List<Tag> tags = tagRepository.findAllById(productCreateDto.getTagsId());
@@ -65,6 +70,12 @@ public class ProductService implements IProductService {
         }
         if (productUpdateDto.getImageUrl() != null) product.setImageUrl(productUpdateDto.getImageUrl());
 
+        if (productUpdateDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productUpdateDto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            product.setCategory(category);
+        }
+
         if (productUpdateDto.getTagIds() != null) {
             List<Tag> tags = tagRepository.findAllById(productUpdateDto.getTagIds());
             product.setTags(new ArrayList<>(tags));
@@ -82,6 +93,21 @@ public class ProductService implements IProductService {
         product.setStock(productCreateDto.getStock());
         product.setImageUrl(product.getImageUrl());
         product.setAvailable(productCreateDto.getStock() > 0);
+
+        if (productCreateDto.getTagsId() != null && !productCreateDto.getTagsId().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(productCreateDto.getTagsId());
+            product.setTags(new ArrayList<>(tags));
+        } else {
+            product.setTags(new ArrayList<>());
+        }
+        if (productCreateDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productCreateDto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            product.setCategory(category);
+        } else {
+            product.setCategory(null); // o mantener la actual, según tu lógica de negocio
+        }
+
         return productMapper.toDTO(productRepository.save(product));
     }
 
