@@ -23,5 +23,6 @@ public class ProductResponseDto {
     private BigDecimal price;
     private Integer stock;
     private Boolean available;
+    private CategoryResponseDto category;
     private List<TagResponseDto> tags;
 }

@@ -20,6 +20,7 @@ import java.util.List;
 public class ProductCreateDto {
 
     @NotNull(message = "name of product is required")
+    @Size(min = 2, max = 100)
     private String name;
     @Size(max = 255 , message = "description of product must be 255 characters or less")
     private String description;
@@ -31,5 +32,6 @@ public class ProductCreateDto {
     @Min(value = 0, message = "stock must be 0 or more")
     private Integer stock;
 
+    private Long categoryId;
     private List<Long> tagsId;
 }

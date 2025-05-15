@@ -51,6 +51,10 @@ public class Product {
     )
     private List<Tag> tags= new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @PrePersist
     public void onCreate()
     {

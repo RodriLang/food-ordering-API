@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface IProductService {
     ProductResponseDto create(ProductCreateDto productCreateDto);
     ProductResponseDto update(Long id, ProductUpdateDto productUpdateDto);
+    ProductResponseDto replace(Long id, ProductCreateDto productCreateDto);
     ProductResponseDto getById(Long id);
     void delete(Long id);
     List<ProductResponseDto> getAll();

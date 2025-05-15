@@ -70,6 +70,19 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public ProductResponseDto replace(Long id, ProductCreateDto productCreateDto) {
+        Product product = productRepository.findById(id).orElseThrow(NoSuchElementException::new);
+
+        product.setName(productCreateDto.getName());
+        product.setDescription(productCreateDto.getDescription());
+        product.setPrice(productCreateDto.getPrice());
+        product.setStock(productCreateDto.getStock());
+        product.setImageUrl(product.getImageUrl());
+        product.setAvailable(productCreateDto.getStock() > 0);
+        return productMapper.toDTO(productRepository.save(product));
+    }
+
+    @Override
     public ProductResponseDto getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(NoSuchElementException::new);
@@ -94,7 +107,6 @@ public class ProductService implements IProductService {
         return productRepository.findAllByFoodVenue_IdAndAvailable(HARDCODED_FOOD_VENUE_ID, true).stream()
                 .map(productMapper::toDTO)
                 .toList();
-
     }
 
 

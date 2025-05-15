@@ -4,11 +4,13 @@ import com.group_three.food_ordering.dtos.create.TagCreateDto;
 import com.group_three.food_ordering.dtos.response.TagResponseDto;
 import com.group_three.food_ordering.dtos.update.TagUpdateDto;
 import com.group_three.food_ordering.services.interfaces.ITagService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TagService implements ITagService {
 
 
