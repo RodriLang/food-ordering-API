@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,31 +37,36 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public CategoryResponseDto update(Long id, CategoryCreateDto categoryCreateDto) {
-        return categoryMapper.toDto(categoryRepository.findById(id).orElseThrow());
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        category.setName(categoryCreateDto.getName());
+        return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
     public CategoryResponseDto getById(Long id) {
-        return null;
+        Category category = categoryRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        return categoryMapper.toDto(category);
     }
 
     @Override
     public void delete(Long id) {
-
+        categoryRepository.deleteById(id);
     }
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        return List.of();
-    }
+        List<Category> roots = categoryRepository.findByParentCategoryIsNull();
 
-    @Override
-    public List<CategoryResponseDto> getRootCategories() {
-        return List.of();
+        return roots.stream()
+                .map(categoryMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id) {
-        return List.of();
+       List<Category> children = categoryRepository.findByParentCategoryId(id);
+       return children.stream()
+               .map(categoryMapper::toDto)
+               .collect(Collectors.toList());
     }
 }

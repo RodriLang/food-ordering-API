@@ -11,5 +11,5 @@ public interface ITagService {
     List<TagResponseDto> getAll();
     TagResponseDto getById(Long id);
     void delete(Long id);
-    TagResponseDto update(TagUpdateDto tagUpdateDto);
+    TagResponseDto update(Long id, TagCreateDto tagCreateDto);
 }

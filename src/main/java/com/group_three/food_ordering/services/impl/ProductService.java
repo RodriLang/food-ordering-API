@@ -7,8 +7,10 @@ import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Product;
 import com.group_three.food_ordering.models.Tag;
+import com.group_three.food_ordering.repositories.ICategoryRepository;
 import com.group_three.food_ordering.repositories.IProductRepository;
 import com.group_three.food_ordering.repositories.ITagRepository;
+import com.group_three.food_ordering.services.interfaces.ICategoryService;
 import com.group_three.food_ordering.services.interfaces.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class ProductService implements IProductService {
 
     private final IProductRepository productRepository;
     private final ITagRepository tagRepository;
+    private final ICategoryRepository categoryRepository;
     private final ProductMapper productMapper;
 
 
@@ -108,7 +111,6 @@ public class ProductService implements IProductService {
                 .map(productMapper::toDTO)
                 .toList();
     }
-
 
 
 }

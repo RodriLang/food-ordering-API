@@ -11,7 +11,6 @@ public interface ICategoryService {
     CategoryResponseDto getById(Long id);
     void delete(Long id);
     List<CategoryResponseDto> getAll();
-    List<CategoryResponseDto> getRootCategories();
     List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id);
 
 }
