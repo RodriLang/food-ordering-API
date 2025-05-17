@@ -6,7 +6,6 @@ import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.enums.PaymentMethod;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.MenuItemNotFoundException;
 import com.group_three.food_ordering.exceptions.OrderDetailNotFoundException;
