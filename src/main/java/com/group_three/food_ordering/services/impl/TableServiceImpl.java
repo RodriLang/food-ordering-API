@@ -10,6 +10,7 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Table;
 import com.group_three.food_ordering.repositories.ITableRepository;
 import com.group_three.food_ordering.services.interfaces.ITableService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,10 @@ public class TableServiceImpl implements ITableService {
             table.setStatus(TableStatus.AVAILABLE);
         }
 
+        if (table.getQrCode() == null) {
+            table.setQrCode(foodVenue.getId().toString().substring(0, 5) + "_TN" + table.getNumber());
+        }
+
         Table savedTable = tableRepository.save(table);
         return tableMapper.toDTO(savedTable);
     }
@@ -48,25 +53,24 @@ public class TableServiceImpl implements ITableService {
     }
 
     @Override
-    public List<TableResponseDto> getAllByStatus(TableStatus status) {
-        return tableRepository.findByFoodVenueIdAndStatus(HARDCODED_FOOD_VENUE_ID, status).stream()
-                .map(tableMapper::toDTO)
-                .toList();
-    }
-
-    @Override
     public TableResponseDto getById(Long id) {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
     }
 
-
     @Override
     public TableResponseDto getByNumber(Integer number) {
         Table table = tableRepository.findByFoodVenueIdAndNumber(HARDCODED_FOOD_VENUE_ID, number)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
+    }
+
+    @Override
+    public List<TableResponseDto> getByFilters(TableStatus status, Integer capacity) {
+        return tableRepository.findByFoodVenueIdAndFilters(HARDCODED_FOOD_VENUE_ID, status, capacity).stream()
+                .map(tableMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -83,8 +87,12 @@ public class TableServiceImpl implements ITableService {
         return tableMapper.toDTO(updatedTable);
     }
 
+    @Transactional
     @Override
     public void delete(Long id) {
-        tableRepository.deleteById(id);
+        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+                .orElseThrow(TableNotFoundException::new);
+
+        table.getFoodVenue().getTables().remove(table);
     }
 }

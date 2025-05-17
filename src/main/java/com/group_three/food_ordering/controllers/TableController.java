@@ -31,14 +31,19 @@ public class TableController {
         return ResponseEntity.ok(tableService.getAll());
     }
 
-    @GetMapping("/status/{tableStatus}")
-    public ResponseEntity<List<TableResponseDto>> getTablesByStatus(@PathVariable TableStatus tableStatus) {
-        return ResponseEntity.ok(tableService.getAllByStatus(tableStatus));
+    @GetMapping("/{tableId}")
+    public ResponseEntity<TableResponseDto> getTableById(@PathVariable Long tableId) {
+        return ResponseEntity.ok(tableService.getById(tableId));
     }
 
     @GetMapping("/number/{tableNumber}")
     public ResponseEntity<TableResponseDto> getTableByNumber(@PathVariable Integer tableNumber) {
         return ResponseEntity.ok(tableService.getByNumber(tableNumber));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<TableResponseDto>> getFilteredTables(@RequestParam(required = false) TableStatus status, @RequestParam(required = false) Integer capacity) {
+        return ResponseEntity.ok(tableService.getByFilters(status, capacity));
     }
 
     @PutMapping("/{tableId}")
@@ -52,8 +57,10 @@ public class TableController {
     }
 
     @DeleteMapping("/{tableId}")
-    public ResponseEntity<Void> deleteTable(@PathVariable Long tableId) {
+    public ResponseEntity<Void> delete(@PathVariable Long tableId) {
+        System.out.println(">>> Entró al controller DELETE");
         tableService.delete(tableId);
         return ResponseEntity.noContent().build();
     }
+
 }

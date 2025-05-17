@@ -10,9 +10,10 @@ import java.util.List;
 public interface ITableService {
     TableResponseDto create(TableCreateDto tableCreateDto);
     List<TableResponseDto> getAll();
-    List<TableResponseDto> getAllByStatus(TableStatus status);
     TableResponseDto getById(Long id);
     TableResponseDto getByNumber(Integer number);
     TableResponseDto update(TableUpdateDto tableUpdateDto, Long id);
     void delete(Long id);
+
+    List<TableResponseDto> getByFilters(TableStatus status, Integer capacity);
 }

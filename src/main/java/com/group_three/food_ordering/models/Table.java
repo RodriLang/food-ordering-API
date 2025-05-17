@@ -26,6 +26,9 @@ public class Table {
     @Column(nullable = false)
     private Integer capacity;
 
+    @Column(nullable = false)
+    private String qrCode;
+
     @Enumerated(EnumType.STRING)
     private TableStatus status = TableStatus.AVAILABLE;
 

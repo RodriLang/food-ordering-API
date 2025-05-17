@@ -26,7 +26,7 @@ public class FoodVenue {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Embedded
     private Address address;
 
     @Column(nullable = false, length = 20)

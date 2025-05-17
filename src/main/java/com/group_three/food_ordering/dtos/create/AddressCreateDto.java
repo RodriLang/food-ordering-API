@@ -1,34 +1,39 @@
-package com.group_three.food_ordering.models;
+package com.group_three.food_ordering.dtos.create;
 
-import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Embeddable
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+@NoArgsConstructor
+@Builder
+public class AddressCreateDto {
 
     @NotBlank(message = "Street is required")
+    @Size(min = 3, max = 100)
     private String street;
 
-    @NotNull(message = "Number is required")
+    @NotBlank(message = "Number is required")
+    @Size(min = 1, max = 10)
     private String number;
 
     @NotBlank(message = "City is required")
+    @Size(min = 3, max = 50)
     private String city;
 
     @NotBlank(message = "Province is required")
+    @Size(min = 3, max = 50)
     private String province;
 
-    @NotBlank(message = "Country is required")
-    private String country;
-
     @NotBlank(message = "Postal code is required")
+    @Size(min = 3, max = 20)
     private String postalCode;
-}
 
+    @NotBlank(message = "Country is required")
+    @Size(min = 3, max = 50)
+    private String country;
+}

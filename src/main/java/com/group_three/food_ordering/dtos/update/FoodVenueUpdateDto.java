@@ -1,13 +1,15 @@
 package com.group_three.food_ordering.dtos.update;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import com.group_three.food_ordering.dtos.create.AddressCreateDto;
+import com.group_three.food_ordering.models.Address;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -15,13 +17,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FoodVenueUpdateDto {
 
+    private UUID id;
+
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
     private String name;
 
-    @NotBlank(message = "Address is required")
-    @Size(min = 5, max = 100, message = "Address must be between 5 and 100 characters")
-    private String address;
+    @Valid
+    @NotNull(message = "Address is required")
+    private AddressCreateDto address;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be a valid email address")
