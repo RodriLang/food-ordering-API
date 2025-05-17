@@ -45,11 +45,15 @@ public class Product {
 
     @ManyToMany
     @JoinTable(
-            name = "products_by_tags",
+            name = "products_tags",
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags= new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @PrePersist
     public void onCreate()

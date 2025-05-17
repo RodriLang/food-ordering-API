@@ -15,6 +15,7 @@ public class TableResponseDto {
     private Long id;
     private Integer number;
     private Integer capacity;
+    private String qrCode;
     private TableStatus status;
 }
 

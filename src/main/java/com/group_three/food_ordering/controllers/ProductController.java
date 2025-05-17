@@ -4,7 +4,6 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
-import com.group_three.food_ordering.models.Product;
 import com.group_three.food_ordering.services.interfaces.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,18 +31,32 @@ public class ProductController {
     {
         return ResponseEntity.ok(productService.getAll());
     }
+    @GetMapping("/available")
+    public ResponseEntity<List<ProductResponseDto>> getProductsAvailable()
+    {
+        return ResponseEntity.ok(productService.getAllAvailable());
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));
     }
-/*
-    @PostMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable Long id, @RequestBody @Valid ProductUpdateDto productUpdateDto)
-    {
-        return ResponseEntity.ok(productService.update(id));
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> replaceProduct(
+            @PathVariable Long id,@Valid @RequestBody ProductCreateDto productCreateDto) {
+        return ResponseEntity.ok(productService.replace(id, productCreateDto));
     }
-*/
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> updateProduct(
+            @PathVariable Long id, @Valid @RequestBody ProductUpdateDto productUpdateDto)
+    {
+        return ResponseEntity.ok(productService.update(id, productUpdateDto));
+    }
 
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ProductResponseDto> deleteProduct(@PathVariable Long id) {
+        productService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -23,9 +23,5 @@ public class FoodVenueResponseDto {
     private String email;
     private String phone;
     private String imageUrl;
-
     private Address address;
-    private Menu menu;
-    private List<Employee> employees;
-    private List<TableResponseDto> tables;
 }

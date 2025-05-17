@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity(name = "table_sessions")
@@ -29,6 +32,19 @@ public class TableSession {
     @JoinColumn(name = "table_id", nullable = false)
     private Table table;
 
-    @Column(name = "food_venue_id", nullable = false)
-    private UUID foodVenueId;
+    @ManyToOne
+    @JoinColumn(name = "food_venue_id", nullable = false)
+    private FoodVenue foodVenue;
+
+    @ManyToOne
+    @JoinColumn(name = "host_client_id", nullable = false)
+    private Client hostClient;
+
+    @ManyToMany
+    @JoinTable(
+            name = "table_session_clients",
+            joinColumns = @JoinColumn(name = "table_session_id"),
+            inverseJoinColumns = @JoinColumn(name = "client_id")
+    )
+    private Set<Client> participants = new LinkedHashSet<>();
 }

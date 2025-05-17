@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
+import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.FoodVenueCreateDto;
 import com.group_three.food_ordering.dtos.response.FoodVenueResponseDto;
 import com.group_three.food_ordering.dtos.update.FoodVenueUpdateDto;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/food-venues")
+@RequestMapping(ApiPaths.VENUE_BASE)
 @RequiredArgsConstructor
 public class FoodVenueController {
 
@@ -30,24 +31,24 @@ public class FoodVenueController {
         return ResponseEntity.ok(foodVenueService.getAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<FoodVenueResponseDto> getFoodVenueById(@PathVariable UUID id) {
-        return ResponseEntity.ok(foodVenueService.getById(id));
+    @GetMapping("/{venueId}")
+    public ResponseEntity<FoodVenueResponseDto> getFoodVenueById(@PathVariable UUID venueId) {
+        return ResponseEntity.ok(foodVenueService.getById(venueId));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<FoodVenueResponseDto> update(@RequestBody @Valid FoodVenueUpdateDto foodVenueUpdateDto, @PathVariable UUID id) {
+    @PutMapping("/{venueId}")
+    public ResponseEntity<FoodVenueResponseDto> update(@RequestBody @Valid FoodVenueUpdateDto foodVenueUpdateDto, @PathVariable UUID venueId) {
         return ResponseEntity.ok(foodVenueService.update(foodVenueUpdateDto));
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<FoodVenueResponseDto> patch(@RequestBody @Valid FoodVenueUpdateDto foodVenueUpdateDto, @PathVariable UUID id) {
+    @PatchMapping("/{venueId}")
+    public ResponseEntity<FoodVenueResponseDto> patch(@RequestBody @Valid FoodVenueUpdateDto foodVenueUpdateDto, @PathVariable UUID venueId) {
         return ResponseEntity.ok(foodVenueService.update(foodVenueUpdateDto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFoodVenue(@PathVariable UUID id) {
-        foodVenueService.delete(id);
+    @DeleteMapping("/{venueId}")
+    public ResponseEntity<Void> deleteFoodVenue(@PathVariable UUID venueId) {
+        foodVenueService.delete(venueId);
         return ResponseEntity.noContent().build();
     }
 }

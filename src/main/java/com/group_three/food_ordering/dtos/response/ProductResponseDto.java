@@ -22,5 +22,7 @@ public class ProductResponseDto {
     private String image;
     private BigDecimal price;
     private Integer stock;
+    private Boolean available;
+    private CategoryResponseDto category;
     private List<TagResponseDto> tags;
 }

@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dtos.create;
 
+import com.group_three.food_ordering.dtos.response.TagResponseDto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 public class ProductCreateDto {
 
     @NotNull(message = "name of product is required")
+    @Size(min = 2, max = 100)
     private String name;
     @Size(max = 255 , message = "description of product must be 255 characters or less")
     private String description;
@@ -28,4 +31,7 @@ public class ProductCreateDto {
 
     @Min(value = 0, message = "stock must be 0 or more")
     private Integer stock;
+
+    private Long categoryId;
+    private List<Long> tagsId;
 }
