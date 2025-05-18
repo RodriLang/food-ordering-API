@@ -1,15 +1,14 @@
 package com.group_three.food_ordering.models;
 
 import com.group_three.food_ordering.enums.PaymentStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "payments")
@@ -22,5 +21,18 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private PaymentStatus paymentStatus;
+    @Column
+    private BigDecimal amount;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private List<Order> orders;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus status;
+
+    @Column(nullable = false)
+    private Boolean deleted;
+
 }

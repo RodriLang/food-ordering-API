@@ -22,7 +22,7 @@ public class OrderDetailResponseDto {
     //Unit price multiplied by quantity
     private BigDecimal totalPrice;
 
-    private String menuItemName;
+    private String productName;
     private String category;
     private String specialInstructions;
 }

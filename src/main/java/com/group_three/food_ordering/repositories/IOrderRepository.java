@@ -11,8 +11,10 @@ import java.util.UUID;
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
-        List<Order> findByFoodVenueId(UUID venueId);
+        Optional<Order> findByIdAndDeletedFalse(UUID orderId);
 
-        Optional<Order> findOrderByIdAndFoodVenueId(UUID orderId, UUID venueId);
+        List<Order> findAllAndDeletedFalse();
+
+        List<Order> findByFoodVenue_IdAndDeletedFalse(UUID venueId);
 
     }
