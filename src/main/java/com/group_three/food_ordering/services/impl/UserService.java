@@ -76,16 +76,13 @@ public class UserService implements IUserService {
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
         User user = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-
-        // Validación de email duplicado si cambia
+        
         if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        // Actualización parcial de campos básicos
         userMapper.updateEntity(dto, user);
 
-        // Actualización parcial del address (merge profundo)
         if (dto.getAddress() != null) {
             if (user.getAddress() == null) {
                 user.setAddress(addressMapper.toEntity(dto.getAddress()));
