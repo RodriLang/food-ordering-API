@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.dtos.create;
+package com.group_three.food_ordering.dtos.update;
 
 
 import jakarta.validation.constraints.Min;
@@ -13,17 +13,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderDetailRequestDto {
+public class OrderDetailUpdateDto {
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity;
 
     @Size(max = 255, message = "Special instructions must be 255 characters or less")
     private String specialInstructions;
-
-    @NotNull(message = "Product ID is required")
-    private Long productId;
 
 }
 

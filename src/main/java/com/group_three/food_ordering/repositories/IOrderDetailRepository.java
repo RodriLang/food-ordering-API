@@ -11,7 +11,10 @@ import java.util.UUID;
 @Repository
 public interface IOrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 
-    Optional<OrderDetail> findByIdAndOrder_Id(Long id, UUID orderId);
-    List<OrderDetail> findAllByOrder_Id(UUID orderId);
+    Optional<OrderDetail> findByIdAndDeletedFalse(Long orderDetailId);
+
+    List<OrderDetail> findAllOrderDetailsAndDeletedFalse();
+
+    List<OrderDetail> findAllByOrder_IdAndDeletedFalse(UUID orderId);
 
 }

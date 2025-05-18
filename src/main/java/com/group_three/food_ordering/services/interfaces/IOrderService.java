@@ -6,6 +6,8 @@ import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.models.Order;
+import com.group_three.food_ordering.models.OrderDetail;
 
 
 import java.util.List;
@@ -16,10 +18,11 @@ public interface IOrderService {
     OrderResponseDto create(OrderRequestDto orderRequestDto);
     List<OrderResponseDto> getAll();
     OrderResponseDto getById(UUID id);
+    Order getEntityById(UUID id);
     OrderResponseDto updateSpecialRequirements(UUID id, String specialRequirements);
-    OrderResponseDto addOrderDetail(UUID orderId, OrderDetailRequestDto orderDetailRequestDto);
-    OrderResponseDto removeOrderDetail(UUID orderId, Long orderDetailId);
     void delete(UUID id);
     OrderResponseDto updateStatus(UUID orderId, OrderStatus orderStatus);
     List<OrderDetailResponseDto>getOrderDetailsByOrderId(UUID orderId);
+    void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail);
+    void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail);
 }

@@ -1,15 +1,14 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
-import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,7 +28,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(
             @RequestBody @Valid OrderRequestDto order) {
-        return ResponseEntity.ok(orderService.create(order));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
     }
 
     @GetMapping
@@ -66,26 +65,4 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-
-    // ========== ORDER DETAIL ENDPOINTS ==========
-
-    @PostMapping(ApiPaths.ORDER_DETAIL_URI)
-    public ResponseEntity<OrderResponseDto> addOrderDetailToOrder(
-            @PathVariable UUID orderId,
-            @RequestBody @Valid OrderDetailRequestDto orderDetailRequestDto) {
-        return ResponseEntity.ok(orderService.addOrderDetail(orderId, orderDetailRequestDto));
-    }
-
-    @GetMapping(ApiPaths.ORDER_DETAIL_URI)
-    public ResponseEntity<List<OrderDetailResponseDto>> getOrderDetailsByOrderId(
-            @PathVariable UUID orderId) {
-        return ResponseEntity.ok(orderService.getOrderDetailsByOrderId(orderId));
-    }
-
-    @DeleteMapping(ApiPaths.ORDER_DETAIL_URI + "/{orderDetailId}")
-    public ResponseEntity<OrderResponseDto> removeOrderDetailFromOrder(
-            @PathVariable UUID orderId,
-            @PathVariable Long orderDetailId) {
-        return ResponseEntity.ok(orderService.removeOrderDetail(orderId, orderDetailId));
-    }
 }
