@@ -76,7 +76,7 @@ public class UserService implements IUserService {
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
         User user = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-        
+
         if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
