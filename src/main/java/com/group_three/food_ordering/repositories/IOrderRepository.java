@@ -13,7 +13,7 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
         Optional<Order> findByIdAndDeletedFalse(UUID orderId);
 
-        List<Order> findAllAndDeletedFalse();
+        List<Order> findAllByDeletedFalse();
 
         List<Order> findByFoodVenue_IdAndDeletedFalse(UUID venueId);
 

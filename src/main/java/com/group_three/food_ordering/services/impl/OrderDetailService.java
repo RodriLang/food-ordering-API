@@ -57,7 +57,7 @@ public class OrderDetailService implements IOrderDetailService {
 
     @Override
     public List<OrderDetailResponseDto> getAll() {
-        return orderDetailRepository.findAllOrderDetailsAndDeletedFalse().
+        return orderDetailRepository.findAllOrderDetailsByDeletedFalse().
                 stream()
                 .map(orderDetailMapper::toDTO)
                 .collect(Collectors.toList());

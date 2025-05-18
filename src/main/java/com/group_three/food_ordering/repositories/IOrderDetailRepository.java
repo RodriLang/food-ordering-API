@@ -13,7 +13,7 @@ public interface IOrderDetailRepository extends JpaRepository<OrderDetail, Long>
 
     Optional<OrderDetail> findByIdAndDeletedFalse(Long orderDetailId);
 
-    List<OrderDetail> findAllOrderDetailsAndDeletedFalse();
+    List<OrderDetail> findAllOrderDetailsByDeletedFalse();
 
     List<OrderDetail> findAllByOrder_IdAndDeletedFalse(UUID orderId);
 

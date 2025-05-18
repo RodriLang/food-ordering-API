@@ -42,7 +42,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<OrderResponseDto> getAll() {
-        return orderRepository.findAllAndDeletedFalse().stream()
+        return orderRepository.findAllByDeletedFalse().stream()
                 .map(orderMapper::toDTO)
                 .toList();
     }

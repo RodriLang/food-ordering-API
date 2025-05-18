@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Entity(name = "table_sessions")
 @Data
@@ -46,5 +43,5 @@ public class TableSession {
             joinColumns = @JoinColumn(name = "table_session_id"),
             inverseJoinColumns = @JoinColumn(name = "client_id")
     )
-    private Set<Client> participants = new LinkedHashSet<>();
+    private List<Client> participants = new ArrayList<>();
 }

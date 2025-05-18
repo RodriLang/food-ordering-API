@@ -141,7 +141,7 @@ Payment "1" <-right-> "1..*" Order : has
 Client "1" <-left-> "0..* " Order : has
 Order "1" -down-> "1..*" OrderDetail : has
 OrderDetail "0..*" -down-> "1" Product : has
-Client "1" -down-> "0..1" User : has?
+Client "1" -down-> "0..1" User : has
 Employee "1" -up-> "1" User : has
 Category "0..1" <--> "0..*" Category : subcategories
 
