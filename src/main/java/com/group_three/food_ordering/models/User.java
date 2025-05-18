@@ -6,6 +6,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -27,6 +28,9 @@ public class User {
     @Column(length = 50)
     private String lastName;
 
+    @Embedded
+    private Address address;
+
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
@@ -40,9 +44,9 @@ public class User {
     private String phone;
 
     @Column(nullable = false)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
     
-    private LocalDate removedAt;
+    private LocalDateTime removedAt;
 
     @Enumerated(EnumType.STRING)
     private RoleType role;

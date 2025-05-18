@@ -1,6 +1,8 @@
 package com.group_three.food_ordering.dtos.create;
 
 import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.models.Address;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -10,8 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class UserCreateDto {
+
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 50, message = "Name must be between 3 and 50 characters")
     private String name;
@@ -20,13 +22,19 @@ public class UserCreateDto {
     @Size(min = 3, max = 50, message = "Surname must be between 3 and 50 characters")
     private String lastName;
 
+    @Valid
+    private Address address;
+
     @Email(message = "The email must be valid")
     @NotBlank(message = "Email is required")
     private String email;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
 
     @Past(message = "The date of birth must be in the past")
-    @NotBlank(message = "The birthdate is required")
+    @NotNull(message = "The birthdate is required") // este reemplaza NotBlank que no aplica a LocalDate
     private LocalDate birthDate;
 
     @NotBlank(message = "Phone is required")
@@ -39,4 +47,5 @@ public class UserCreateDto {
 
     @NotNull(message = "Role is required")
     private RoleType role;
+
 }

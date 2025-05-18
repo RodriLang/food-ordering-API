@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.dtos.update;
 
 import com.group_three.food_ordering.enums.RoleType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -20,6 +21,9 @@ public class UserUpdateDto {
     @NotBlank(message = "Last name is required")
     @Size(min = 3, max = 50, message = "Surname must be between 3 and 50 characters")
     private String lastName;
+
+    @Valid
+    private AddressUpdateDto address;
 
     @Email(message = "The email must be valid")
     @NotBlank(message = "Email is required")
