@@ -22,9 +22,6 @@ public class OrderController {
 
     private final IOrderService orderService;
 
-
-    // ========== ORDER ENDPOINTS ==========
-
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(
             @RequestBody @Valid OrderRequestDto order) {
@@ -40,6 +37,19 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> getOrderById(
             @PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.getById(orderId));
+    }
+
+    @GetMapping("/{foodVenueId}")
+    public ResponseEntity<List<OrderResponseDto>> getDailyOrders(
+            @PathVariable UUID foodVenueId) {
+        return ResponseEntity.ok(orderService.getDailyOrders(foodVenueId));
+    }
+
+    @GetMapping("/{foodVenueId}/{orderNumber}")
+    public ResponseEntity<OrderResponseDto> getDailyOrderByOrderNumber(
+            @PathVariable UUID foodVenueId,
+            @PathVariable Integer orderNumber) {
+        return ResponseEntity.ok(orderService.getDailyOrderByOrderNumber(foodVenueId, orderNumber));
     }
 
     @PatchMapping("/{orderId}/requirements")

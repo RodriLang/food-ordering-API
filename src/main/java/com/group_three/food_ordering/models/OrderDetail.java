@@ -40,4 +40,20 @@ public class OrderDetail {
 
     @Column(nullable = false)
     private Boolean deleted;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.quantity == null) this.quantity = 1;
+        if (this.price == null) {
+            this.price = this.product.getPrice().multiply(BigDecimal.valueOf(quantity));
+        }
+        if (this.deleted == null) this.deleted = false;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        if (this.quantity == null) this.quantity = 1;
+        if (this.price == null) {
+            this.price = this.product.getPrice().multiply(BigDecimal.valueOf(quantity));
+        }    }
 }

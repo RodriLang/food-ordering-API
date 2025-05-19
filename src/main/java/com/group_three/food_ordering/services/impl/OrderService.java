@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,12 +33,11 @@ public class OrderService implements IOrderService {
     private final IOrderDetailRepository orderDetailRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
-    private final IMenuItemRepository menuItemRepository;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
         Order order = orderMapper.toEntity(orderRequestDto);
-
+        order.setOrderNumber(this.generateOrderNumber());
         return orderMapper.toDTO(orderRepository.save(order));
     }
 
@@ -88,6 +89,48 @@ public class OrderService implements IOrderService {
                 .toList();
     }
 
+    @Override
+    public OrderResponseDto getDailyOrderByOrderNumber(
+            UUID venueId, Integer orderNumber) {
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
+        return this.getOrderByOrderNumberAndDateBetween(venueId, orderNumber, start, end);
+    }
+
+    @Override
+    public OrderResponseDto getOrderByOrderNumberAndDateBetween(
+            UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end) {
+
+        return orderMapper.toDTO(orderRepository
+                .findByFoodVenue_IdAndOrderNumberAndCreationDateBetweenAndDeletedFalse(
+                        venueId, orderNumber, start, end)
+                .orElseThrow(OrderNotFoundException::new));
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersByDateBetween(
+            UUID foodVenueId, LocalDateTime start, LocalDateTime end) {
+        return orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndDeletedFalse(
+                foodVenueId, start, end).stream()
+                .map(orderMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponseDto> getDailyOrders(
+            UUID foodVenueId) {
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+
+        return this.getOrdersByDateBetween(foodVenueId, start, end);
+    }
+
+    @Override
     public void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail) {
 
         Order existingOrder = this.getEntityById(orderId);
@@ -98,6 +141,7 @@ public class OrderService implements IOrderService {
         this.orderRepository.save(existingOrder);
     }
 
+    @Override
     public void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail) {
 
         Order existingOrder = this.getEntityById(orderId);
@@ -108,6 +152,7 @@ public class OrderService implements IOrderService {
         this.orderRepository.save(existingOrder);
     }
 
+    @Override
     public Order getEntityById(UUID id) {
         return orderRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(OrderNotFoundException::new);
@@ -118,7 +163,7 @@ public class OrderService implements IOrderService {
         BigDecimal totalPrice = order.getOrderDetails().stream()
                 .map(orderDetail
                         -> orderDetail.getPrice().multiply(
-                                new BigDecimal(orderDetail.getQuantity())))
+                        new BigDecimal(orderDetail.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setTotalPrice(totalPrice);
@@ -136,6 +181,15 @@ public class OrderService implements IOrderService {
 
         // Si no cumple con las condiciones anteriores, lanzamos la excepción
         throw new OrderInProgressException(order.getId());
+    }
+
+    private Integer generateOrderNumber() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = start.plusDays(1);
+        int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(UUID.randomUUID(), start, end));
+
+        return ordersCount + 1;
     }
 
 }

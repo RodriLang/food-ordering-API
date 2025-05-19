@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderResponseDto {
 
-    private String orderNumber;
+    private String formattedOrderNumber;
 
     private String specialRequirements;
 

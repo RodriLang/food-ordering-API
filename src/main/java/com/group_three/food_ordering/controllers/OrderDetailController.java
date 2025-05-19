@@ -20,8 +20,6 @@ public class OrderDetailController {
     private final IOrderDetailService orderDetailService;
 
 
-    // ========== ORDER DETAIL ENDPOINTS ==========
-
     @PostMapping(ApiPaths.ORDER_DETAIL_URI)
     public ResponseEntity<OrderDetailResponseDto> addOrderDetailToOrder(
             @PathVariable UUID orderId,

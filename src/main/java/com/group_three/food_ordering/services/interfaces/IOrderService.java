@@ -10,6 +10,7 @@ import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.OrderDetail;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,4 +26,9 @@ public interface IOrderService {
     List<OrderDetailResponseDto>getOrderDetailsByOrderId(UUID orderId);
     void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail);
     void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail);
+    OrderResponseDto getDailyOrderByOrderNumber(UUID venueId, Integer orderNumber);
+    OrderResponseDto getOrderByOrderNumberAndDateBetween(UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
+    List<OrderResponseDto> getOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end);
+    List<OrderResponseDto> getDailyOrders(UUID foodVenueId);
+
 }

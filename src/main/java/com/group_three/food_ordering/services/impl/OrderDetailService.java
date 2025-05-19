@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +41,7 @@ public class OrderDetailService implements IOrderDetailService {
         Product product = productRepository.findById(orderDetailRequestDto.getProductId())
                 .orElseThrow(ProductNotFoundException::new);
 
-        this.updateProductStock(product, orderDetailRequestDto.getQuantity());
+        this.updateProductStock(product, -1);
         
         OrderDetail orderDetail = orderDetailMapper.toEntity(orderDetailRequestDto);
         orderDetail.setProduct(product);
@@ -60,14 +59,14 @@ public class OrderDetailService implements IOrderDetailService {
         return orderDetailRepository.findAllOrderDetailsByDeletedFalse().
                 stream()
                 .map(orderDetailMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public List<OrderDetailResponseDto> getOrderDetailsByOrderId(UUID orderId) {
         return orderDetailRepository.findAllByOrder_IdAndDeletedFalse(orderId).stream()
                 .map(orderDetailMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -83,7 +82,7 @@ public class OrderDetailService implements IOrderDetailService {
         OrderDetail orderDetail = this.getOderDetailById(orderDetailId);
         updateProductStock(orderDetail.getProduct(), orderDetail.getQuantity());
 
-        //Al se borrado lógico se remueve el OrderDetail de Order
+        //Al ser borrado lógico se remueve el OrderDetail de Order
         orderService.removeOrderDetailFromOrder(orderDetail.getOrder().getId(), orderDetail);
         orderDetailRepository.save(orderDetail);
 
@@ -95,17 +94,17 @@ public class OrderDetailService implements IOrderDetailService {
     public OrderDetailResponseDto updateQuantity(Long id, Integer newQuantity) {
         OrderDetail detail = orderDetailRepository.findById(id)
                 .orElseThrow(OrderDetailNotFoundException::new);
-
+/*
         int currentQuantity = detail.getQuantity();
         int diff = newQuantity - currentQuantity;
 
         if (diff > 0) {
-           // productService.validateStock(detail.getProduct(), diff);
-           // productService.decrementStock(detail.getProduct(), diff);
+            productService.validateStock(detail.getProduct(), diff);
+            productService.decrementStock(detail.getProduct(), diff);
         } else if (diff < 0) {
-           // productService.incrementStock(detail.getProduct(), -diff);
+            productService.incrementStock(detail.getProduct(), -diff);
         }
-
+*/
         detail.setQuantity(newQuantity);
         orderDetailRepository.save(detail);
         return orderDetailMapper.toDTO(detail);

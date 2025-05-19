@@ -3,6 +3,7 @@ package com.group_three.food_ordering.models;
 import com.group_three.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity(name = "orders")
+@Entity
+@Table(name = "orders")
 @SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @AllArgsConstructor
@@ -28,7 +30,7 @@ public class Order {
     private UUID id;
 
     @Column
-    private String orderNumber;
+    private Integer orderNumber;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
