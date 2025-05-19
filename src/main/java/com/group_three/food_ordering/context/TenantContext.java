@@ -15,8 +15,9 @@ public class TenantContext {
     public FoodVenue getCurrentFoodVenue() {
         if (cachedVenue == null) {
             cachedVenue = foodVenueRepository.findAll().stream()
+                .filter(venue -> "Burger House".equalsIgnoreCase(venue.getName()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No FoodVenue found in DB"));
+                .orElseThrow(() -> new RuntimeException("No se encontró el FoodVenue 'Burger House'"));
         }
         return cachedVenue;
     }
