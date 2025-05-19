@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.response.TableResponseDto;
 import com.group_three.food_ordering.dtos.update.TableUpdateDto;
@@ -17,26 +18,21 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-import static com.group_three.food_ordering.services.impl.MyFoodVenueService.HARDCODED_FOOD_VENUE_ID;
-
 @Service
 @RequiredArgsConstructor
 public class TableService implements ITableService {
 
     private final ITableRepository tableRepository;
     private final TableMapper tableMapper;
+    private final TenantContext tenantContext;
 
     @Override
     public TableResponseDto create(TableCreateDto tableCreateDto) {
         Table table = tableMapper.toEntity(tableCreateDto);
 
         FoodVenue foodVenue = new FoodVenue();
-        foodVenue.setId(HARDCODED_FOOD_VENUE_ID);
+        foodVenue.setId(tenantContext.getCurrentFoodVenue().getId());
         table.setFoodVenue(foodVenue);
-
-        if (table.getStatus() == null) {
-            table.setStatus(TableStatus.AVAILABLE);
-        }
 
         Table savedTable = tableRepository.save(table);
         return tableMapper.toDTO(savedTable);
@@ -44,41 +40,41 @@ public class TableService implements ITableService {
 
     @Override
     public List<TableResponseDto> getAll() {
-        return tableRepository.findByFoodVenueId(HARDCODED_FOOD_VENUE_ID).stream()
+        return tableRepository.findByFoodVenueId(tenantContext.getCurrentFoodVenue().getId()).stream()
                 .map(tableMapper::toDTO)
                 .toList();
     }
 
     @Override
     public TableResponseDto getById(UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
     }
 
     @Override
     public Table getEntityById(UUID id) {
-        return tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+        return tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
                 .orElseThrow(TableNotFoundException::new);
     }
 
     @Override
     public TableResponseDto getByNumber(Integer number) {
-        Table table = tableRepository.findByFoodVenueIdAndNumber(HARDCODED_FOOD_VENUE_ID, number)
+        Table table = tableRepository.findByFoodVenueIdAndNumber(tenantContext.getCurrentFoodVenue().getId(), number)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
     }
 
     @Override
     public List<TableResponseDto> getByFilters(TableStatus status, Integer capacity) {
-        return tableRepository.findByFoodVenueIdAndFilters(HARDCODED_FOOD_VENUE_ID, status, capacity).stream()
+        return tableRepository.findByFoodVenueIdAndFilters(tenantContext.getCurrentFoodVenue().getId(), status, capacity).stream()
                 .map(tableMapper::toDTO)
                 .toList();
     }
 
     @Override
     public TableResponseDto update(TableUpdateDto tableUpdateDto, UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
                 .orElseThrow(TableNotFoundException::new);
 
         table.setNumber(tableUpdateDto.getNumber());
@@ -96,7 +92,7 @@ public class TableService implements ITableService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
                 .orElseThrow(TableNotFoundException::new);
 
         table.getFoodVenue().getTables().remove(table);

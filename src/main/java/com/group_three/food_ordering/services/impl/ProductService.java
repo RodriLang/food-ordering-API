@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
@@ -21,9 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static com.group_three.food_ordering.services.impl.MyFoodVenueService.HARDCODED_FOOD_VENUE_ID;
-
-
 @Service
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
@@ -32,6 +30,7 @@ public class ProductService implements IProductService {
     private final ITagRepository tagRepository;
     private final ICategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final TenantContext tenantContext;
 
 
     @Override
@@ -39,7 +38,7 @@ public class ProductService implements IProductService {
         Product product = productMapper.toEntity(productCreateDto);
 
         FoodVenue foodVenue = new FoodVenue();
-        foodVenue.setId(HARDCODED_FOOD_VENUE_ID);
+        foodVenue.setId(tenantContext.getCurrentFoodVenue().getId());
         product.setFoodVenue(foodVenue);
 
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
@@ -135,7 +134,7 @@ public class ProductService implements IProductService {
 
     @Override
     public List<ProductResponseDto> getAllAvailable() {
-        return productRepository.findAllByFoodVenue_IdAndAvailable(HARDCODED_FOOD_VENUE_ID, true).stream()
+        return productRepository.findAllByFoodVenue_IdAndAvailable(tenantContext.getCurrentFoodVenue().getId(), true).stream()
                 .map(productMapper::toDTO)
                 .toList();
     }

@@ -10,5 +10,6 @@ import java.util.UUID;
 
 @Repository
 public interface IFoodVenueRepository extends JpaRepository<FoodVenue, UUID> {
-    Optional<FoodVenue> findByEmail(String email);
+    Optional<FoodVenue> findByEmailIgnoreCase(String email);
+
 }

@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
@@ -17,8 +18,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static com.group_three.food_ordering.services.impl.MyFoodVenueService.HARDCODED_FOOD_VENUE_ID;
-
 @Service
 @RequiredArgsConstructor
 public class TableSessionService implements ITableSessionService {
@@ -27,13 +26,14 @@ public class TableSessionService implements ITableSessionService {
     private final TableSessionMapper tableSessionMapper;
     private final TableService tableService;
     private final IClientService clientService;
+    private final TenantContext tenantContext;
 
     @Override
     public TableSessionResponseDto create(TableSessionCreateDto tableSessionCreateDto) {
         TableSession tableSession = tableSessionMapper.toEntity(tableSessionCreateDto);
 
         FoodVenue foodVenue = new FoodVenue();
-        foodVenue.setId(HARDCODED_FOOD_VENUE_ID);
+        foodVenue.setId(tenantContext.getCurrentFoodVenue().getId());
         tableSession.setFoodVenue(foodVenue);
 
         Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());

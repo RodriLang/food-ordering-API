@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.response.FoodVenueResponseDto;
 import com.group_three.food_ordering.dtos.update.FoodVenueUpdateDto;
 import com.group_three.food_ordering.exceptions.FoodVenueNotFoundException;
@@ -19,20 +20,18 @@ public class MyFoodVenueService implements IMyFoodVenueService {
 
     private final IFoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;
-
-    // Cambiar por el id del food venue que se quiere mostrar dinámicamente cuando se implemente la autenticación
-    public static final UUID HARDCODED_FOOD_VENUE_ID = UUID.fromString("a05a8270-0bcf-4dbe-ac85-e5b56d0aa3d1");
+    private final TenantContext tenantContext;
 
     @Override
     public FoodVenueResponseDto get() {
-        FoodVenue foodVenue = foodVenueRepository.findById(HARDCODED_FOOD_VENUE_ID)
+        FoodVenue foodVenue = foodVenueRepository.findById(tenantContext.getCurrentFoodVenue().getId())
                 .orElseThrow(FoodVenueNotFoundException::new);
         return foodVenueMapper.toDTO(foodVenue);
     }
 
     @Override
     public FoodVenueResponseDto update(FoodVenueUpdateDto foodVenueUpdateDto) {
-        FoodVenue foodVenue = foodVenueRepository.findById(HARDCODED_FOOD_VENUE_ID)
+        FoodVenue foodVenue = foodVenueRepository.findById(tenantContext.getCurrentFoodVenue().getId())
                 .orElseThrow(FoodVenueNotFoundException::new);
 
         foodVenue.setName(foodVenueUpdateDto.getName());

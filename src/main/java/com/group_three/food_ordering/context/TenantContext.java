@@ -1,6 +1,8 @@
 package com.group_three.food_ordering.context;
 
-import java.util.UUID;
+import com.group_three.food_ordering.models.FoodVenue;
+import com.group_three.food_ordering.repositories.IFoodVenueRepository;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TenantContext {
@@ -8,17 +10,18 @@ public class TenantContext {
     private final IFoodVenueRepository foodVenueRepository;
     private FoodVenue cachedVenue;
 
-    public TenantContext(FoodVenueRepository foodVenueRepository) {
+    public TenantContext(IFoodVenueRepository foodVenueRepository) {
         this.foodVenueRepository = foodVenueRepository;
     }
 
     public FoodVenue getCurrentFoodVenue() {
         if (cachedVenue == null) {
-            cachedVenue = foodVenueRepository.findAll().stream()
-                .filter(venue -> "Burger House".equalsIgnoreCase(venue.getName()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No se encontró el FoodVenue 'Burger House'"));
+            String email = "contact@burgerhouse.com";
+
+            cachedVenue = foodVenueRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new RuntimeException("No se encontró el FoodVenue con email: " + email));
         }
         return cachedVenue;
     }
+
 }
