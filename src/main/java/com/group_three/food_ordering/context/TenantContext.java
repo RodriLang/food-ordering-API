@@ -5,7 +5,7 @@ import java.util.UUID;
 @Component
 public class TenantContext {
 
-    private final FoodVenueRepository foodVenueRepository;
+    private final IFoodVenueRepository foodVenueRepository;
     private FoodVenue cachedVenue;
 
     public TenantContext(FoodVenueRepository foodVenueRepository) {
