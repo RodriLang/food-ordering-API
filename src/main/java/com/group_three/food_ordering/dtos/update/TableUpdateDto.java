@@ -6,13 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TableUpdateDto {
 
-    private Long id;
+    private UUID id;
     private int number;
     private int capacity;
     private TableStatus status;

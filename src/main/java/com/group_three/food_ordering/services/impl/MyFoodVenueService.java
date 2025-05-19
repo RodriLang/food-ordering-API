@@ -15,13 +15,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class MyFoodVenueServiceImpl implements IMyFoodVenueService {
+public class MyFoodVenueService implements IMyFoodVenueService {
 
     private final IFoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;
 
     // Cambiar por el id del food venue que se quiere mostrar dinámicamente cuando se implemente la autenticación
-    public static final UUID HARDCODED_FOOD_VENUE_ID = UUID.fromString("67aff441-1545-4bf8-a003-bd300d96eeda");
+    public static final UUID HARDCODED_FOOD_VENUE_ID = UUID.fromString("a05a8270-0bcf-4dbe-ac85-e5b56d0aa3d1");
 
     @Override
     public FoodVenueResponseDto get() {

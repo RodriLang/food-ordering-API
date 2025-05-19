@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity(name = "tables")
 @Data
@@ -17,17 +18,14 @@ import java.util.List;
 @Builder
 public class Table {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private Integer number;
 
     @Column(nullable = false)
     private Integer capacity;
-
-    @Column(nullable = false)
-    private String qrCode;
 
     @Enumerated(EnumType.STRING)
     private TableStatus status = TableStatus.AVAILABLE;

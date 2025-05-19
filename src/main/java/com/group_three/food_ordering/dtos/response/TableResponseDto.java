@@ -6,16 +6,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TableResponseDto {
 
-    private Long id;
+    private UUID id;
     private Integer number;
     private Integer capacity;
-    private String qrCode;
     private TableStatus status;
 }
 
