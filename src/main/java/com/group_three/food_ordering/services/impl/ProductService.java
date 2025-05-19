@@ -3,6 +3,8 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
+import com.group_three.food_ordering.exceptions.InsufficientStockException;
+import com.group_three.food_ordering.exceptions.ProductNotFoundException;
 import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -136,6 +138,26 @@ public class ProductService implements IProductService {
         return productRepository.findAllByFoodVenue_IdAndAvailable(HARDCODED_FOOD_VENUE_ID, true).stream()
                 .map(productMapper::toDTO)
                 .toList();
+    }
+
+    public void validateStock(Product product, Integer quantity) throws InsufficientStockException
+    {
+        if (product.getStock() < quantity) {
+            throw new InsufficientStockException("Insufficient stock for product: " + product.getName());
+        }
+    }
+    public void IncrementStockProduct (Product product, Integer quantity)
+    {
+        if (quantity != null && quantity > 0) {
+            product.setStock(product.getStock() + quantity);
+            product.setAvailable(product.getStock() + quantity > 0);
+        }
+    }
+    public void decrementStockProduct (Product product, Integer quantity)
+    {
+        validateStock(product, quantity);
+        product.setStock(product.getStock() - quantity);
+        product.setAvailable(product.getStock() - quantity > 0);
     }
 
 
