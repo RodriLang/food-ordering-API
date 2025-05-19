@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
+import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.UserCreateDto;
 import com.group_three.food_ordering.dtos.update.UserUpdateDto;
 import com.group_three.food_ordering.dtos.response.UserResponseDto;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(ApiPaths.USER_BASE)
 @RequiredArgsConstructor
 public class UserController {
 

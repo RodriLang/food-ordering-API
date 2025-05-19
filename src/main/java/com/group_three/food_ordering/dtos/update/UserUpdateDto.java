@@ -31,7 +31,7 @@ public class UserUpdateDto {
 
 
     @Past(message = "The date of birth must be in the past")
-    @NotBlank(message = "The birthdate is required")
+    @NotNull(message = "The birthdate is required")
     private LocalDate birthDate;
 
     @NotBlank(message = "Phone is required")
