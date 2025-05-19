@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.group_three.food_ordering.services.impl.MyFoodVenueServiceImpl.HARDCODED_FOOD_VENUE_ID;
 
@@ -37,10 +38,6 @@ public class TableServiceImpl implements ITableService {
             table.setStatus(TableStatus.AVAILABLE);
         }
 
-        if (table.getQrCode() == null) {
-            table.setQrCode(foodVenue.getId().toString().substring(0, 5) + "_TN" + table.getNumber());
-        }
-
         Table savedTable = tableRepository.save(table);
         return tableMapper.toDTO(savedTable);
     }
@@ -53,7 +50,7 @@ public class TableServiceImpl implements ITableService {
     }
 
     @Override
-    public TableResponseDto getById(Long id) {
+    public TableResponseDto getById(UUID id) {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
@@ -74,13 +71,16 @@ public class TableServiceImpl implements ITableService {
     }
 
     @Override
-    public TableResponseDto update(TableUpdateDto tableUpdateDto, Long id) {
+    public TableResponseDto update(TableUpdateDto tableUpdateDto, UUID id) {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
 
         table.setNumber(tableUpdateDto.getNumber());
         table.setCapacity(tableUpdateDto.getCapacity());
-        table.setStatus(tableUpdateDto.getStatus());
+
+        if (tableUpdateDto.getStatus() == null) {
+            table.setStatus(TableStatus.AVAILABLE);
+        }
 
         Table updatedTable = tableRepository.save(table);
 
@@ -89,7 +89,7 @@ public class TableServiceImpl implements ITableService {
 
     @Transactional
     @Override
-    public void delete(Long id) {
+    public void delete(UUID id) {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
 
