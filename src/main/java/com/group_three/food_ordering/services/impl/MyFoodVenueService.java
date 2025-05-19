@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class MyFoodVenueServiceImpl implements IMyFoodVenueService {
+public class MyFoodVenueService implements IMyFoodVenueService {
 
     private final IFoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;

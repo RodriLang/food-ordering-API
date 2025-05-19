@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-import static com.group_three.food_ordering.services.impl.MyFoodVenueServiceImpl.HARDCODED_FOOD_VENUE_ID;
+import static com.group_three.food_ordering.services.impl.MyFoodVenueService.HARDCODED_FOOD_VENUE_ID;
 
 @Service
 @RequiredArgsConstructor
-public class TableServiceImpl implements ITableService {
+public class TableService implements ITableService {
 
     private final ITableRepository tableRepository;
     private final TableMapper tableMapper;
@@ -54,6 +54,12 @@ public class TableServiceImpl implements ITableService {
         Table table = tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
                 .orElseThrow(TableNotFoundException::new);
         return tableMapper.toDTO(table);
+    }
+
+    @Override
+    public Table getEntityById(UUID id) {
+        return tableRepository.findByFoodVenueIdAndId(HARDCODED_FOOD_VENUE_ID, id)
+                .orElseThrow(TableNotFoundException::new);
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(ApiPaths.TABLE_BASE)
@@ -31,14 +32,14 @@ public class TableController {
         return ResponseEntity.ok(tableService.getAll());
     }
 
-    @GetMapping("/{tableId}")
-    public ResponseEntity<TableResponseDto> getTableById(@PathVariable Long tableId) {
-        return ResponseEntity.ok(tableService.getById(tableId));
+    @GetMapping("/{id}")
+    public ResponseEntity<TableResponseDto> getTableById(@PathVariable UUID id) {
+        return ResponseEntity.ok(tableService.getById(id));
     }
 
-    @GetMapping("/number/{tableNumber}")
-    public ResponseEntity<TableResponseDto> getTableByNumber(@PathVariable Integer tableNumber) {
-        return ResponseEntity.ok(tableService.getByNumber(tableNumber));
+    @GetMapping("/number/{number}")
+    public ResponseEntity<TableResponseDto> getTableByNumber(@PathVariable Integer number) {
+        return ResponseEntity.ok(tableService.getByNumber(number));
     }
 
     @GetMapping("/filter")
@@ -46,21 +47,20 @@ public class TableController {
         return ResponseEntity.ok(tableService.getByFilters(status, capacity));
     }
 
-    @PutMapping("/{tableId}")
-    public ResponseEntity<TableResponseDto> update(@RequestBody @Valid TableUpdateDto tableUpdateDto, @PathVariable Long tableId) {
-        return ResponseEntity.ok(tableService.update(tableUpdateDto, tableId));
+    @PutMapping("/{id}")
+    public ResponseEntity<TableResponseDto> update(@RequestBody @Valid TableUpdateDto tableUpdateDto, @PathVariable UUID id) {
+        return ResponseEntity.ok(tableService.update(tableUpdateDto, id));
     }
 
-    @PatchMapping("/{tableId}")
-    public ResponseEntity<TableResponseDto> patch(@RequestBody @Valid TableUpdateDto tableUpdateDto, @PathVariable Long tableId) {
-        return ResponseEntity.ok(tableService.update(tableUpdateDto, tableId));
+    @PatchMapping("/{id}")
+    public ResponseEntity<TableResponseDto> patch(@RequestBody @Valid TableUpdateDto tableUpdateDto, @PathVariable UUID id) {
+        return ResponseEntity.ok(tableService.update(tableUpdateDto, id));
     }
 
-    @DeleteMapping("/{tableId}")
-    public ResponseEntity<Void> delete(@PathVariable Long tableId) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         System.out.println(">>> Entró al controller DELETE");
-        tableService.delete(tableId);
+        tableService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 }
