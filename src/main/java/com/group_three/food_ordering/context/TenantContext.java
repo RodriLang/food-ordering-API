@@ -2,18 +2,22 @@ package com.group_three.food_ordering.context;
 
 import java.util.UUID;
 
+@Component
 public class TenantContext {
-    private static final ThreadLocal<UUID> currentTenant = new ThreadLocal<>();
 
-    public static void setCurrentTenant(UUID tenantId) {
-        currentTenant.set(tenantId);
+    private final FoodVenueRepository foodVenueRepository;
+    private FoodVenue cachedVenue;
+
+    public TenantContext(FoodVenueRepository foodVenueRepository) {
+        this.foodVenueRepository = foodVenueRepository;
     }
 
-    public static UUID getCurrentTenant() {
-        return currentTenant.get();
-    }
-
-    public static void clear() {
-        currentTenant.remove();
+    public FoodVenue getCurrentFoodVenue() {
+        if (cachedVenue == null) {
+            cachedVenue = foodVenueRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No FoodVenue found in DB"));
+        }
+        return cachedVenue;
     }
 }
