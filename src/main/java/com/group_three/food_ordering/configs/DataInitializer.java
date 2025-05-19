@@ -117,9 +117,9 @@ public class DataInitializer implements CommandLineRunner {
             clientRepository.saveAll(List.of(c1, c2, c3));
 
             // Tables
-            Table t1 = Table.builder().number(1).capacity(4).qrCode("QR1").foodVenue(v1).build();
-            Table t2 = Table.builder().number(2).capacity(2).qrCode("QR2").foodVenue(v2).build();
-            Table t3 = Table.builder().number(3).capacity(6).qrCode("QR3").foodVenue(v3).build();
+            Table t1 = Table.builder().number(1).capacity(4).foodVenue(v1).build();
+            Table t2 = Table.builder().number(2).capacity(2).foodVenue(v2).build();
+            Table t3 = Table.builder().number(3).capacity(6).foodVenue(v3).build();
             tableRepository.saveAll(List.of(t1, t2, t3));
 
             // TableSessions

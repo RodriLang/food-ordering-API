@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dtos.create;
 
+import com.group_three.food_ordering.dtos.response.ClientResponseDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,5 +17,7 @@ public class TableSessionCreateDto {
 
     @NotNull(message = "Table ID is required")
     private UUID tableId;
+
+    private UUID hostClientId;
 }
 

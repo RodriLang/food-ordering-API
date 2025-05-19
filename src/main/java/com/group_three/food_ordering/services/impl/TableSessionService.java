@@ -8,6 +8,7 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Table;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.repositories.ITableSessionRepository;
+import com.group_three.food_ordering.services.interfaces.IClientService;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class TableSessionService implements ITableSessionService {
     private final ITableSessionRepository tableSessionRepository;
     private final TableSessionMapper tableSessionMapper;
     private final TableService tableService;
-    private final ClientService clientService;
+    private final IClientService clientService;
 
     @Override
     public TableSessionResponseDto create(TableSessionCreateDto tableSessionCreateDto) {
@@ -42,6 +43,7 @@ public class TableSessionService implements ITableSessionService {
         tableSession.setEndTime(null);
 
         Client hostClient = clientService.getEntityById(tableSessionCreateDto.getHostClientId());
+        return null;
     }
 
     @Override
