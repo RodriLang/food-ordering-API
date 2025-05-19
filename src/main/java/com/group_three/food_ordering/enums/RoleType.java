@@ -1,8 +1,11 @@
 package com.group_three.food_ordering.enums;
 
 public enum RoleType {
-    ROOT,
-    ADMIN,
-    CLIENT,
-    GUEST,
+
+    ROLE_GUEST,
+    ROLE_CLIENT,
+    ROLE_STAFF,
+    ROLE_ADMIN,
+    ROLE_SUPER_ADMIN,
+    ROLE_ROOT
 }

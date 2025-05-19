@@ -146,7 +146,7 @@ public class ProductService implements IProductService {
             throw new InsufficientStockException("Insufficient stock for product: " + product.getName());
         }
     }
-    public void IncrementStockProduct (Product product, Integer quantity)
+    public void incrementStockProduct(Product product, Integer quantity)
     {
         if (quantity != null && quantity > 0) {
             product.setStock(product.getStock() + quantity);

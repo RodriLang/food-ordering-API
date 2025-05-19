@@ -7,7 +7,6 @@ import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.models.Product;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface IProductService {
     ProductResponseDto create(ProductCreateDto productCreateDto);
@@ -19,7 +18,7 @@ public interface IProductService {
 
     List<ProductResponseDto> getAllAvailable();
     void validateStock(Product product, Integer quantity) throws InsufficientStockException;
-    void IncrementStockProduct (Product product, Integer quantity);
+    void incrementStockProduct(Product product, Integer quantity);
     void decrementStockProduct (Product product, Integer quantity);
 
 }
