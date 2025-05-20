@@ -37,6 +37,9 @@ public class TableSession {
     @JoinColumn(name = "host_client_id", nullable = false)
     private Client hostClient;
 
+    @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
+
     @ManyToMany
     @JoinTable(
             name = "table_session_clients",

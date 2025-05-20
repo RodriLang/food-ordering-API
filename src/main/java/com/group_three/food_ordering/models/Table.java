@@ -37,7 +37,7 @@ public class Table {
     private List<TableSession> tableSessions = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "food_venue_id", nullable = false)
+    @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 
     @PrePersist

@@ -59,7 +59,6 @@ public class TableController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        System.out.println(">>> Entró al controller DELETE");
         tableService.delete(id);
         return ResponseEntity.noContent().build();
     }

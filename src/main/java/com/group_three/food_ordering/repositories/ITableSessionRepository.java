@@ -16,6 +16,7 @@ public interface ITableSessionRepository extends JpaRepository<TableSession, UUI
     List<TableSession> findByFoodVenueIdAndTableIdAndStartTimeAfter(UUID foodVenueId, UUID tableId, LocalDateTime since);
     List<TableSession> findByFoodVenueIdAndEndTimeIsNull(UUID foodVenueId);
     List<TableSession> findByFoodVenueIdAndHostClientId(UUID foodVenueId, UUID clientId);
+    Optional<TableSession> findByFoodVenueIdAndId(UUID foodVenueId, UUID tableSessionId);
     Optional<TableSession> findByFoodVenueIdAndIdAndEndTimeIsNull(UUID foodVenueId, UUID sessionId);
     Optional<TableSession> findFirstByFoodVenueIdAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 

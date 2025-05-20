@@ -1,9 +1,7 @@
 package com.group_three.food_ordering.dtos.response;
 
 import com.group_three.food_ordering.models.Address;
-import com.group_three.food_ordering.models.Employee;
-import com.group_three.food_ordering.models.Menu;
-import com.group_three.food_ordering.models.Table;
+import com.group_three.food_ordering.models.Product;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

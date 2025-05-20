@@ -23,7 +23,7 @@ public class FoodVenue {
     @Column(length = 50)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String email;
 
     @Embedded
@@ -44,10 +44,6 @@ public class FoodVenue {
     private List<Product> products = new ArrayList<>();
 
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Menu> menus = new ArrayList<>();
-
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Table> tables = new ArrayList<>();
 }

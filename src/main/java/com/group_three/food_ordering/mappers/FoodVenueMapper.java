@@ -6,7 +6,7 @@ import com.group_three.food_ordering.dtos.create.FoodVenueCreateDto;
 import com.group_three.food_ordering.dtos.response.FoodVenueResponseDto;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = { TableMapper.class })
+@Mapper(componentModel = "spring")
 public interface FoodVenueMapper {
 
     FoodVenue toEntity(FoodVenueCreateDto foodVenueDto);

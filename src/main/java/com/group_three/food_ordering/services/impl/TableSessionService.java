@@ -3,6 +3,7 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
+import com.group_three.food_ordering.exceptions.TableSessionNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.Client;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,16 +45,26 @@ public class TableSessionService implements ITableSessionService {
         tableSession.setEndTime(null);
 
         Client hostClient = clientService.getEntityById(tableSessionCreateDto.getHostClientId());
-        return null;
+        tableSession.setHostClient(hostClient);
+
+        List<Client> participants = new ArrayList<>();
+        participants.add(hostClient);
+
+        tableSession.setParticipants(participants);
+
+        return tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
     }
 
     @Override
-    public TableSessionResponseDto getById(UUID sessionId) {
-        return null;
+    public TableSessionResponseDto getById(UUID id) {
+        TableSession tableSession = tableSessionRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
+                .orElseThrow(TableSessionNotFoundException::new);
+        return tableSessionMapper.toDTO(tableSession);
     }
 
     @Override
     public List<TableSessionResponseDto> getByTable(UUID tableId) {
+        /*return tableSessionRepository.findByFoodVenueIdAndTableIdAndStartTimeAfter();*/
         return List.of();
     }
 

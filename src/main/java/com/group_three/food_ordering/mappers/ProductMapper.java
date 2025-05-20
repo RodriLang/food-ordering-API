@@ -6,7 +6,7 @@ import com.group_three.food_ordering.models.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {CategoryMapper.class, TagMapper.class})
+@Mapper(componentModel = "spring")
 public interface ProductMapper {
 
     ProductResponseDto toDTO(Product product);
