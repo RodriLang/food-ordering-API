@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
-
+ 
     private final ICategoryRepository categoryRepository;
     private final ITagRepository tagRepository;
     private final IFoodVenueRepository foodVenueRepository;
