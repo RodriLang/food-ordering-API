@@ -152,6 +152,6 @@ TableStatus -right[hidden]- PaymentMethod
 TableStatus -left[hidden]- OrderStatus
 PaymentMethod -right[hidden]- RoleType
 RoleType -right[hidden]- PaymentStatus
-TableStatus -up[hidden]- Category
+OrderStatus -up[hidden]- Category
 
 @enduml

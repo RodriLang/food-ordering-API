@@ -48,8 +48,10 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     private FoodVenue foodVenue;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "payment_id")
     private Payment payment;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Client client;
@@ -58,8 +60,7 @@ public class Order {
     @JoinColumn(name = "table_session_id")
     private TableSession tableSession;
 
-    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
     @Column(nullable = false)

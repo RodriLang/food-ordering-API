@@ -30,5 +30,7 @@ public interface IOrderService {
     OrderResponseDto getOrderByOrderNumberAndDateBetween(UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
     List<OrderResponseDto> getOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end);
     List<OrderResponseDto> getDailyOrders(UUID foodVenueId);
+    List<OrderResponseDto> getDailyOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end);
+    List<OrderResponseDto> getOrdersByTableSessionId(UUID tableSessionId);
 
 }

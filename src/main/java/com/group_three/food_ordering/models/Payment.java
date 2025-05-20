@@ -24,8 +24,7 @@ public class Payment {
     @Column
     private BigDecimal amount;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
+    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<Order> orders;
 
     @Enumerated(EnumType.STRING)
@@ -34,5 +33,11 @@ public class Payment {
 
     @Column(nullable = false)
     private Boolean deleted;
+
+    @PrePersist
+    public void onCreate() {
+        if(this.status == null) this.status = PaymentStatus.PENDING;
+        if(this.deleted == null) this.deleted = Boolean.FALSE;
+    }
 
 }

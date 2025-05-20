@@ -12,7 +12,6 @@ import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
 import com.group_three.food_ordering.models.OrderDetail;
-import com.group_three.food_ordering.repositories.IMenuItemRepository;
 import com.group_three.food_ordering.repositories.IOrderDetailRepository;
 import com.group_three.food_ordering.repositories.IOrderRepository;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
@@ -128,6 +127,18 @@ public class OrderService implements IOrderService {
         LocalDateTime end = start.plusDays(1);
 
         return this.getOrdersByDateBetween(foodVenueId, start, end);
+    }
+
+    @Override
+    public List<OrderResponseDto> getDailyOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end) {
+        return List.of();
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersByTableSessionId(UUID tableSessionId) {
+        return orderRepository.findOrderByTableSession_IdAndDeletedFalse(tableSessionId).stream()
+                .map(orderMapper::toDTO)
+                .toList();
     }
 
     @Override

@@ -27,6 +27,8 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
         List<Order> findByFoodVenue_IdAndDeletedFalse(UUID venueId);
 
+        List<Order> findOrderByTableSession_IdAndDeletedFalse(UUID tableSessionId);
+
     @Query("SELECT COUNT(o) FROM Order o WHERE o.foodVenue = :venueId " +
             "AND o.creationDate >= :start AND o.creationDate < :end")
     Long countOrdersToday(
