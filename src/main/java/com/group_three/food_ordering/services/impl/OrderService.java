@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
@@ -8,6 +9,7 @@ import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
+import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +35,7 @@ public class OrderService implements IOrderService {
     private final IOrderDetailRepository orderDetailRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
+    private final FoodVenue foodVenue;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -42,10 +46,34 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<OrderResponseDto> getAll() {
-        return orderRepository.findAllByDeletedFalse().stream()
+        return orderRepository.findAll().stream()
                 .map(orderMapper::toDTO)
                 .toList();
     }
+
+    public List<OrderResponseDto> getOrders(LocalDate from, LocalDate to, OrderStatus status) {
+        LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : null;
+        LocalDateTime toDateTime = (to != null) ? to.atTime(LocalTime.MAX) : null;
+
+        List<Order> orders;
+
+        if (fromDateTime != null && toDateTime != null && status != null) {
+            orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(
+                    foodVenue.getId(), fromDateTime, toDateTime, status);
+        } else if (fromDateTime != null && toDateTime != null) {
+            orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(
+                    foodVenue.getId(), fromDateTime, toDateTime);
+        } else if (status != null) {
+            orders = orderRepository.findByFoodVenue_IdAndStatus(foodVenue.getId(), status);
+        } else {
+            orders = orderRepository.findAll();
+        }
+
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .toList();
+    }
+
 
     @Override
     public OrderResponseDto getById(UUID id) {
@@ -104,29 +132,23 @@ public class OrderService implements IOrderService {
             UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end) {
 
         return orderMapper.toDTO(orderRepository
-                .findByFoodVenue_IdAndOrderNumberAndCreationDateBetweenAndDeletedFalse(
+                .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
                         venueId, orderNumber, start, end)
                 .orElseThrow(OrderNotFoundException::new));
     }
 
-    @Override
-    public List<OrderResponseDto> getOrdersByDateBetween(
-            UUID foodVenueId, LocalDateTime start, LocalDateTime end) {
-        return orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndDeletedFalse(
-                foodVenueId, start, end).stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
 
     @Override
-    public List<OrderResponseDto> getDailyOrders(
-            UUID foodVenueId) {
+    public List<OrderResponseDto> getDailyOrders() {
 
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
 
-        return this.getOrdersByDateBetween(foodVenueId, start, end);
+        return orderRepository.findByFoodVenue_IdAndCreationDateBetween(foodVenue.getId(), start, end)
+                .stream()
+                .map(orderMapper::toDTO)
+                .toList();
     }
 
     @Override
@@ -136,7 +158,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<OrderResponseDto> getOrdersByTableSessionId(UUID tableSessionId) {
-        return orderRepository.findOrderByTableSession_IdAndDeletedFalse(tableSessionId).stream()
+        return orderRepository.findOrderByTableSession_Id(tableSessionId).stream()
                 .map(orderMapper::toDTO)
                 .toList();
     }
@@ -165,7 +187,7 @@ public class OrderService implements IOrderService {
 
     @Override
     public Order getEntityById(UUID id) {
-        return orderRepository.findByIdAndDeletedFalse(id)
+        return orderRepository.findById(id)
                 .orElseThrow(OrderNotFoundException::new);
     }
 

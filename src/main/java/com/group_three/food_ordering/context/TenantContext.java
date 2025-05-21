@@ -2,6 +2,7 @@ package com.group_three.food_ordering.context;
 
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +15,7 @@ public class TenantContext {
         this.foodVenueRepository = foodVenueRepository;
     }
 
+    @Bean
     public FoodVenue getCurrentFoodVenue() {
         if (cachedVenue == null) {
             String email = "contact@burgerhouse.com";

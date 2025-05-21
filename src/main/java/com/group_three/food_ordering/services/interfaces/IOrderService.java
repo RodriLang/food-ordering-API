@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.services.interfaces;
 
 
-import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
@@ -28,8 +27,7 @@ public interface IOrderService {
     void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail);
     OrderResponseDto getDailyOrderByOrderNumber(UUID venueId, Integer orderNumber);
     OrderResponseDto getOrderByOrderNumberAndDateBetween(UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
-    List<OrderResponseDto> getOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end);
-    List<OrderResponseDto> getDailyOrders(UUID foodVenueId);
+    List<OrderResponseDto> getDailyOrders();
     List<OrderResponseDto> getDailyOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end);
     List<OrderResponseDto> getOrdersByTableSessionId(UUID tableSessionId);
 

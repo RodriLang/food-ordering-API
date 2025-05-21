@@ -1,6 +1,8 @@
 package com.group_three.food_ordering.repositories;
 
+import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.models.Order;
+import com.group_three.food_ordering.services.impl.OrderService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,20 +16,22 @@ import java.util.UUID;
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
-        Optional<Order> findByIdAndDeletedFalse(UUID orderId);
+    Optional<Order> findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
+            UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
 
-        Optional<Order> findByFoodVenue_IdAndOrderNumberAndCreationDateBetweenAndDeletedFalse(
-                UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
+    List<Order> findByFoodVenue_IdAndCreationDateBetweenAndStatus(
+            UUID foodVenueId, LocalDateTime start, LocalDateTime end, OrderStatus status
+    );
 
-        List<Order> findByFoodVenue_IdAndCreationDateBetweenAndDeletedFalse(
-                UUID foodVenueId, LocalDateTime start, LocalDateTime end
-        );
+    List<Order> findByFoodVenue_IdAndCreationDateBetween(
+            UUID foodVenueId, LocalDateTime start, LocalDateTime end
+    );
 
-        List<Order> findAllByDeletedFalse();
+    List<Order> findByFoodVenue_Id(UUID venueId);
 
-        List<Order> findByFoodVenue_IdAndDeletedFalse(UUID venueId);
+    List<Order> findByFoodVenue_IdAndStatus(UUID venueId, OrderStatus status);
 
-        List<Order> findOrderByTableSession_IdAndDeletedFalse(UUID tableSessionId);
+    List<Order> findOrderByTableSession_Id(UUID tableSessionId);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.foodVenue = :venueId " +
             "AND o.creationDate >= :start AND o.creationDate < :end")
@@ -36,7 +40,6 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
-
 
 
 }

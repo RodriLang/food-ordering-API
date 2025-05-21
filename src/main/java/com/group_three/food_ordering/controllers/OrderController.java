@@ -29,9 +29,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
     }
 
-    @GetMapping
-    public ResponseEntity<List<OrderResponseDto>> getOrders() {
-        return ResponseEntity.ok(orderService.getAll());
+
+    @GetMapping()
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByPeriodAndStatus(
+            @RequestParam LocalDate from,
+            @RequestParam LocalDate to,
+            @RequestParam OrderStatus status){
+        return ResponseEntity.ok(null);
+
     }
 
     @GetMapping("/{id}")
@@ -40,10 +45,9 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getById(id));
     }
 
-    @GetMapping("/{foodVenueId}")
-    public ResponseEntity<List<OrderResponseDto>> getDailyOrders(
-            @PathVariable UUID foodVenueId) {
-        return ResponseEntity.ok(orderService.getDailyOrders(foodVenueId));
+    @GetMapping("/today")
+    public ResponseEntity<List<OrderResponseDto>> getDailyOrders() {
+        return ResponseEntity.ok(orderService.getDailyOrders());
     }
 
     @GetMapping("/{foodVenueId}/{orderNumber}")
@@ -88,21 +92,6 @@ public class OrderController {
 
 
 
-    @GetMapping("/orders/today")
-    private ResponseEntity<List<OrderResponseDto>> getTodayOrdersByStatus(
-            @RequestParam OrderStatus status){
-        return ResponseEntity.ok(null);
-
-    }
-
-    @GetMapping("/orders")
-    private ResponseEntity<List<OrderResponseDto>> getTodayOrdersByFromAndTo(
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to,
-            @RequestParam OrderStatus status){
-        return ResponseEntity.ok(null);
-
-    }
 
 }
 
