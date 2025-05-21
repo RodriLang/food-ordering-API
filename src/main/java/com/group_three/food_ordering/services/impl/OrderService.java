@@ -35,7 +35,7 @@ public class OrderService implements IOrderService {
     private final IOrderDetailRepository orderDetailRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
-    private final FoodVenue foodVenue;
+    private final TenantContext tenantContext;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -59,12 +59,12 @@ public class OrderService implements IOrderService {
 
         if (fromDateTime != null && toDateTime != null && status != null) {
             orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(
-                    foodVenue.getId(), fromDateTime, toDateTime, status);
+                    tenantContext.getCurrentFoodVenue().getId(), fromDateTime, toDateTime, status);
         } else if (fromDateTime != null && toDateTime != null) {
             orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(
-                    foodVenue.getId(), fromDateTime, toDateTime);
+                    tenantContext.getCurrentFoodVenue().getId(), fromDateTime, toDateTime);
         } else if (status != null) {
-            orders = orderRepository.findByFoodVenue_IdAndStatus(foodVenue.getId(), status);
+            orders = orderRepository.findByFoodVenue_IdAndStatus(tenantContext.getCurrentFoodVenue().getId(), status);
         } else {
             orders = orderRepository.findAll();
         }
@@ -145,7 +145,7 @@ public class OrderService implements IOrderService {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
 
-        return orderRepository.findByFoodVenue_IdAndCreationDateBetween(foodVenue.getId(), start, end)
+        return orderRepository.findByFoodVenue_IdAndCreationDateBetween(tenantContext.getCurrentFoodVenue().getId(), start, end)
                 .stream()
                 .map(orderMapper::toDTO)
                 .toList();

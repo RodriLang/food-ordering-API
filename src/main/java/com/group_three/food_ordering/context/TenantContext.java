@@ -15,7 +15,6 @@ public class TenantContext {
         this.foodVenueRepository = foodVenueRepository;
     }
 
-    @Bean
     public FoodVenue getCurrentFoodVenue() {
         if (cachedVenue == null) {
             String email = "contact@burgerhouse.com";
