@@ -1,8 +1,7 @@
-package com.group_three.food_ordering.dtos.create;
+package com.group_three.food_ordering.dtos.update;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -10,11 +9,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientCreateDto {
+public class ClientUpdateDto {
 
     @Valid
-    @NotNull(message = "User information is required")
-    private UserCreateDto user;
+    private UserUpdateDto user;
 
     @NotBlank(message = "Nickname is required")
     private String nickname;

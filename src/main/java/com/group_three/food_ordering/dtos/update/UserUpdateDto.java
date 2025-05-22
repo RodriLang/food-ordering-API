@@ -23,6 +23,7 @@ public class UserUpdateDto {
     private String lastName;
 
     @Valid
+    @NotNull(message = "Address is required")
     private AddressUpdateDto address;
 
     @Email(message = "The email must be valid")

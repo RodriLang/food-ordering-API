@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.dtos.create;
 
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.models.Address;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -23,7 +22,8 @@ public class UserCreateDto {
     private String lastName;
 
     @Valid
-    private Address address;
+    @NotNull(message = "Address is required")
+    private AddressCreateDto address;
 
     @Email(message = "The email must be valid")
     @NotBlank(message = "Email is required")
