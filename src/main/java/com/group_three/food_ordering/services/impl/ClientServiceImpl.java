@@ -28,14 +28,18 @@ public class ClientServiceImpl implements IClientService {
 
     @Override
     public ClientResponseDto create(ClientCreateDto dto) {
-        User user = clientMapper.toUser(dto.getUser());
-        user.setRole(dto.getUser().getRole());
-        User savedUser = userRepository.save(user);
+        Client client = clientMapper.toEntity(dto);
 
-        Client client = Client.builder()
-                .user(savedUser)
-                .nickname(dto.getNickname())
-                .build();
+        if (dto.getUserId() != null) {
+            User user = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new ClientNotFoundException("User with ID " + dto.getUserId() + " not found"));
+            client.setUser(user);
+        } else if (dto.getUser() != null) {
+            User user = clientMapper.toUser(dto.getUser());
+            user.setRole(dto.getUser().getRole());
+            userRepository.save(user);
+            client.setUser(user);
+        }
 
         Client savedClient = clientRepository.save(client);
         return clientMapper.toResponseDto(savedClient);
