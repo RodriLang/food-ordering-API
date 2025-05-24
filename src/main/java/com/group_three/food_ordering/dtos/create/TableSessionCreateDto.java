@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dtos.create;
 
-import com.group_three.food_ordering.dtos.response.ClientResponseDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

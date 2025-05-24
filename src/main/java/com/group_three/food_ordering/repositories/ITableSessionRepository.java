@@ -13,13 +13,23 @@ import java.util.UUID;
 @Repository
 public interface ITableSessionRepository extends JpaRepository<TableSession, UUID> {
 
-    List<TableSession> findByFoodVenueIdAndTableIdAndStartTimeAfter(UUID foodVenueId, UUID tableId, LocalDateTime since);
+    List<TableSession> findByFoodVenueId(UUID foodVenueId);
+    List<TableSession> findByFoodVenueIdAndTableNumber(UUID foodVenueId, Integer tableNumber);
+    List<TableSession> findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
+            UUID foodVenueId,
+            Integer tableNumber,
+            LocalDateTime start,
+            LocalDateTime end
+    );
     List<TableSession> findByFoodVenueIdAndEndTimeIsNull(UUID foodVenueId);
     List<TableSession> findByFoodVenueIdAndHostClientId(UUID foodVenueId, UUID clientId);
-    Optional<TableSession> findByFoodVenueIdAndId(UUID foodVenueId, UUID tableSessionId);
-    Optional<TableSession> findByFoodVenueIdAndIdAndEndTimeIsNull(UUID foodVenueId, UUID sessionId);
-    Optional<TableSession> findFirstByFoodVenueIdAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 
-    @Query("SELECT ts FROM table_sessions ts JOIN ts.participants p WHERE p.id = :clientId AND ts.endTime IS NOT NULL")
-    List<TableSession> findPastSessionsByParticipantId(UUID clientId);
+    @Query("SELECT ts " +
+            "FROM table_sessions ts " +
+            "JOIN ts.participants p " +
+            "WHERE p.id = :clientId " +
+            "AND ts.endTime " +
+            "IS NOT NULL")
+    List<TableSession> findPastSessionsByParticipantId(UUID foodVenueId, UUID clientId);
+    Optional<TableSession> findTopByFoodVenueIdAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 }
