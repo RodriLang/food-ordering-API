@@ -1,7 +1,5 @@
 package com.group_three.food_ordering.dtos.update;
 
-import com.group_three.food_ordering.dtos.create.AddressCreateDto;
-import com.group_three.food_ordering.models.Address;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +23,7 @@ public class FoodVenueUpdateDto {
 
     @Valid
     @NotNull(message = "Address is required")
-    private AddressCreateDto address;
+    private AddressUpdateDto address;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be a valid email address")

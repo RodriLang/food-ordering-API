@@ -5,6 +5,11 @@ import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,62 +28,175 @@ public class TableSessionController {
 
     private final ITableSessionService tableSessionService;
 
+    @Operation(
+            summary = "Crear una nueva sesión de mesa",
+            description = "Crea una sesión asociada a una mesa con los datos proporcionados.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Sesión creada exitosamente",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+            }
+    )
     @PostMapping
-    public ResponseEntity<TableSessionResponseDto> createTableSession(@RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
+    public ResponseEntity<TableSessionResponseDto> createTableSession(
+            @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tableSessionService.create(tableSessionCreateDto));
     }
 
+    @Operation(
+            summary = "Obtener todas las sesiones de mesa",
+            description = "Devuelve una lista con todas las sesiones de mesa registradas.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping
     public ResponseEntity<List<TableSessionResponseDto>> getTableSessions() {
         return ResponseEntity.ok(tableSessionService.getAll());
     }
 
+    @Operation(
+            summary = "Obtener sesión por UUID",
+            description = "Obtiene una sesión de mesa mediante su identificador UUID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sesión encontrada",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Sesión no encontrada")
+            }
+    )
     @GetMapping("/{id}")
-    public ResponseEntity<TableSessionResponseDto> getTableSessionById(@PathVariable UUID id) {
+    public ResponseEntity<TableSessionResponseDto> getTableSessionById(
+            @Parameter(description = "UUID de la sesión a buscar", required = true)
+            @PathVariable UUID id) {
         return ResponseEntity.ok(tableSessionService.getById(id));
     }
 
+    @Operation(
+            summary = "Obtener sesiones por número de mesa",
+            description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa específico.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones por mesa",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping("/table/{tableNumber}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTable(@PathVariable Integer tableNumber) {
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTable(
+            @Parameter(description = "Número de la mesa", required = true)
+            @PathVariable Integer tableNumber) {
         return ResponseEntity.ok(tableSessionService.getByTable(tableNumber));
     }
 
+    @Operation(
+            summary = "Obtener sesiones por número de mesa y rango de tiempo",
+            description = "Obtiene sesiones de una mesa dentro de un rango de fechas y horas. El parámetro 'end' es opcional.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones filtradas",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping("/table/{tableNumber}/time-range")
     public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
+            @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
+            @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @Parameter(description = "Fecha y hora de fin (ISO 8601)", required = false)
             @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end));
     }
 
+    @Operation(
+            summary = "Obtener sesiones activas",
+            description = "Devuelve una lista con todas las sesiones que están activas actualmente.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones activas",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping("/active")
     public ResponseEntity<List<TableSessionResponseDto>> getActiveSessions() {
         return ResponseEntity.ok(tableSessionService.getActiveSessions());
     }
 
+    @Operation(
+            summary = "Obtener sesiones por cliente anfitrión",
+            description = "Devuelve todas las sesiones donde un cliente específico es el anfitrión.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones por cliente anfitrión",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping("/host/{clientId}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(@PathVariable UUID clientId) {
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(
+            @Parameter(description = "UUID del cliente anfitrión", required = true)
+            @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.getByHostClient(clientId));
     }
 
+    @Operation(
+            summary = "Obtener sesiones pasadas por participante",
+            description = "Devuelve todas las sesiones pasadas en las que un cliente participó.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones pasadas por participante",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
     @GetMapping("/participant/{clientId}")
-    public ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(@PathVariable UUID clientId) {
+    public ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(
+            @Parameter(description = "UUID del cliente participante", required = true)
+            @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId));
     }
 
+    @Operation(
+            summary = "Obtener la última sesión de una mesa",
+            description = "Devuelve la sesión más reciente asociada a una mesa determinada.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Última sesión encontrada",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "No se encontró sesión para la mesa especificada")
+            }
+    )
     @GetMapping("/latest/{tableId}")
-    public ResponseEntity<TableSessionResponseDto> getLatestTableSessionByTable(@PathVariable UUID tableId) {
+    public ResponseEntity<TableSessionResponseDto> getLatestTableSessionByTable(
+            @Parameter(description = "UUID de la mesa", required = true)
+            @PathVariable UUID tableId) {
         return ResponseEntity.ok(tableSessionService.getLatestByTable(tableId));
     }
 
+    @Operation(
+            summary = "Actualizar sesión de mesa",
+            description = "Actualiza la información completa de una sesión existente.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Sesión actualizada correctamente",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "400", description = "Datos inválidos para actualización"),
+                    @ApiResponse(responseCode = "404", description = "Sesión no encontrada")
+            }
+    )
     @PutMapping("/{id}")
-    public ResponseEntity<TableSessionResponseDto> update(@RequestBody @Valid TableSessionUpdateDto tableSessionUpdateDto, @PathVariable UUID id) {
+    public ResponseEntity<TableSessionResponseDto> update(
+            @RequestBody @Valid TableSessionUpdateDto tableSessionUpdateDto,
+            @Parameter(description = "UUID de la sesión a actualizar", required = true)
+            @PathVariable UUID id) {
         return ResponseEntity.ok(tableSessionService.update(tableSessionUpdateDto, id));
     }
 
+    @Operation(
+            summary = "Agregar un cliente a una sesión",
+            description = "Agrega un cliente participante a una sesión de mesa existente.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Cliente agregado exitosamente a la sesión",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Sesión o cliente no encontrado")
+            }
+    )
     @PutMapping("/{id}/clients/{clientId}")
     public ResponseEntity<TableSessionResponseDto> addClientToSession(
+            @Parameter(description = "UUID de la sesión", required = true)
             @PathVariable UUID id,
+            @Parameter(description = "UUID del cliente a agregar", required = true)
             @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
     }
