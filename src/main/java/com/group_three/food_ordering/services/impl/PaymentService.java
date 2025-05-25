@@ -33,9 +33,9 @@ public class PaymentService implements IPaymentService {
 
     @Override
     public List<PaymentResponseDto> getAll() {
-        return paymentRepository.findAllByDeletedFalse().stream()
+        return paymentRepository.findAll().stream()
                 .map(paymentMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PaymentService implements IPaymentService {
 
     @Override
     public PaymentResponseDto updateStatus(UUID paymentId, PaymentStatus paymentStatus) {
-        Payment payment = paymentRepository.findByIdAndDeletedFalse(paymentId)
+        Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(PaymentNotFoundException::new);
 
         payment.setStatus(paymentStatus);

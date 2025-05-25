@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 
 @Component
@@ -146,6 +147,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // Orders and OrderDetails + Payments
             Order o1 = Order.builder()
+                    .id(UUID.fromString("00000000-0000-0000-0000-000123000000"))
                     .client(c1)
                     .orderNumber(1)
                     .foodVenue(v1)
@@ -154,6 +156,7 @@ public class DataInitializer implements CommandLineRunner {
                     .status(OrderStatus.PENDING)
                     .build();
             Order o2 = Order.builder()
+                    .id(UUID.fromString("00000000-0000-0000-0000-000124000000"))
                     .client(c2)
                     .orderNumber(2)
                     .foodVenue(v1)
@@ -161,6 +164,7 @@ public class DataInitializer implements CommandLineRunner {
                     .status(OrderStatus.PENDING)
                     .build();
             Order o3 = Order.builder()
+                    //.id(UUID.fromString("00000000-0000-0000-0000-000125000000"))
                     .client(c3)
                     .orderNumber(456)
                     .foodVenue(v3)
@@ -188,20 +192,20 @@ public class DataInitializer implements CommandLineRunner {
                     .price(p3.getPrice())
                     .build();
             orderDetailRepository.saveAll(List.of(od1, od2, od3));
-/*
+
             // Payment grouping all orders
             Payment pay1 = Payment.builder()
+                    .id(UUID.fromString("00000000-0000-0000-0000-123123000000"))
                     .amount(BigDecimal.ZERO) // will adjust
                     .orders(List.of(o1, o2, o3))
                     .status(PaymentStatus.PENDING)
-                    .deleted(false)
                     .build();
             BigDecimal total = od1.getPrice().multiply(BigDecimal.valueOf(od1.getQuantity()))
                     .add(od2.getPrice().multiply(BigDecimal.valueOf(od2.getQuantity())))
                     .add(od3.getPrice().multiply(BigDecimal.valueOf(od3.getQuantity())));
             pay1.setAmount(total);
             paymentRepository.save(pay1);
-*/
+
             System.out.println("✅ Initialized sample data.");
         }
     }

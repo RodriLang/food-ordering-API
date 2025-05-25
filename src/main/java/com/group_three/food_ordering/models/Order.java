@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,7 +28,8 @@ import java.util.UUID;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column
@@ -63,16 +66,13 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @Column(nullable = false)
-    private Boolean deleted;
-
     @PrePersist
     public void onCreate() {
         this.creationDate = LocalDateTime.now();
         this.updateDate = LocalDateTime.now();
+        if (this.id == null) this.id = UUID.randomUUID();
         if (this.status == null) this.status = OrderStatus.PENDING;
         if (this.totalPrice == null) this.totalPrice = BigDecimal.ZERO;
-        if (this.deleted == null) this.deleted = false;
     }
 
     @PreUpdate

@@ -11,9 +11,4 @@ import java.util.UUID;
 @Repository
 public interface IPaymentRepository extends JpaRepository<Payment, UUID> {
 
-        Optional<Payment> findByIdAndDeletedFalse(UUID paymentId);
-
-        List<Payment> findAllByDeletedFalse();
-
-        List<Payment> findByOrders_IdAndDeletedFalse(UUID orderId);
     }

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,7 +20,8 @@ import java.util.UUID;
 @Builder
 public class Payment {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column
@@ -31,13 +34,10 @@ public class Payment {
     @Column(nullable = false)
     private PaymentStatus status;
 
-    @Column(nullable = false)
-    private Boolean deleted;
-
     @PrePersist
     public void onCreate() {
+        if(this.id == null) this.id = UUID.randomUUID();
         if(this.status == null) this.status = PaymentStatus.PENDING;
-        if(this.deleted == null) this.deleted = Boolean.FALSE;
     }
 
 }
