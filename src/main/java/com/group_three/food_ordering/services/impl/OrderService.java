@@ -9,6 +9,7 @@ import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
+import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
@@ -49,31 +50,38 @@ public class OrderService implements IOrderService {
                 .map(orderMapper::toDTO)
                 .toList();
     }
+    @Override
 
     public List<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus status) {
         LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : null;
         LocalDateTime toDateTime = (to != null) ? to.atTime(LocalTime.MAX) : null;
 
+        return fetchOrders(fromDateTime, toDateTime, status);
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersForToday(OrderStatus status) {
+        FoodVenue currentVenue = tenantContext.getCurrentFoodVenue();
+        LocalDateTime opening = LocalDate.now().atStartOfDay();
+        LocalDateTime closing = opening.plusDays(1);
+
+        return fetchOrders(opening, closing, status);
+    }
+
+    private List<OrderResponseDto> fetchOrders(LocalDateTime from, LocalDateTime to, OrderStatus status) {
+        UUID venueId = tenantContext.getCurrentFoodVenueId();
         List<Order> orders;
 
-        UUID venueId = tenantContext.getCurrentFoodVenue().getId();
-
-        if (fromDateTime != null && toDateTime != null) {
+        if (from != null && to != null) {
             if (status != null) {
-                // Filtrar por fecha y estado
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(
-                        venueId, fromDateTime, toDateTime, status);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(venueId, from, to, status);
             } else {
-                // Filtrar solo por fecha
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(
-                        venueId, fromDateTime, toDateTime);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(venueId, from, to);
             }
         } else if (status != null) {
-            // Filtrar solo por estado
             orders = orderRepository.findByFoodVenue_IdAndStatus(venueId, status);
         } else {
-            // Sin filtros
-            orders = orderRepository.findAll();
+            orders = orderRepository.findByFoodVenue_Id(venueId);
         }
 
         return orders.stream()
@@ -81,13 +89,6 @@ public class OrderService implements IOrderService {
                 .toList();
     }
 
-    @Override
-    public List<OrderResponseDto> getOrdersByPaymentStatus(PaymentStatus status) {
-        return orderRepository.getOrdersByPayment_Status(status)
-                .stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
 
 
     @Override

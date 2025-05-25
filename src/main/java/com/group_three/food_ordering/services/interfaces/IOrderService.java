@@ -32,9 +32,9 @@ public interface IOrderService {
 
     OrderResponseDto getOrderByDateAndOrderNumber(LocalDate date, Integer orderNumber);
 
-    List<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus status);
+    List<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus orderStatus);
 
-    List<OrderResponseDto> getOrdersByPaymentStatus(PaymentStatus status);
+    List<OrderResponseDto> getOrdersForToday(OrderStatus orderStatus);
 
     List<OrderDetailResponseDto>getOrderDetailsByOrderId(UUID orderId);
 

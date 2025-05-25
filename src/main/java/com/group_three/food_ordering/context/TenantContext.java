@@ -5,6 +5,8 @@ import com.group_three.food_ordering.repositories.IFoodVenueRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class TenantContext {
 
@@ -24,4 +26,9 @@ public class TenantContext {
         }
         return cachedVenue;
     }
+
+    public UUID getCurrentFoodVenueId() {
+        return getCurrentFoodVenue().getId();
+    }
+
 }

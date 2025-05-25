@@ -4,10 +4,16 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +29,14 @@ public class OrderController {
 
     private final IOrderService orderService;
 
+    @Operation(
+            summary = "Crear una nueva orden",
+            description = "Crea una orden con los datos proporcionados en el cuerpo de la solicitud."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Orden creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos en la solicitud")
+    })
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(
             @RequestBody @Valid OrderRequestDto order) {
@@ -30,63 +44,151 @@ public class OrderController {
     }
 
 
+
+
+    @Operation(
+            summary = "Obtener órdenes con filtros opcionales",
+            description = "Devuelve una lista de órdenes que pueden ser filtradas por rango de fechas y estado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Órdenes recuperadas exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
+    })
     @GetMapping()
     public ResponseEntity<List<OrderResponseDto>> getOrders(
-            @RequestParam(required = false) LocalDate from,
-            @RequestParam(required = false) LocalDate to,
+            @Parameter(description = "Fecha desde la cual buscar órdenes (formato yyyy-MM-dd)", example = "2025-05-01")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+
+            @Parameter(description = "Fecha hasta la cual buscar órdenes (formato yyyy-MM-dd)", example = "2025-05-10")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+
+            @Parameter(description = "Estado de la orden para filtrar", example = "PENDING")
             @RequestParam(required = false) OrderStatus status) {
         return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status));
-
     }
 
+
+
+    @Operation(
+            summary = "Obtener las órdenes del dia",
+            description = "Devuelve una lista de órdenes del dia en curso que pueden ser filtralas por estado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Órdenes recuperadas exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
+    })
+    @GetMapping("/today")
+    public ResponseEntity<List<OrderResponseDto>> getDailyOrders(
+            @Parameter(description = "Estado de la orden para filtrar", example = "PENDING")
+            @RequestParam(required = false) OrderStatus status) {
+
+        return ResponseEntity.ok(orderService.getOrdersForToday(status));
+    }
+
+
+
+    @Operation(
+            summary = "Obtener una orden por ID",
+            description = "Devuelve los detalles de una orden específica identificada por su UUID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orden encontrada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDto> getOrderById(
+            @Parameter(description = "UUID de la orden", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
         return ResponseEntity.ok(orderService.getById(id));
     }
 
-    @GetMapping("/{date}/{orderNumber}")
-    public ResponseEntity<OrderResponseDto> getDailyOrderByOrderNumber(
-            @PathVariable LocalDate date,
+
+
+
+    @Operation(
+            summary = "Obtener una orden por fecha y número de orden",
+            description = "Devuelve los detalles de una orden específica identificada por la fecha y el número de orden del día."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orden encontrada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada"),
+            @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
+    })
+    @GetMapping("/by-date/{date}/number/{orderNumber}")
+    public ResponseEntity<OrderResponseDto> getOrderByDateAndOrderNumber(
+            @Parameter(description = "Fecha de la orden en formato yyyy-MM-dd", example = "2025-05-25")
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+
+            @Parameter(description = "Número de orden del día", example = "15")
             @PathVariable Integer orderNumber) {
+
         return ResponseEntity.ok(orderService.getOrderByDateAndOrderNumber(date, orderNumber));
     }
 
+
+
+
+
+    @Operation(
+            summary = "Actualizar requisitos especiales de una orden",
+            description = "Actualiza los requisitos especiales o notas específicas asociados a una orden."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Requisitos actualizados exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Requisitos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
     @PatchMapping("/{id}/requirements")
     public ResponseEntity<OrderResponseDto> updateOrderRequirements(
+            @Parameter(description = "UUID de la orden", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
+
+            @Parameter(description = "Requisitos especiales o notas", example = "Sin cebolla, extra picante")
             @RequestParam @Size(max = 255) String requirements) {
         return ResponseEntity.ok(orderService.updateSpecialRequirements(id, requirements));
     }
 
-    @PostMapping("/{id}/cancel")
+
+
+
+    @Operation(
+            summary = "Cancelar una orden",
+            description = "Marca una orden como cancelada."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orden cancelada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
+    @PatchMapping("/{id}/cancel")
     public ResponseEntity<OrderResponseDto> cancelOrder(
+            @Parameter(description = "UUID de la orden", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
         return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.CANCELLED));
     }
 
+
+
+    @Operation(
+            summary = "Actualizar el estado de una orden",
+            description = "Actualiza el estado de una orden. Ejemplo: PENDING, SERVED, CANCELLED."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Estado inválido"),
+            @ApiResponse(responseCode = "404", description = "Orden no encontrada")
+    })
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponseDto> updateOrderStatus(
+            @Parameter(description = "UUID de la orden", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
+
+            @Parameter(description = "Nuevo estado de la orden", example = "COMPLETED")
             @RequestParam OrderStatus status) {
         return ResponseEntity.ok(orderService.updateStatus(id, status));
     }
 
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(
-            @PathVariable UUID id) {
-
-        orderService.delete(id);
-
-        return ResponseEntity.noContent().build();
-    }
-
-
-//------------------------------------------------------------------//
-
-
 }
+
 
 
 
