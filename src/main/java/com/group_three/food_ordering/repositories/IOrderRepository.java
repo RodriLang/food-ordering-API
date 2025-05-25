@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.repositories;
 
 import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.models.Order;
-import com.group_three.food_ordering.services.impl.OrderService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,13 +33,16 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findOrderByTableSession_Id(UUID tableSessionId);
 
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.foodVenue = :venueId " +
-            "AND o.creationDate >= :start AND o.creationDate < :end")
+    List<Order> getOrdersByPayment_Status(PaymentStatus status);
+
+     @Query("SELECT COUNT(o) " +
+            "FROM Order o " +
+            "WHERE o.foodVenue = :venueId " +
+            "AND o.creationDate >= :start " +
+            "AND o.creationDate < :end")
     Long countOrdersToday(
             @Param("venueId") UUID venueId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
-
-
 }

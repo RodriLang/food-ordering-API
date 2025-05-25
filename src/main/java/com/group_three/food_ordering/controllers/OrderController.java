@@ -31,11 +31,11 @@ public class OrderController {
 
 
     @GetMapping()
-    public ResponseEntity<List<OrderResponseDto>> getOrdersByPeriodAndStatus(
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to,
-            @RequestParam OrderStatus status){
-        return ResponseEntity.ok(null);
+    public ResponseEntity<List<OrderResponseDto>> getOrders(
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
+            @RequestParam(required = false) OrderStatus status) {
+        return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status));
 
     }
 
@@ -45,16 +45,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getById(id));
     }
 
-    @GetMapping("/today")
-    public ResponseEntity<List<OrderResponseDto>> getDailyOrders() {
-        return ResponseEntity.ok(orderService.getDailyOrders());
-    }
-
-    @GetMapping("/{foodVenueId}/{orderNumber}")
+    @GetMapping("/{date}/{orderNumber}")
     public ResponseEntity<OrderResponseDto> getDailyOrderByOrderNumber(
-            @PathVariable UUID foodVenueId,
+            @PathVariable LocalDate date,
             @PathVariable Integer orderNumber) {
-        return ResponseEntity.ok(orderService.getDailyOrderByOrderNumber(foodVenueId, orderNumber));
+        return ResponseEntity.ok(orderService.getOrderByDateAndOrderNumber(date, orderNumber));
     }
 
     @PatchMapping("/{id}/requirements")
@@ -89,8 +84,6 @@ public class OrderController {
 
 
 //------------------------------------------------------------------//
-
-
 
 
 }

@@ -9,7 +9,6 @@ import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
-import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
@@ -51,25 +50,41 @@ public class OrderService implements IOrderService {
                 .toList();
     }
 
-    public List<OrderResponseDto> getOrders(LocalDate from, LocalDate to, OrderStatus status) {
+    public List<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus status) {
         LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : null;
         LocalDateTime toDateTime = (to != null) ? to.atTime(LocalTime.MAX) : null;
 
         List<Order> orders;
 
-        if (fromDateTime != null && toDateTime != null && status != null) {
-            orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(
-                    tenantContext.getCurrentFoodVenue().getId(), fromDateTime, toDateTime, status);
-        } else if (fromDateTime != null && toDateTime != null) {
-            orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(
-                    tenantContext.getCurrentFoodVenue().getId(), fromDateTime, toDateTime);
+        UUID venueId = tenantContext.getCurrentFoodVenue().getId();
+
+        if (fromDateTime != null && toDateTime != null) {
+            if (status != null) {
+                // Filtrar por fecha y estado
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(
+                        venueId, fromDateTime, toDateTime, status);
+            } else {
+                // Filtrar solo por fecha
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(
+                        venueId, fromDateTime, toDateTime);
+            }
         } else if (status != null) {
-            orders = orderRepository.findByFoodVenue_IdAndStatus(tenantContext.getCurrentFoodVenue().getId(), status);
+            // Filtrar solo por estado
+            orders = orderRepository.findByFoodVenue_IdAndStatus(venueId, status);
         } else {
+            // Sin filtros
             orders = orderRepository.findAll();
         }
 
         return orders.stream()
+                .map(orderMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersByPaymentStatus(PaymentStatus status) {
+        return orderRepository.getOrdersByPayment_Status(status)
+                .stream()
                 .map(orderMapper::toDTO)
                 .toList();
     }
@@ -117,51 +132,17 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public OrderResponseDto getDailyOrderByOrderNumber(
-            UUID venueId, Integer orderNumber) {
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
+    public OrderResponseDto getOrderByDateAndOrderNumber(
+            LocalDate date, Integer orderNumber) {
+        LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = start.plusDays(1);
-
-        return this.getOrderByOrderNumberAndDateBetween(venueId, orderNumber, start, end);
-    }
-
-    @Override
-    public OrderResponseDto getOrderByOrderNumberAndDateBetween(
-            UUID venueId, Integer orderNumber, LocalDateTime start, LocalDateTime end) {
 
         return orderMapper.toDTO(orderRepository
                 .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
-                        venueId, orderNumber, start, end)
+                        tenantContext.getCurrentFoodVenue().getId(), orderNumber, start, end)
                 .orElseThrow(OrderNotFoundException::new));
     }
 
-
-    @Override
-    public List<OrderResponseDto> getDailyOrders() {
-
-        LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
-
-        return orderRepository.findByFoodVenue_IdAndCreationDateBetween(tenantContext.getCurrentFoodVenue().getId(), start, end)
-                .stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
-
-    @Override
-    public List<OrderResponseDto> getDailyOrdersByDateBetween(UUID foodVenueId, LocalDateTime start, LocalDateTime end) {
-        return List.of();
-    }
-
-    @Override
-    public List<OrderResponseDto> getOrdersByTableSessionId(UUID tableSessionId) {
-        return orderRepository.findOrderByTableSession_Id(tableSessionId).stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
 
     @Override
     public void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail) {
