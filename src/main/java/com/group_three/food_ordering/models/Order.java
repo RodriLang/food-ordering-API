@@ -72,7 +72,6 @@ public class Order {
         this.updateDate = LocalDateTime.now();
         if (this.id == null) this.id = UUID.randomUUID();
         if (this.status == null) this.status = OrderStatus.PENDING;
-        if (this.totalPrice == null) this.totalPrice = BigDecimal.ZERO;
     }
 
     @PreUpdate

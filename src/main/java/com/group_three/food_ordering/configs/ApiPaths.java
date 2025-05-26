@@ -10,8 +10,6 @@ public class ApiPaths {
         public static final String VENUE_BASE = URI_BASE_V1 + "/food-venues";
         public static final String TAG_BASE = URI_BASE_V1 + "/tags";
         public static final String CATEGORY_BASE = URI_BASE_V1 + "/categories";
-        public static final String MENU_BASE = URI_BASE_V1 + "/menus";
-        public static final String MENU_ITEM_BASE = URI_BASE_V1 + "/menu-items";
         public static final String PRODUCT_BASE = URI_BASE_V1 + "/products";
         public static final String PAYMENT_BASE = URI_BASE_V1 + "/payments";
         public static final String TABLE_BASE = URI_BASE_V1 + "/tables";

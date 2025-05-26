@@ -2,7 +2,6 @@ package com.group_three.food_ordering.context;
 
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

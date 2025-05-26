@@ -154,6 +154,7 @@ public class DataInitializer implements CommandLineRunner {
                     .tableSession(ts1)
                     .specialRequirements("Estamos festejando un cumpleaños, pueden traer una velita?")
                     .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
                     .build();
             Order o2 = Order.builder()
                     .id(UUID.fromString("00000000-0000-0000-0000-000124000000"))
@@ -162,14 +163,16 @@ public class DataInitializer implements CommandLineRunner {
                     .foodVenue(v1)
                     .tableSession(ts2)
                     .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
                     .build();
             Order o3 = Order.builder()
-                    //.id(UUID.fromString("00000000-0000-0000-0000-000125000000"))
+                    .id(UUID.fromString("00000000-0000-0000-0000-000125000000"))
                     .client(c3)
                     .orderNumber(456)
                     .foodVenue(v3)
                     .tableSession(ts3)
                     .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
                     .build();
             orderRepository.saveAll(List.of(o1, o2, o3));
 
@@ -199,6 +202,8 @@ public class DataInitializer implements CommandLineRunner {
                     .amount(BigDecimal.ZERO) // will adjust
                     .orders(List.of(o1, o2, o3))
                     .status(PaymentStatus.PENDING)
+                    .paymentMethod(PaymentMethod.DEBIT_CARD)
+                    .amount(BigDecimal.ZERO)
                     .build();
             BigDecimal total = od1.getPrice().multiply(BigDecimal.valueOf(od1.getQuantity()))
                     .add(od2.getPrice().multiply(BigDecimal.valueOf(od2.getQuantity())))

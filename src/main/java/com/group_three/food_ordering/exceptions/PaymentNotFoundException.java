@@ -1,5 +1,7 @@
 package com.group_three.food_ordering.exceptions;
 
+import java.util.UUID;
+
 public class PaymentNotFoundException extends RuntimeException {
 
     public PaymentNotFoundException(String message) {
@@ -14,12 +16,11 @@ public class PaymentNotFoundException extends RuntimeException {
         super(message, cause);
     }
 
-    public PaymentNotFoundException(Long id) {
+    public PaymentNotFoundException(UUID id) {
         super("Payment not found with ID: " + id);
     }
 
-    public PaymentNotFoundException(Long id, Throwable cause) {
+    public PaymentNotFoundException(UUID id, Throwable cause) {
         super("Payment not found with ID: " + id, cause);
     }
 }
-
