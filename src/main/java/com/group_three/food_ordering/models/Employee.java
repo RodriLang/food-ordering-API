@@ -14,11 +14,11 @@ import java.util.UUID;
 public class Employee {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
-    @JoinColumn(name = "id")
+    @OneToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

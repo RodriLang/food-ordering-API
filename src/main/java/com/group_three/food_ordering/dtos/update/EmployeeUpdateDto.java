@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dtos.update;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -11,7 +10,6 @@ import lombok.*;
 @Builder
 public class EmployeeUpdateDto {
 
-    @Valid
     private UserUpdateDto user;
 
     @NotBlank(message = "Position is required")

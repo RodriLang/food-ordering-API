@@ -6,15 +6,15 @@ import lombok.*;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class EmployeeCreateDto {
 
+    private UUID userId;
+
     @Valid
-    @NotNull(message = "User information is required")
     private UserCreateDto user;
 
     @NotBlank(message = "Position is required")

@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.FoodVenueNotFoundException;
 import com.group_three.food_ordering.exceptions.EmployeeNotFoundException;
+import com.group_three.food_ordering.exceptions.UserNotFoundException;
 import com.group_three.food_ordering.mappers.EmployeeMapper;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -35,26 +36,28 @@ public class EmployeeServiceImpl implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto create(EmployeeCreateDto dto) {
+        User user = null;
 
-        if (userRepository.existsByEmail(dto.getUser().getEmail())) {
-            throw new EmailAlreadyUsedException(dto.getUser().getEmail());
+        if (dto.getUserId() != null) {
+            user = userRepository.findByIdAndRemovedAtIsNull(dto.getUserId())
+                    .orElseThrow(() -> new UserNotFoundException(dto.getUserId()));
         }
+        else if (dto.getUser() != null) {
+            if (userRepository.existsByEmail(dto.getUser().getEmail())) {
+                throw new EmailAlreadyUsedException(dto.getUser().getEmail());
+            }
 
-
-        User user = employeeMapper.toUser(dto.getUser());
-        user.setPassword(passwordEncoder.encode(dto.getUser().getPassword()));
-        userRepository.save(user);
-
+            user = employeeMapper.toUser(dto.getUser());
+            user.setPassword(passwordEncoder.encode(dto.getUser().getPassword()));
+            userRepository.save(user);
+        }
 
         FoodVenue foodVenue = foodVenueRepository.findById(dto.getFoodVenueId())
                 .orElseThrow(() -> new FoodVenueNotFoundException(dto.getFoodVenueId()));
 
-
-        Employee employee = Employee.builder()
-                .user(user)
-                .foodVenue(foodVenue)
-                .position(dto.getPosition())
-                .build();
+        Employee employee = employeeMapper.toEmployee(dto);
+        employee.setUser(user);
+        employee.setFoodVenue(foodVenue);
 
         employeeRepository.save(employee);
 
@@ -66,7 +69,10 @@ public class EmployeeServiceImpl implements IEmployeeService {
         Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
-        employeeMapper.updateUserFromDto(dto.getUser(), employee.getUser());
+        if (dto.getUser() != null && employee.getUser() != null) {
+            employeeMapper.updateUserFromDto(dto.getUser(), employee.getUser());
+        }
+
         employeeMapper.updateEmployeeFromDto(dto, employee);
         employeeRepository.save(employee);
 
