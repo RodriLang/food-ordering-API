@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dtos.create;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -14,6 +15,7 @@ public class ClientCreateDto {
 
     private UUID userId;
 
+    @Valid
     private UserCreateDto user;
 
     @NotBlank(message = "Nickname is required")
