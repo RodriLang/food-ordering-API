@@ -4,8 +4,8 @@ import com.group_three.food_ordering.dtos.create.PaymentRequestDto;
 import com.group_three.food_ordering.dtos.response.PaymentResponseDto;
 import com.group_three.food_ordering.dtos.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
-import com.group_three.food_ordering.exceptions.PaymentNotFoundException;
 import com.group_three.food_ordering.mappers.PaymentMapper;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.Payment;
@@ -56,7 +56,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public PaymentResponseDto getById(UUID id) {
         return paymentMapper.toDTO(paymentRepository.findById(id)
-                .orElseThrow(() -> new PaymentNotFoundException(id)));
+                .orElseThrow(() -> new EntityNotFoundException(Payment.class.getName(), id.toString())));
     }
 
     @Transactional
@@ -107,6 +107,9 @@ public class PaymentService implements IPaymentService {
     @Override
     public PaymentResponseDto updateStatus(UUID id, PaymentStatus paymentStatus) {
         Payment existingPayment = getPaymentEntityByID(id);
+
+        this.verifyUpdatablePayment(existingPayment);
+
         if (paymentStatus != null) {
             existingPayment.setStatus(paymentStatus);
         }
@@ -117,7 +120,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public void delete(UUID id) {
         if (!paymentRepository.existsById(id)) {
-            throw new PaymentNotFoundException(id);
+            throw new EntityNotFoundException(Payment.class.getName(), id.toString());
         }
         paymentRepository.deleteById(id);
     }
@@ -132,7 +135,7 @@ public class PaymentService implements IPaymentService {
 
     private Payment getPaymentEntityByID(UUID id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new PaymentNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException(Payment.class.getName(), id.toString()));
     }
 
 }

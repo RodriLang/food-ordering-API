@@ -2,8 +2,8 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
-import com.group_three.food_ordering.exceptions.OrderDetailNotFoundException;
 import com.group_three.food_ordering.exceptions.ProductNotFoundException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.Order;
@@ -76,7 +76,7 @@ public class OrderDetailService implements IOrderDetailService {
     @Override
     public OrderDetailResponseDto getOrderDetailById(Long orderDetailId) {
         OrderDetail orderDetail = orderDetailRepository.findByIdAndDeletedFalse(orderDetailId)
-                .orElseThrow(OrderDetailNotFoundException::new);
+                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), orderDetailId.toString()));
         return orderDetailMapper.toDTO(orderDetail);
     }
 
@@ -137,7 +137,7 @@ public class OrderDetailService implements IOrderDetailService {
     @Transactional
     public OrderDetailResponseDto updateSpecialInstructions(Long id, String instructions) {
         OrderDetail detail = orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(OrderDetailNotFoundException::new);
+                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), id.toString()));
 
         detail.setSpecialInstructions(instructions);
         OrderDetail saved = orderDetailRepository.save(detail);
@@ -145,7 +145,7 @@ public class OrderDetailService implements IOrderDetailService {
     }
 
     /**
-     * Método privado para actualizar stock de productos.
+     * Metodo privado para actualizar stock de productos.
      * @param product producto a modificar
      * @param difference diferencia positiva o negativa en stock
      */
@@ -159,10 +159,10 @@ public class OrderDetailService implements IOrderDetailService {
     }
 
     /**
-     * Método privado para obtener la entidad OrderDetail verificando existencia y no eliminado.
+     * Metodo privado para obtener la entidad OrderDetail verificando existencia y no eliminado.
      */
     private OrderDetail getOrderDetailEntityById(Long id) {
         return orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(OrderDetailNotFoundException::new);
+                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), id.toString()));
     }
 }

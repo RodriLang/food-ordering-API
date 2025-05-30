@@ -7,11 +7,11 @@ import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Order;
-import com.group_three.food_ordering.exceptions.OrderNotFoundException;
 import com.group_three.food_ordering.mappers.OrderMapper;
 import com.group_three.food_ordering.models.OrderDetail;
 import com.group_three.food_ordering.repositories.IOrderDetailRepository;
@@ -141,7 +141,7 @@ public class OrderService implements IOrderService {
         return orderMapper.toDTO(orderRepository
                 .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
                         tenantContext.getCurrentFoodVenue().getId(), orderNumber, start, end)
-                .orElseThrow(OrderNotFoundException::new));
+                .orElseThrow(()-> new EntityNotFoundException("Order not found")));
     }
 
 
@@ -170,7 +170,7 @@ public class OrderService implements IOrderService {
     @Override
     public Order getEntityById(UUID id) {
         return orderRepository.findById(id)
-                .orElseThrow(OrderNotFoundException::new);
+                .orElseThrow(()-> new EntityNotFoundException(Order.class.getName() + id));
     }
 
 
