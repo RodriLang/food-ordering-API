@@ -10,7 +10,7 @@ import com.group_three.food_ordering.exceptions.UserNotFoundException;
 import com.group_three.food_ordering.mappers.EmployeeMapper;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.models.UserEntity;
 import com.group_three.food_ordering.repositories.IEmployeeRepository;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
 import com.group_three.food_ordering.repositories.IUserRepository;
@@ -36,7 +36,7 @@ public class EmployeeServiceImpl implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto create(EmployeeCreateDto dto) {
-        User user = null;
+        UserEntity user = null;
 
         if (dto.getUserId() != null) {
             user = userRepository.findByIdAndRemovedAtIsNull(dto.getUserId())

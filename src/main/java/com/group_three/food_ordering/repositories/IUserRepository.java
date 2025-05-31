@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.repositories;
 
-import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.models.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,15 +9,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IUserRepository extends JpaRepository<User, UUID> {
+public interface IUserRepository extends JpaRepository<UserEntity, UUID> {
 
-    Optional<User> findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
     boolean existsByEmail(String email);
 
-    List<User> findAllByRemovedAtIsNull();
+    List<UserEntity> findAllByRemovedAtIsNull();
 
-    Optional<User> findByIdAndRemovedAtIsNull(UUID id);
+    Optional<UserEntity> findByIdAndRemovedAtIsNull(UUID id);
 
-    List<User> findAllByRemovedAtIsNotNull();
+    List<UserEntity> findAllByRemovedAtIsNotNull();
 }
