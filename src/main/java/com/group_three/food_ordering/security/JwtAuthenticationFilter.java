@@ -3,7 +3,7 @@ package com.group_three.food_ordering.security;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,12 +33,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
-        UserEntity user = null;
+        User user = null;
         String username="";
         String password="";
 
         try {
-            user = new ObjectMapper().readValue(request.getInputStream(), UserEntity.class);
+            user = new ObjectMapper().readValue(request.getInputStream(), User.class);
             username=user.getEmail();
             password=user.getPassword();
 
@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws ServletException, IOException {
 
-        UserEntity user = (UserEntity) authResult.getPrincipal();
+        User user = (User) authResult.getPrincipal();
         String token = jwtUtil.generateToken(user.getEmail());
 
         response.addHeader("Authorization", token);

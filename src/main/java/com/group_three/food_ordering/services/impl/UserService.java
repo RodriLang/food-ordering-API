@@ -7,7 +7,7 @@ import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.UserNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IUserService;
 
@@ -34,7 +34,7 @@ public class UserService implements IUserService {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        UserEntity user = userMapper.toEntity(dto);
+        User user = userMapper.toEntity(dto);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
 
@@ -43,7 +43,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto getById(UUID id) {
-        UserEntity user = userRepository.findByIdAndRemovedAtIsNull(id)
+        User user = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         return userMapper.toResponseDto(user);
     }
@@ -74,7 +74,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
-        UserEntity user = userRepository.findByIdAndRemovedAtIsNull(id)
+        User user = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
@@ -96,7 +96,7 @@ public class UserService implements IUserService {
 
     @Override
     public void delete(UUID id) {
-        UserEntity user = userRepository.findByIdAndRemovedAtIsNull(id)
+        User user = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         user.setRemovedAt(LocalDateTime.now());

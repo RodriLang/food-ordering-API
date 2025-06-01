@@ -1,13 +1,12 @@
 package com.group_three.food_ordering.services.impl;
 
 
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,12 +23,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user =  userRepository.findByEmail(username)
+        User user =  userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("No se ah encontrado el usuario: " + username));
 
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
         List<GrantedAuthority> authorities = List.of(authority);
-        return new User(user.getEmail(),
+        return new org.springframework.security.core.userdetails.User(user.getEmail(),
                 user.getPassword(),
                 true,
                 true,

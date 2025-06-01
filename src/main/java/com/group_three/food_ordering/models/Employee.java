@@ -19,7 +19,7 @@ public class Employee {
 
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
-    private UserEntity user;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "food_venue_id", nullable = false)
