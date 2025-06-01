@@ -6,7 +6,7 @@ import com.group_three.food_ordering.dtos.response.ClientResponseDto;
 import com.group_three.food_ordering.exceptions.ClientNotFoundException;
 import com.group_three.food_ordering.mappers.ClientMapper;
 import com.group_three.food_ordering.models.Client;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IClientRepository;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IClientService;
@@ -31,11 +31,11 @@ public class ClientServiceImpl implements IClientService {
         Client client = clientMapper.toEntity(dto);
 
         if (dto.getUserId() != null) {
-            UserEntity user = userRepository.findById(dto.getUserId())
+            User user = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new ClientNotFoundException("UserEntity with ID " + dto.getUserId() + " not found"));
             client.setUser(user);
         } else if (dto.getUser() != null) {
-            UserEntity user = clientMapper.toUser(dto.getUser());
+            User user = clientMapper.toUser(dto.getUser());
             user.setRole(dto.getUser().getRole());
             userRepository.save(user);
             client.setUser(user);

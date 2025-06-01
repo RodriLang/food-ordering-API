@@ -37,7 +37,7 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
      @Query("SELECT COUNT(o) " +
             "FROM Order o " +
-            "WHERE o.foodVenue = :venueId " +
+            "WHERE o.foodVenue.id = :venueId " +
             "AND o.creationDate >= :start " +
             "AND o.creationDate < :end")
     Long countOrdersToday(

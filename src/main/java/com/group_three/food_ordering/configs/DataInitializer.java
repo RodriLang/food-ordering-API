@@ -24,11 +24,13 @@ public class DataInitializer implements CommandLineRunner {
     private final IFoodVenueRepository foodVenueRepository;
     private final IProductRepository productRepository;
     private final IClientRepository clientRepository;
+    private final IUserRepository userRepository;
     private final ITableRepository tableRepository;
     private final ITableSessionRepository tableSessionRepository;
     private final IOrderRepository orderRepository;
     private final IOrderDetailRepository orderDetailRepository;
     private final IPaymentRepository paymentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private final IUserRepository userRepository;
     private final IEmployeeRepository employeeRepository;
@@ -113,15 +115,51 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             productRepository.saveAll(List.of(p1, p2, p3));
 
+            // Users
+            User u1 = User.builder()
+                    .role(RoleType.ROLE_CLIENT)
+                    .email("user1@example.com")
+                    .name("Leonardo")
+                    .lastName("Juarez")
+                    .birthDate(LocalDate.of(2000, 1, 1))
+                    .createdAt(LocalDateTime.now())
+                    .password(passwordEncoder.encode("1234"))
+                    .phone("1234567890")
+                    .build();
+            User u2 = User.builder()
+                    .role(RoleType.ROLE_CLIENT)
+                    .email("user2@example.com")
+                    .name("David")
+                    .lastName("Fernandez")
+                    .birthDate(LocalDate.of(2000, 1, 1))
+                    .createdAt(LocalDateTime.now())
+                    .password(passwordEncoder.encode("1234"))
+                    .phone("1234567890")
+                    .build();
+            User u3 = User.builder()
+                    .role(RoleType.ROLE_CLIENT)
+                    .email("user3@example.com")
+                    .name("Diego")
+                    .lastName("Alonso")
+                    .birthDate(LocalDate.of(2000, 1, 1))
+                    .createdAt(LocalDateTime.now())
+                    .password(passwordEncoder.encode("1234"))
+                    .phone("1234567890")
+                    .build();
+            userRepository.saveAll(List.of(u1, u2, u3));
+
+
             // Clients
             Client c1 = Client.builder()
-                    .nickname("Pablo")
+                    .nickname(u1.getName())
+                    .user(u1)
                     .build();
             Client c2 = Client.builder()
                     .nickname("Frank")
                     .build();
             Client c3 = Client.builder()
-                    .nickname("Daniel")
+                    .nickname(u2.getName())
+                    .user(u2)
                     .build();
             clientRepository.saveAll(List.of(c1, c2, c3));
 

@@ -10,12 +10,12 @@ import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
-import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.Order;
+import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.mappers.OrderMapper;
-import com.group_three.food_ordering.models.OrderDetail;
+import com.group_three.food_ordering.repositories.IClientRepository;
 import com.group_three.food_ordering.repositories.IOrderDetailRepository;
 import com.group_three.food_ordering.repositories.IOrderRepository;
+import com.group_three.food_ordering.repositories.IProductRepository;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,14 +33,41 @@ public class OrderService implements IOrderService {
 
     private final IOrderRepository orderRepository;
     private final IOrderDetailRepository orderDetailRepository;
+    private final IProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final TenantContext tenantContext;
+    private final IClientRepository clientRepository;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
+
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(this.generateOrderNumber());
+        order.setClient(clientRepository.findById(orderRequestDto.getClientId()).orElseThrow(
+                ()-> new EntityNotFoundException(Client.class.getSimpleName(), orderRequestDto.getClientId().toString())
+        ));
+
+        FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
+
+        order.setFoodVenue(currentFoodVenue);
+        List<OrderDetail> orderDetails = orderRequestDto.getOrderDetails()
+                .stream()
+                .map(dto -> {
+                    OrderDetail detail = orderDetailMapper.toEntity(dto);
+                    Product product = productRepository.findById(dto.getProductId())
+                            .orElseThrow(() -> new EntityNotFoundException("Poduct", dto.getProductId().toString()));
+                    detail.setProduct(product);
+                    detail.setOrder(order);
+                    detail.setQuantity(1);
+                    detail.setPrice(product.getPrice());
+                    return detail;
+                })
+                .toList();
+
+        order.setOrderDetails(orderDetails);
+        this.updateTotalPrice(order);
+        System.out.println(orderMapper.toDTO(order));
         return orderMapper.toDTO(orderRepository.save(order));
     }
 
@@ -202,7 +229,7 @@ public class OrderService implements IOrderService {
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
-        int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(UUID.randomUUID(), start, end));
+        int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(tenantContext.getCurrentFoodVenueId(), start, end));
 
         return ordersCount + 1;
     }
