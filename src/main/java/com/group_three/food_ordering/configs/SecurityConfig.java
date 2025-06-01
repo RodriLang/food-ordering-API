@@ -25,6 +25,7 @@ public class SecurityConfig {
     private final JwtUtil jwtUtil;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                    JwtUtil jwtUtil,
@@ -42,7 +43,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
 
-                    auth.requestMatchers(ApiPaths.USER_BASE).permitAll() ///  ???? jejeje los tkm
+                    auth.requestMatchers(ApiPaths.USER_BASE, "/auth/**").permitAll() ///  ???? jejeje los tkm
                             .anyRequest().authenticated();
                 })
                 .addFilter(jwtAuthenticationFilter)

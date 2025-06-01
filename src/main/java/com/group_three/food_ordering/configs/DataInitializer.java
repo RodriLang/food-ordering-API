@@ -111,7 +111,7 @@ public class DataInitializer implements CommandLineRunner {
             productRepository.saveAll(List.of(p1, p2, p3));
 
             // Users
-            User u1 = User.builder()
+            UserEntity u1 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user1@example.com")
                     .name("Leonardo")
@@ -121,7 +121,7 @@ public class DataInitializer implements CommandLineRunner {
                     .password(passwordEncoder.encode("1234"))
                     .phone("1234567890")
                     .build();
-            User u2 = User.builder()
+            UserEntity u2 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user2@example.com")
                     .name("David")
@@ -131,7 +131,7 @@ public class DataInitializer implements CommandLineRunner {
                     .password(passwordEncoder.encode("1234"))
                     .phone("1234567890")
                     .build();
-            User u3 = User.builder()
+            UserEntity u3 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user3@example.com")
                     .name("Diego")
