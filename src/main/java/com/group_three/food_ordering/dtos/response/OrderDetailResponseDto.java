@@ -1,9 +1,6 @@
 package com.group_three.food_ordering.dtos.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -20,7 +17,7 @@ public class OrderDetailResponseDto {
     private BigDecimal unitPrice;
 
     //Unit price multiplied by quantity
-    private BigDecimal totalPrice;
+    private BigDecimal subtotal;
 
     private String productName;
     private String category;

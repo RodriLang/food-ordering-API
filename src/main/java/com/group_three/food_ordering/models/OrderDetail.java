@@ -1,20 +1,19 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@ToString(exclude = "order")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "order_details")
-@SQLDelete(sql = "UPDATE order_detail SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE order_details SET deleted = true WHERE id = ?")
 public class OrderDetail {
 
     @Id
@@ -30,12 +29,12 @@ public class OrderDetail {
     @Column(length = 255)
     private String specialInstructions;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id")
     private Order order;
 
     @Column(nullable = false)
@@ -53,7 +52,5 @@ public class OrderDetail {
     @PreUpdate
     public void onUpdate() {
         if (this.quantity == null) this.quantity = 1;
-        if (this.price == null) {
-            this.price = this.product.getPrice().multiply(BigDecimal.valueOf(quantity));
-        }    }
+    }
 }

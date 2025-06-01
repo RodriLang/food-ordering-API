@@ -9,13 +9,15 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {OrderDetailMapper.class})
 public interface OrderMapper {
 
     @Mapping(source = "orderNumber",
             target = "formattedOrderNumber",
             qualifiedByName = "formatOrderNumber")
     @Mapping(source = "client.nickname", target = "clientAlias")
+    @Mapping(source = "orderDetails", target = "orderDetails")
+
     OrderResponseDto toDTO(Order order);
 
     Order toEntity(OrderRequestDto orderDTO);

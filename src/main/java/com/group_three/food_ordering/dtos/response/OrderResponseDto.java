@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -18,6 +19,8 @@ public class OrderResponseDto {
     private String specialRequirements;
 
     private String clientAlias;
+
+    private BigDecimal totalPrice;
 
     private List<OrderDetailResponseDto> orderDetails;
 
