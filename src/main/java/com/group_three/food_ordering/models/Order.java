@@ -4,10 +4,7 @@ import com.group_three.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
@@ -21,7 +18,10 @@ import java.util.UUID;
 @Entity
 @Table(name = "orders")
 @SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString(exclude = "foodVenue")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -63,7 +63,7 @@ public class Order {
     @JoinColumn(name = "table_session_id")
     private TableSession tableSession;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
     @PrePersist

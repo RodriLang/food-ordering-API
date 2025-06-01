@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dtos.response.PaymentResponseDto;
 import com.group_three.food_ordering.dtos.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.services.interfaces.IPaymentService;
+import com.group_three.food_ordering.utils.constants.ApiDocConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,8 +31,8 @@ public class PaymentController {
     @PostMapping
     public ResponseEntity<PaymentResponseDto> createPayment(
             @RequestBody @Valid PaymentRequestDto dto) {
-        PaymentResponseDto response = paymentService.create(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        PaymentResponseDto createdPayment = paymentService.create(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
     }
 
     @Operation(summary = "Obtener todos los pagos")
@@ -60,13 +61,28 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Actualizar el estado de un pago")
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<PaymentResponseDto> updatePaymentStatus(
+
+    @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
+            description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
+    )
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<PaymentResponseDto> cancelPayment(
             @Parameter(description = "ID del pago", required = true)
-            @PathVariable UUID id,
-            @RequestParam PaymentStatus status) {
-        PaymentResponseDto response = paymentService.updateStatus(id, status);
+            @PathVariable UUID id) {
+        PaymentResponseDto response = paymentService.updateStatus(id, PaymentStatus.CANCELLED);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
+            description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
+    )
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<PaymentResponseDto> completePayment(
+            @Parameter(description = "ID del pago", required = true)
+            @PathVariable UUID id) {
+        PaymentResponseDto response = paymentService.updateStatus(id, PaymentStatus.COMPLETED);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

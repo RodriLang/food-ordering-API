@@ -38,6 +38,11 @@ public class OrderDetailService implements IOrderDetailService {
     @Transactional
     @Override
     public OrderDetailResponseDto create(UUID orderId, OrderDetailRequestDto orderDetailRequestDto) {
+
+        return orderDetailMapper.toDTO(this.createInternal(orderId, orderDetailRequestDto));
+    }
+
+    public OrderDetail createInternal(UUID orderId, OrderDetailRequestDto orderDetailRequestDto) {
         Order existingOrder = orderService.getEntityById(orderId);
 
         Product product = productRepository.findById(orderDetailRequestDto.getProductId())
@@ -49,13 +54,14 @@ public class OrderDetailService implements IOrderDetailService {
         orderDetail.setProduct(product);
         orderDetail.setOrder(existingOrder);
 
-        OrderDetail saved = orderDetailRepository.save(orderDetail);
 
-        // Asociar el detalle a la orden (según tu lógica en orderService)
+        // Asociar el detalle a la Order
         orderService.addOrderDetailToOrder(existingOrder.getId(), orderDetail);
 
-        return orderDetailMapper.toDTO(saved);
+        return orderDetailRepository.save(orderDetail);
     }
+
+
 
     @Override
     public List<OrderDetailResponseDto> getAll() {

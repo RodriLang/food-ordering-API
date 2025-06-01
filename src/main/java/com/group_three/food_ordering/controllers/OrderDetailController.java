@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,8 +47,8 @@ public class OrderDetailController {
             @PathVariable UUID orderId,
             @Parameter(description = "Detalle de la orden a crear", required = true)
             @Valid @RequestBody OrderDetailRequestDto orderDetailRequestDto) {
-        OrderDetailResponseDto createdOrderDetail = orderDetailService.create(orderId, orderDetailRequestDto);
-        return ResponseEntity.ok(createdOrderDetail);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                orderDetailService.create(orderId, orderDetailRequestDto));
     }
 
     @Operation(summary = "Obtener detalles de una orden", description = "Obtiene la lista de todos los detalles asociados a una orden específica.")
@@ -60,8 +61,7 @@ public class OrderDetailController {
     public ResponseEntity<List<OrderDetailResponseDto>> getOrderDetailsByOrderId(
             @Parameter(description = "UUID de la orden a consultar", required = true)
             @PathVariable UUID orderId) {
-        List<OrderDetailResponseDto> orderDetails = orderDetailService.getOrderDetailsByOrderId(orderId);
-        return ResponseEntity.ok(orderDetails);
+        return ResponseEntity.ok(orderDetailService.getOrderDetailsByOrderId(orderId));
     }
 
     @Operation(summary = "Eliminar un detalle de una orden (borrado lógico)", description = "Realiza un borrado lógico de un detalle específico de una orden, marcándolo como inactivo.")
