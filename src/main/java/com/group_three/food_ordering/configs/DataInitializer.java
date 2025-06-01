@@ -5,9 +5,11 @@ import com.group_three.food_ordering.enums.*;
 import com.group_three.food_ordering.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +30,13 @@ public class DataInitializer implements CommandLineRunner {
     private final IOrderDetailRepository orderDetailRepository;
     private final IPaymentRepository paymentRepository;
 
+    private final IUserRepository userRepository;
+    private final IEmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) throws Exception {
+        initializeUsers();
         // Categories
         if (categoryRepository.count() == 0) {
             Category drinks = Category.builder().name("Drinks").build();
@@ -211,7 +218,93 @@ public class DataInitializer implements CommandLineRunner {
             pay1.setAmount(total);
             paymentRepository.save(pay1);
 
+
+
+
             System.out.println("✅ Initialized sample data.");
+        }
+    }
+
+    private void initializeUsers() {
+        if (userRepository.count() == 0) {
+            System.out.println("🚀 Creando usuarios de desarrollo...");
+
+            // Admin/Super Admin
+            UserEntity admin = UserEntity.builder()
+                    .name("Admin")
+                    .lastName("System")
+                    .email("admin@test.com")
+                    .password(passwordEncoder.encode("admin123"))
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .phone("1111111111")
+                    .createdAt(LocalDateTime.now())
+                    .role(RoleType.ROLE_ADMIN)
+                    .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
+                    .build();
+
+            // Manager
+            UserEntity manager = UserEntity.builder()
+                    .name("Manager")
+                    .lastName("Restaurant")
+                    .email("manager@test.com")
+                    .password(passwordEncoder.encode("manager123"))
+                    .birthDate(LocalDate.of(1985, 5, 15))
+                    .phone("2222222222")
+                    .createdAt(LocalDateTime.now())
+                    .role(RoleType.ROLE_STAFF)
+                    .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
+                    .build();
+
+            // Employee
+            UserEntity employee = UserEntity.builder()
+                    .name("Employee")
+                    .lastName("Waiter")
+                    .email("employee@test.com")
+                    .password(passwordEncoder.encode("employee123"))
+                    .birthDate(LocalDate.of(1995, 8, 20))
+                    .phone("3333333333")
+                    .createdAt(LocalDateTime.now())
+                    .role(RoleType.ROLE_STAFF)
+                    .address(new Address("Employee St", "3", "Work City", "Work Province", "Work Country", "2222"))
+                    .build();
+
+            // Client
+            UserEntity client = UserEntity.builder()
+                    .name("Client")
+                    .lastName("Customer")
+                    .email("client@test.com")
+                    .password(passwordEncoder.encode("client123"))
+                    .birthDate(LocalDate.of(2000, 12, 10))
+                    .phone("4444444444")
+                    .createdAt(LocalDateTime.now())
+                    .role(RoleType.ROLE_CLIENT)
+                    .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
+                    .build();
+
+            // Usuario de prueba general
+            UserEntity testUser = UserEntity.builder()
+                    .name("Test")
+                    .lastName("User")
+                    .email("test@test.com")
+                    .password(passwordEncoder.encode("test123"))
+                    .birthDate(LocalDate.of(1992, 6, 15))
+                    .phone("5555555555")
+                    .createdAt(LocalDateTime.now())
+                    .role(RoleType.ROLE_GUEST)
+                    .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
+                    .build();
+
+            userRepository.saveAll(List.of(admin, manager, employee, client, testUser));
+
+            System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
+            System.out.println("🔑 Admin: admin@test.com / admin123");
+            System.out.println("👔 Manager: manager@test.com / manager123");
+            System.out.println("👨‍💼 Employee: employee@test.com / employee123");
+            System.out.println("👤 Client: client@test.com / client123");
+            System.out.println("🧪 Test: test@test.com / test123");
+            System.out.println("=====================================");
+        } else {
+            System.out.println("👥 Usuarios ya existen en la base de datos");
         }
     }
 }

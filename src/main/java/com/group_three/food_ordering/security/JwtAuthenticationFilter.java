@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 
@@ -60,15 +61,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws ServletException, IOException {
 
-        UserEntity user = (UserEntity) authResult.getPrincipal();
-        String token = jwtUtil.generateToken(user.getEmail());
+       User user = (User) authResult.getPrincipal();
+       // UserEntity user = (UserEntity) authResult.getPrincipal();
+        String token = jwtUtil.generateToken(user.getUsername());
 
         response.addHeader("Authorization", token);
 
         Map<String,Object> httpResponse = new HashMap<>();
         httpResponse.put("token", token);
         httpResponse.put("Message", "Authentication successful");
-        httpResponse.put("username", user.getEmail());
+        httpResponse.put("username", user.getUsername());
 
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));

@@ -36,7 +36,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 true,
                 true,
                 authorities);
-
     }
 
 }

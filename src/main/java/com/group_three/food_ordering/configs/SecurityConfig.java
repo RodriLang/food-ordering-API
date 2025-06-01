@@ -6,6 +6,7 @@ import com.group_three.food_ordering.security.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,14 +36,15 @@ public class SecurityConfig {
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(
                 httpSecurity.getSharedObject(AuthenticationConfiguration.class)));
 
-       // jwtAuthenticationFilter.setFilterProcessesUrl("/auth/login");
+        jwtAuthenticationFilter.setFilterProcessesUrl(ApiPaths.AUTH_URI+"/login");
 
 
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
 
-                    auth.requestMatchers(ApiPaths.USER_BASE).permitAll() ///  ???? jejeje los tkm
+                    auth.requestMatchers(ApiPaths.AUTH_URI+"/login").permitAll()
+                            .requestMatchers(HttpMethod.GET,ApiPaths.PRODUCT_BASE).permitAll()///  ???? jejeje los tkm
                             .anyRequest().authenticated();
                 })
                 .addFilter(jwtAuthenticationFilter)
