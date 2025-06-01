@@ -11,13 +11,13 @@ import java.util.UUID;
 @Repository
 public interface IEmployeeRepository extends JpaRepository<Employee, UUID> {
 
-    Optional<Employee> findByUser_Email(String email);
+    Optional<Employee> findByUserEntity_Email(String email);
 
-    boolean existsByUser_Email(String email);
+    boolean existsByUserEntity_Email(String email);
 
-    List<Employee> findAllByUser_RemovedAtIsNull();
+    List<Employee> findAllByUserEntity_RemovedAtIsNull();
 
-    Optional<Employee> findByIdAndUser_RemovedAtIsNull(UUID id);
+    Optional<Employee> findByIdAndUserEntity_RemovedAtIsNull(UUID id);
 
     List<Employee> findAllByFoodVenue_Id(UUID foodVenueId);
 }

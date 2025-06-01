@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
+
 import com.group_three.food_ordering.dtos.create.LoginRequest;
-import com.group_three.food_ordering.models.UserEntity;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.security.JwtUtil;
 import com.group_three.food_ordering.services.impl.AuthService;
@@ -26,11 +26,11 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-/*
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
-    }*/
+    }
 
   /*  @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
@@ -38,17 +38,17 @@ public class AuthController {
             return ResponseEntity.badRequest().body("El usuario ya existe.");
         }
 
-        UserEntity user = new UserEntity();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER); // o request.getRole()
-        userRepository.save(user);
+        UserEntity userEntity = new UserEntity();
+        userEntity.setEmail(request.getEmail());
+        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
+        userEntity.setRole(Role.USER); // o request.getRole()
+        userRepository.save(userEntity);
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(userEntity.getEmail());
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "message", "Registro exitoso",
-                "username", user.getEmail()
+                "username", userEntity.getEmail()
         ));
     }*/
 

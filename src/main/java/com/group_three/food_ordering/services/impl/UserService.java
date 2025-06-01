@@ -7,7 +7,7 @@ import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.UserNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
-import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.models.UserEntity;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IUserService;
 
@@ -34,18 +34,18 @@ public class UserService implements IUserService {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        User user = userMapper.toEntity(dto);
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setCreatedAt(LocalDateTime.now());
+        UserEntity userEntity = userMapper.toEntity(dto);
+        userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userEntity.setCreatedAt(LocalDateTime.now());
 
-        return userMapper.toResponseDto(userRepository.save(user));
+        return userMapper.toResponseDto(userRepository.save(userEntity));
     }
 
     @Override
     public UserResponseDto getById(UUID id) {
-        User user = userRepository.findByIdAndRemovedAtIsNull(id)
+        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
-        return userMapper.toResponseDto(user);
+        return userMapper.toResponseDto(userEntity);
     }
 
     @Override
@@ -74,32 +74,32 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
-        User user = userRepository.findByIdAndRemovedAtIsNull(id)
+        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        if (!user.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
+        if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        userMapper.updateEntity(dto, user);
+        userMapper.updateEntity(dto, userEntity);
 
         if (dto.getAddress() != null) {
-            if (user.getAddress() == null) {
-                user.setAddress(addressMapper.toEntity(dto.getAddress()));
+            if (userEntity.getAddress() == null) {
+                userEntity.setAddress(addressMapper.toEntity(dto.getAddress()));
             } else {
-                addressMapper.updateEntity(dto.getAddress(), user.getAddress());
+                addressMapper.updateEntity(dto.getAddress(), userEntity.getAddress());
             }
         }
 
-        return userMapper.toResponseDto(userRepository.save(user));
+        return userMapper.toResponseDto(userRepository.save(userEntity));
     }
 
     @Override
     public void delete(UUID id) {
-        User user = userRepository.findByIdAndRemovedAtIsNull(id)
+        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
-        user.setRemovedAt(LocalDateTime.now());
-        userRepository.save(user);
+        userEntity.setRemovedAt(LocalDateTime.now());
+        userRepository.save(userEntity);
     }
 }

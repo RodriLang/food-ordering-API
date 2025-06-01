@@ -32,9 +32,8 @@ public class DataInitializer implements CommandLineRunner {
     private final IPaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
 
-    private final IUserRepository userRepository;
+
     private final IEmployeeRepository employeeRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
@@ -116,7 +115,7 @@ public class DataInitializer implements CommandLineRunner {
             productRepository.saveAll(List.of(p1, p2, p3));
 
             // Users
-            User u1 = User.builder()
+            UserEntity u1 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user1@example.com")
                     .name("Leonardo")
@@ -126,7 +125,7 @@ public class DataInitializer implements CommandLineRunner {
                     .password(passwordEncoder.encode("1234"))
                     .phone("1234567890")
                     .build();
-            User u2 = User.builder()
+            UserEntity u2 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user2@example.com")
                     .name("David")
@@ -136,7 +135,7 @@ public class DataInitializer implements CommandLineRunner {
                     .password(passwordEncoder.encode("1234"))
                     .phone("1234567890")
                     .build();
-            User u3 = User.builder()
+            UserEntity u3 = UserEntity.builder()
                     .role(RoleType.ROLE_CLIENT)
                     .email("user3@example.com")
                     .name("Diego")
@@ -152,14 +151,14 @@ public class DataInitializer implements CommandLineRunner {
             // Clients
             Client c1 = Client.builder()
                     .nickname(u1.getName())
-                    .user(u1)
+                    .userEntity(u1)
                     .build();
             Client c2 = Client.builder()
                     .nickname("Frank")
                     .build();
             Client c3 = Client.builder()
                     .nickname(u2.getName())
-                    .user(u2)
+                    .userEntity(u2)
                     .build();
             clientRepository.saveAll(List.of(c1, c2, c3));
 
@@ -320,9 +319,9 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             // Usuario de prueba general
-            UserEntity testUser = UserEntity.builder()
+            UserEntity testUserEntity = UserEntity.builder()
                     .name("Test")
-                    .lastName("User")
+                    .lastName("UserEntity")
                     .email("test@test.com")
                     .password(passwordEncoder.encode("test123"))
                     .birthDate(LocalDate.of(1992, 6, 15))
@@ -332,7 +331,7 @@ public class DataInitializer implements CommandLineRunner {
                     .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
                     .build();
 
-            userRepository.saveAll(List.of(admin, manager, employee, client, testUser));
+            userRepository.saveAll(List.of(admin, manager, employee, client, testUserEntity));
 
             System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
             System.out.println("🔑 Admin: admin@test.com / admin123");

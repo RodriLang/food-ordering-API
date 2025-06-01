@@ -36,15 +36,15 @@ public class SecurityConfig {
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(
                 httpSecurity.getSharedObject(AuthenticationConfiguration.class)));
 
-        jwtAuthenticationFilter.setFilterProcessesUrl(ApiPaths.AUTH_URI+"/login");
+        //jwtAuthenticationFilter.setFilterProcessesUrl(ApiPaths.AUTH_URI+"/login");
 
 
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
 
-                    auth.requestMatchers(ApiPaths.AUTH_URI+"/login").permitAll()
-                            .requestMatchers(HttpMethod.GET,ApiPaths.PRODUCT_BASE).permitAll()///  ???? jejeje los tkm
+                    auth.requestMatchers(ApiPaths.AUTH_URI+"/login",
+                                    ApiPaths.PRODUCT_BASE).permitAll()///  ???? jejeje los tkm
                             .anyRequest().authenticated();
                 })
                 .addFilter(jwtAuthenticationFilter)

@@ -19,7 +19,7 @@ public class Client {
 
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
-    private User user;
+    private UserEntity userEntity;
 
     @Column(nullable = false, unique = true)
     private String nickname;

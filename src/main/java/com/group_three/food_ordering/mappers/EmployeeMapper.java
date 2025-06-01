@@ -7,7 +7,7 @@ import com.group_three.food_ordering.dtos.response.UserResponseDto;
 import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
 import com.group_three.food_ordering.dtos.update.UserUpdateDto;
 import com.group_three.food_ordering.models.Employee;
-import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.models.UserEntity;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
@@ -15,18 +15,18 @@ public interface EmployeeMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "removedAt", ignore = true)
-    User toUser(UserCreateDto dto);
+    UserEntity toUser(UserCreateDto dto);
 
-    UserResponseDto toUserResponse(User user);
+    UserResponseDto toUserResponse(UserEntity userEntity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateUserFromDto(UserUpdateDto dto, @MappingTarget User user);
+    void updateUserFromDto(UserUpdateDto dto, @MappingTarget UserEntity userEntity);
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "userEntity", ignore = true)
     @Mapping(target = "foodVenue", ignore = true)
     Employee toEmployee(EmployeeCreateDto dto);
 
-    @Mapping(source = "user", target = "user")
+    @Mapping(source = "userEntity", target = "user")
     @Mapping(source = "foodVenue.name", target = "foodVenueName")
     EmployeeResponseDto toResponseDto(Employee employee);
 

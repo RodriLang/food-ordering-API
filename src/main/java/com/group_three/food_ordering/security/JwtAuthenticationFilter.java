@@ -14,6 +14,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
@@ -34,14 +35,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
-        UserEntity user = null;
+        UserEntity userEntity = null;
         String username="";
         String password="";
 
         try {
-            user = new ObjectMapper().readValue(request.getInputStream(), UserEntity.class);
-            username=user.getEmail();
-            password=user.getPassword();
+            userEntity = new ObjectMapper().readValue(request.getInputStream(), UserEntity.class);
+            username= userEntity.getEmail();
+            password= userEntity.getPassword();
 
         } catch (DatabindException e) {
             throw new RuntimeException(e);
@@ -61,16 +62,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws ServletException, IOException {
 
-       User user = (User) authResult.getPrincipal();
-       // UserEntity user = (UserEntity) authResult.getPrincipal();
+
+       User user = (User)authResult.getPrincipal();
+       // UserEntity userEntity = (UserEntity) authResult.getPrincipal();
         String token = jwtUtil.generateToken(user.getUsername());
 
         response.addHeader("Authorization", token);
-
         Map<String,Object> httpResponse = new HashMap<>();
         httpResponse.put("token", token);
         httpResponse.put("Message", "Authentication successful");
         httpResponse.put("username", user.getUsername());
+
 
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
