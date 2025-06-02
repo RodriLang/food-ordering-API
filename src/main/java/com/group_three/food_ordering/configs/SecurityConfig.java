@@ -35,7 +35,7 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(ApiPaths.AUTH_URI + "/login", ApiPaths.PRODUCT_BASE).permitAll()
+                        .requestMatchers(ApiPaths.AUTH_URI + "/login-employee", ApiPaths.PRODUCT_BASE).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilter(jwtAuthenticationFilter)
