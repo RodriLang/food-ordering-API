@@ -5,6 +5,7 @@ import com.group_three.food_ordering.dtos.create.UserCreateDto;
 import com.group_three.food_ordering.dtos.response.EmployeeResponseDto;
 import com.group_three.food_ordering.dtos.response.UserResponseDto;
 import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
+import com.group_three.food_ordering.dtos.update.UserPatchDto;
 import com.group_three.food_ordering.dtos.update.UserUpdateDto;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.UserEntity;
@@ -32,4 +33,7 @@ public interface EmployeeMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEmployeeFromDto(EmployeeUpdateDto dto, @MappingTarget Employee employee);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateUserFromPatchDto(UserPatchDto dto, @MappingTarget UserEntity userEntity);
 }

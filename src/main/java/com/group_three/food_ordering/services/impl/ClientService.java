@@ -187,19 +187,4 @@ public class ClientService implements IClientService {
         Client updated = clientRepository.save(client);
         return clientMapper.toResponseDto(updated);
     }
-
-    @Override
-    public List<ClientResponseDto> getActiveClients() {
-        return clientRepository.findAllByUserEntity_RemovedAtIsNull().stream()
-                .map(clientMapper::toResponseDto)
-                .toList();
-    }
-
-    @Override
-    public List<ClientResponseDto> getDeletedClients() {
-        return clientRepository.findAll().stream()
-                .filter(c -> c.getUserEntity() != null && c.getUserEntity().getRemovedAt() != null)
-                .map(clientMapper::toResponseDto)
-                .toList();
-    }
 }

@@ -27,7 +27,4 @@ public interface IClientService {
 
     ClientResponseDto partialUpdate(UUID id, ClientPatchDto dto);
 
-    List<ClientResponseDto> getActiveClients();
-
-    List<ClientResponseDto> getDeletedClients();
 }

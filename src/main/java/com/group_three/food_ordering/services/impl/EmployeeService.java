@@ -1,0 +1,130 @@
+package com.group_three.food_ordering.services.impl;
+
+import com.group_three.food_ordering.dtos.create.EmployeeCreateDto;
+import com.group_three.food_ordering.dtos.response.EmployeeResponseDto;
+import com.group_three.food_ordering.dtos.update.EmployeePatchDto;
+import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
+import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
+import com.group_three.food_ordering.exceptions.EmployeeNotFoundException;
+import com.group_three.food_ordering.mappers.EmployeeMapper;
+import com.group_three.food_ordering.models.Employee;
+import com.group_three.food_ordering.models.FoodVenue;
+import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.repositories.IEmployeeRepository;
+import com.group_three.food_ordering.repositories.IFoodVenueRepository;
+import com.group_three.food_ordering.services.interfaces.IEmployeeService;
+import com.group_three.food_ordering.services.interfaces.IUserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class EmployeeService implements IEmployeeService {
+
+    private final IEmployeeRepository employeeRepository;
+    private final IFoodVenueRepository foodVenueRepository;
+    private final IUserService userService;
+    private final EmployeeMapper employeeMapper;
+
+    @Override
+    public EmployeeResponseDto create(EmployeeCreateDto dto) {
+        Employee employee = employeeMapper.toEmployee(dto);
+
+        // Validar que se proporcione un User embebido
+        if (dto.getUser() == null) {
+            throw new IllegalArgumentException("A full User must be provided to create an Employee.");
+        }
+
+        // Validar duplicación de email
+        if (userService.getAll().stream().anyMatch(u -> u.getEmail().equals(dto.getUser().getEmail()))) {
+            throw new EmailAlreadyUsedException(dto.getUser().getEmail());
+        }
+
+        // Asignar automáticamente el rol STAFF
+        dto.getUser().setRole(RoleType.ROLE_STAFF);
+        UserEntity userEntity = userService.createIfPresent(dto.getUser());
+
+        // Asignar usuario
+        employee.setUserEntity(userEntity);
+
+        // Asignar local gastronómico
+        FoodVenue foodVenue = foodVenueRepository.findById(dto.getFoodVenueId())
+                .orElseThrow(() -> new IllegalArgumentException("Food venue not found with ID: " + dto.getFoodVenueId()));
+        employee.setFoodVenue(foodVenue);
+
+        // Guardar y retornar
+        Employee saved = employeeRepository.save(employee);
+        return employeeMapper.toResponseDto(saved);
+    }
+
+    @Override
+    public List<EmployeeResponseDto> getAll() {
+        return employeeRepository.findAll().stream()
+                .map(employeeMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public EmployeeResponseDto getById(UUID id) {
+        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+        return employeeMapper.toResponseDto(employee);
+    }
+
+    @Override
+    public void delete(UUID id) {
+        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+        employee.getUserEntity().setRemovedAt(LocalDateTime.now());
+        userService.delete(employee.getUserEntity().getId());
+    }
+
+    @Override
+    public EmployeeResponseDto update(UUID id, EmployeeUpdateDto dto) {
+        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+        // Actualizar campos del employee y del user
+        employeeMapper.updateEmployeeFromDto(dto, employee);
+        employeeMapper.updateUserFromDto(dto.getUser(), employee.getUserEntity());
+
+        Employee updated = employeeRepository.save(employee);
+        return employeeMapper.toResponseDto(updated);
+    }
+
+    @Override
+    public Employee getEntityById(UUID id) {
+        return employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+    }
+
+    @Override
+    public EmployeeResponseDto replace(UUID id, EmployeeUpdateDto dto) {
+        return update(id, dto); // misma lógica que update
+    }
+
+    @Override
+    public EmployeeResponseDto partialUpdate(UUID id, EmployeePatchDto dto) {
+        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+        // Solo actualizar lo que viene no nulo
+        if (dto.getPosition() != null) {
+            employee.setPosition(dto.getPosition());
+        }
+
+        if (dto.getUser() != null) {
+            employeeMapper.updateUserFromPatchDto(dto.getUser(), employee.getUserEntity());
+        }
+
+        Employee updated = employeeRepository.save(employee);
+        return employeeMapper.toResponseDto(updated);
+    }
+}
