@@ -52,5 +52,4 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
-
 }

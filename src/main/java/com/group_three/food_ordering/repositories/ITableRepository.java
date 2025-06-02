@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ITableRepository extends JpaRepository<Table, Long> {
+public interface ITableRepository extends JpaRepository<Table, UUID> {
 
     List<Table> findByFoodVenueId(UUID foodVenueId);
     Optional<Table> findByFoodVenueIdAndId(UUID foodVenueId, UUID id);

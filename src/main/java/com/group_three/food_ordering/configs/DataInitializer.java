@@ -18,7 +18,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
- 
+
     private final ICategoryRepository categoryRepository;
     private final ITagRepository tagRepository;
     private final IFoodVenueRepository foodVenueRepository;
@@ -294,6 +294,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // Employee
             UserEntity employee = UserEntity.builder()
+
                     .name("Employee")
                     .lastName("Waiter")
                     .email("employee@test.com")
