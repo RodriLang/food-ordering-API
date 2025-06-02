@@ -45,7 +45,6 @@ public class UserCreateDto {
     @Size(max = 20, message = "Phone number cannot exceed 20 characters")
     private String phone;
 
-    @NotNull(message = "Role is required")
     private RoleType role;
 
 }

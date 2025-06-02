@@ -10,7 +10,6 @@ import com.group_three.food_ordering.mappers.UserMapper;
 import com.group_three.food_ordering.models.UserEntity;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IUserService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,20 @@ public class UserService implements IUserService {
         userEntity.setCreatedAt(LocalDateTime.now());
 
         return userMapper.toResponseDto(userRepository.save(userEntity));
+    }
+
+    public UserEntity createIfPresent(UserCreateDto dto) {
+        if (dto == null) return null;
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new EmailAlreadyUsedException(dto.getEmail());
+        }
+
+        UserEntity userEntity = userMapper.toEntity(dto);
+        userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
+        userEntity.setCreatedAt(LocalDateTime.now());
+
+        return userRepository.save(userEntity);
     }
 
     @Override
@@ -101,5 +114,11 @@ public class UserService implements IUserService {
 
         userEntity.setRemovedAt(LocalDateTime.now());
         userRepository.save(userEntity);
+    }
+
+    @Override
+    public UserEntity getEntityById(UUID id) {
+        return userRepository.findByIdAndRemovedAtIsNull(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 }

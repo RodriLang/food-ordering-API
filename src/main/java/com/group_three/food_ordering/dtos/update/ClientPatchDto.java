@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.dtos.update;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -9,8 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientUpdateDto {
+public class ClientPatchDto {
 
     @Valid
-    private UserUpdateDto user;
+    private UserPatchDto user;
 }
