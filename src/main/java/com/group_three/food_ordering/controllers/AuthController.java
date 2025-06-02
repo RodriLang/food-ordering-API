@@ -21,10 +21,6 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
-    private final IUserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-
 
     @PostMapping("/login-employee")
     public ResponseEntity<AuthResponse> loginEmployee(@RequestBody LoginRequest request) {
@@ -35,24 +31,4 @@ public class AuthController {
     public ResponseEntity<AuthResponse> loginClient(@RequestBody LoginRequest request, @RequestParam UUID tableId) {
         return ResponseEntity.ok(authService.loginClient(request, tableId));
     }
-  /*  @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("El usuario ya existe.");
-        }
-
-        UserEntity userEntity = new UserEntity();
-        userEntity.setEmail(request.getEmail());
-        userEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-        userEntity.setRole(Role.USER); // o request.getRole()
-        userRepository.save(userEntity);
-
-        String token = jwtUtil.generateToken(userEntity.getEmail());
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "message", "Registro exitoso",
-                "username", userEntity.getEmail()
-        ));
-    }*/
-
 }

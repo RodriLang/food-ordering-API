@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,7 +22,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity =  userRepository.findByEmail(username)
+        User userEntity =  userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("No se ha encontrado el usuario: " + username));
 
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userEntity.getRole().name());

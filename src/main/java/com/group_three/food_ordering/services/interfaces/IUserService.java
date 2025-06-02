@@ -3,7 +3,7 @@ package com.group_three.food_ordering.services.interfaces;
 import com.group_three.food_ordering.dtos.create.UserCreateDto;
 import com.group_three.food_ordering.dtos.update.UserUpdateDto;
 import com.group_three.food_ordering.dtos.response.UserResponseDto;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +24,7 @@ public interface IUserService {
 
     void delete(UUID id);
 
-    UserEntity getEntityById(UUID id);
+    User getEntityById(UUID id);
 
-    UserEntity createIfPresent(UserCreateDto dto);
+    User createIfPresent(UserCreateDto dto);
 }

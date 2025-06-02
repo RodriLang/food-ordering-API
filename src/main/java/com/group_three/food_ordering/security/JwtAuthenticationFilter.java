@@ -2,7 +2,7 @@ package com.group_three.food_ordering.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group_three.food_ordering.models.Employee;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,9 +34,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             throws AuthenticationException {
 
         try {
-            UserEntity userEntity = new ObjectMapper().readValue(request.getInputStream(), UserEntity.class);
-            String username = userEntity.getEmail();
-            String password = userEntity.getPassword();
+            User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
+            String username = user.getEmail();
+            String password = user.getPassword();
 
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(username, password);
@@ -54,11 +54,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain,
                                             Authentication authResult) throws IOException {
 
-
-
         Employee employee = (Employee) authResult.getPrincipal();
-        /*User user = (User) authResult.getPrincipal();*/
-        String token = jwtUtil.generateToken(employee.getUserEntity().getEmail(), employee.getFoodVenue().getId(), employee.getUserEntity().getRole());
+
+        String token = jwtUtil.generateToken(employee.getUser().getEmail(), employee.getFoodVenue().getId(), employee.getUser().getRole());
 
         response.setStatus(HttpStatus.OK.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -67,7 +65,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String, Object> httpResponse = new HashMap<>();
         httpResponse.put("token", token);
         httpResponse.put("message", "Authentication successful");
-        httpResponse.put("username", employee.getUserEntity().getEmail());
+        httpResponse.put("username", employee.getUser().getEmail());
 
         response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
         response.getWriter().flush();

@@ -11,14 +11,14 @@ import java.util.UUID;
 @Repository
 public interface IClientRepository extends JpaRepository<Client, UUID> {
 
-    Optional<Client> findByUserEntity_Email(String email);
+    Optional<Client> findByUser_Email(String email);
 
-    boolean existsByUserEntity_Email(String email);
+    boolean existsByUser_Email(String email);
 
     boolean existsByNickname(String nickname);
 
-    List<Client> findAllByUserEntity_RemovedAtIsNull();
+    List<Client> findAllByUser_RemovedAtIsNull();
 
-    Optional<Client> findByIdAndUserEntity_RemovedAtIsNull(UUID id);
+    Optional<Client> findByIdAndUser_RemovedAtIsNull(UUID id);
 }
 

@@ -6,15 +6,12 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.Client;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.Table;
-import com.group_three.food_ordering.models.UserEntity;
 import com.group_three.food_ordering.repositories.IClientRepository;
 import com.group_three.food_ordering.repositories.IEmployeeRepository;
 import com.group_three.food_ordering.repositories.ITableRepository;
-import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,28 +40,28 @@ public class AuthService {
     }*/
 
     public AuthResponse loginEmployee(LoginRequest request) {
-        Employee employee = employeeRepository.findByUserEntity_Email(request.getEmail())
+        Employee employee = employeeRepository.findByUser_Email(request.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
 
-        if (!passwordEncoder.matches(request.getPassword(), employee.getUserEntity().getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), employee.getUser().getPassword())) {
             throw new BadCredentialsException("Credenciales inválidas");
         }
-        String token = jwtUtil.generateToken(employee.getUserEntity().getEmail(), employee.getFoodVenue().getId(), employee.getUserEntity().getRole());
+        String token = jwtUtil.generateToken(employee.getUser().getEmail(), employee.getFoodVenue().getId(), employee.getUser().getRole());
 
         return new AuthResponse(token);
     }
 
     public AuthResponse loginClient(LoginRequest request, UUID tableId) {
-        Client client = clientRepository.findByUserEntity_Email(request.getEmail())
+        Client client = clientRepository.findByUser_Email(request.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
 
         Table table = tableRepository.findById(tableId)
                 .orElseThrow(() -> new EntityNotFoundException("Tabla no encontrada"));
 
-        if (!passwordEncoder.matches(request.getPassword(), client.getUserEntity().getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), client.getUser().getPassword())) {
             throw new BadCredentialsException("Credenciales inválidas");
         }
-        String token = jwtUtil.generateToken(client.getUserEntity().getEmail(), table.getFoodVenue().getId(), client.getUserEntity().getRole());
+        String token = jwtUtil.generateToken(client.getUser().getEmail(), table.getFoodVenue().getId(), client.getUser().getRole());
 
         return new AuthResponse(token);
     }

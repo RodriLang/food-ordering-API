@@ -10,7 +10,7 @@ import com.group_three.food_ordering.exceptions.EmployeeNotFoundException;
 import com.group_three.food_ordering.mappers.EmployeeMapper;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IEmployeeRepository;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
 import com.group_three.food_ordering.services.interfaces.IEmployeeService;
@@ -48,10 +48,10 @@ public class EmployeeService implements IEmployeeService {
 
         // Asignar automáticamente el rol STAFF
         dto.getUser().setRole(RoleType.ROLE_STAFF);
-        UserEntity userEntity = userService.createIfPresent(dto.getUser());
+        User user = userService.createIfPresent(dto.getUser());
 
         // Asignar usuario
-        employee.setUserEntity(userEntity);
+        employee.setUser(user);
 
         // Asignar local gastronómico
         FoodVenue foodVenue = foodVenueRepository.findById(dto.getFoodVenueId())
@@ -72,28 +72,28 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto getById(UUID id) {
-        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
         return employeeMapper.toResponseDto(employee);
     }
 
     @Override
     public void delete(UUID id) {
-        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
-        employee.getUserEntity().setRemovedAt(LocalDateTime.now());
-        userService.delete(employee.getUserEntity().getId());
+        employee.getUser().setRemovedAt(LocalDateTime.now());
+        userService.delete(employee.getUser().getId());
     }
 
     @Override
     public EmployeeResponseDto update(UUID id, EmployeeUpdateDto dto) {
-        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
         // Actualizar campos del employee y del user
         employeeMapper.updateEmployeeFromDto(dto, employee);
-        employeeMapper.updateUserFromDto(dto.getUser(), employee.getUserEntity());
+        employeeMapper.updateUserFromDto(dto.getUser(), employee.getUser());
 
         Employee updated = employeeRepository.save(employee);
         return employeeMapper.toResponseDto(updated);
@@ -101,7 +101,7 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public Employee getEntityById(UUID id) {
-        return employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+        return employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
     }
 
@@ -112,7 +112,7 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto partialUpdate(UUID id, EmployeePatchDto dto) {
-        Employee employee = employeeRepository.findByIdAndUserEntity_RemovedAtIsNull(id)
+        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
         // Solo actualizar lo que viene no nulo
@@ -121,7 +121,7 @@ public class EmployeeService implements IEmployeeService {
         }
 
         if (dto.getUser() != null) {
-            employeeMapper.updateUserFromPatchDto(dto.getUser(), employee.getUserEntity());
+            employeeMapper.updateUserFromPatchDto(dto.getUser(), employee.getUser());
         }
 
         Employee updated = employeeRepository.save(employee);

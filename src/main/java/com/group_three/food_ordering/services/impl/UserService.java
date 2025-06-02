@@ -7,7 +7,7 @@ import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.UserNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
-import com.group_three.food_ordering.models.UserEntity;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -33,21 +33,21 @@ public class UserService implements IUserService {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        UserEntity userEntity = userMapper.toEntity(dto);
+        User userEntity = userMapper.toEntity(dto);
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.setCreatedAt(LocalDateTime.now());
 
         return userMapper.toResponseDto(userRepository.save(userEntity));
     }
 
-    public UserEntity createIfPresent(UserCreateDto dto) {
+    public User createIfPresent(UserCreateDto dto) {
         if (dto == null) return null;
 
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
-        UserEntity userEntity = userMapper.toEntity(dto);
+        User userEntity = userMapper.toEntity(dto);
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.setCreatedAt(LocalDateTime.now());
 
@@ -56,7 +56,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto getById(UUID id) {
-        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
+        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
         return userMapper.toResponseDto(userEntity);
     }
@@ -87,7 +87,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
-        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
+        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
@@ -109,7 +109,7 @@ public class UserService implements IUserService {
 
     @Override
     public void delete(UUID id) {
-        UserEntity userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
+        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         userEntity.setRemovedAt(LocalDateTime.now());
@@ -117,7 +117,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserEntity getEntityById(UUID id) {
+    public User getEntityById(UUID id) {
         return userRepository.findByIdAndRemovedAtIsNull(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
