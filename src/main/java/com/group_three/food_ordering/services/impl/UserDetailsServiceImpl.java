@@ -16,24 +16,22 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final IUserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User userEntity =  userRepository.findByEmail(username)
+        User user =  userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("No se ha encontrado el usuario: " + username));
 
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userEntity.getRole().name());
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
         List<GrantedAuthority> authorities = List.of(authority);
 
-        return new org.springframework.security.core.userdetails.User(userEntity.getEmail(),
-                userEntity.getPassword(),
-                true,
-                true,
-                true,
-                true,
-                authorities);
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                authorities
+        );
     }
 }

@@ -1,12 +1,12 @@
 package com.group_three.food_ordering.security;
 
-import com.group_three.food_ordering.enums.RoleType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @Component
-public class JwtUtil {
+public class JwtService {
 
     @Value("${jwt.secret:myDefaultSecretKeyForJWTTokenGenerationThatShouldBeLongEnoughForSecurity}")
     private String jwtSecret;
@@ -25,14 +25,14 @@ public class JwtUtil {
     @Value("${jwt.expirationMs:86400000}")
     private long jwtExpirationMs;
 
-    public String generateToken(String username, UUID foodVenueId, RoleType role) {
+    public String generateToken(String email, UUID foodVenueId, String role) {
         Map<String, Object> claims = new HashMap<>();
 
         claims.put("foodVenueId", foodVenueId);
         claims.put("role", role);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(email)
                 .claims(claims)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))

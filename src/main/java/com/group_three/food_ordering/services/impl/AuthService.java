@@ -2,30 +2,33 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.response.AuthResponse;
+import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.Client;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.Table;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.IClientRepository;
 import com.group_three.food_ordering.repositories.IEmployeeRepository;
 import com.group_three.food_ordering.repositories.ITableRepository;
-import com.group_three.food_ordering.security.JwtUtil;
+import com.group_three.food_ordering.repositories.IUserRepository;
+import com.group_three.food_ordering.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final IUserRepository userRepository;
     private final IEmployeeRepository employeeRepository;
-    private final IClientRepository clientRepository;
-    private final ITableRepository tableRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
    /* public AuthResponse register(RegisterRequest request) {
         UserEntity userEntity = new UserEntity();
@@ -39,30 +42,55 @@ public class AuthService {
         return new AuthResponse(token);
     }*/
 
-    public AuthResponse loginEmployee(LoginRequest request) {
-        Employee employee = employeeRepository.findByUser_Email(request.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+    /*public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("Credenciales inválidas"));
 
-        if (!passwordEncoder.matches(request.getPassword(), employee.getUser().getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Credenciales inválidas");
         }
-        String token = jwtUtil.generateToken(employee.getUser().getEmail(), employee.getFoodVenue().getId(), employee.getUser().getRole());
 
+        Optional<UUID> foodVenueId = getFoodVenueIdIfStaff(user);
+
+        String token = jwtService.generateToken(
+                user.getEmail(),
+                foodVenueId.orElse(null),
+                user.getRole().name()
+        );
         return new AuthResponse(token);
     }
 
-    public AuthResponse loginClient(LoginRequest request, UUID tableId) {
-        Client client = clientRepository.findByUser_Email(request.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
-
-        Table table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new EntityNotFoundException("Tabla no encontrada"));
-
-        if (!passwordEncoder.matches(request.getPassword(), client.getUser().getPassword())) {
-            throw new BadCredentialsException("Credenciales inválidas");
+    private Optional<UUID> getFoodVenueIdIfStaff(User user) {
+        if (user.getRole() != RoleType.ROLE_STAFF) {
+            return Optional.empty();
         }
-        String token = jwtUtil.generateToken(client.getUser().getEmail(), table.getFoodVenue().getId(), client.getUser().getRole());
+        return employeeRepository.findByUser_Email(user.getEmail())
+                .map(employee -> employee.getFoodVenue().getId());
+    }*/
 
-        return new AuthResponse(token);
+    public AuthResponse login(LoginRequest loginRequest) {
+
+        Optional<Employee> employeeOpt = employeeRepository.findByUser_Email(loginRequest.getEmail());
+
+        if (employeeOpt.isPresent()) {
+            Employee emp = employeeOpt.get();
+
+            if (passwordEncoder.matches(loginRequest.getPassword(), emp.getUser().getPassword())) {
+                String token = jwtService.generateToken(loginRequest.getEmail(), emp.getFoodVenue().getId(), emp.getUser().getRole().name());
+
+                return new AuthResponse(token);
+            }
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                String token = jwtService.generateToken(loginRequest.getEmail(), null, user.getRole().name());
+                return new AuthResponse(token);
+            }
+        }
+
+        throw new BadCredentialsException("Usuario o contraseña incorrectos");
     }
 }

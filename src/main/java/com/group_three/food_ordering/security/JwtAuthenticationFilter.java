@@ -1,88 +1,63 @@
 package com.group_three.food_ordering.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group_three.food_ordering.models.Employee;
-import com.group_three.food_ordering.models.User;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+@AllArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
-
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
-        this.jwtUtil = jwtUtil;
-        setAuthenticationManager(authenticationManager);
-    }
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
-        try {
-            User user = new ObjectMapper().readValue(request.getInputStream(), User.class);
-            String username = user.getEmail();
-            String password = user.getPassword();
+        String authHeader = request.getHeader("Authorization");
 
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(username, password);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.replace("Bearer ", "");
 
-            return getAuthenticationManager().authenticate(authenticationToken);
+            try {
+                if (jwtService.isTokenValid(token)) {
+                    String username = jwtService.getUsernameFromToken(token);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-        } catch (IOException e) {
-            throw new RuntimeException("Error reading user credentials", e);
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                Map<String, Object> error = new HashMap<>();
+                error.put("message", "Invalid or expired token");
+                error.put("error", e.getMessage());
+                response.getWriter().write(new ObjectMapper().writeValueAsString(error));
+                response.getWriter().flush();
+                return;
+            }
         }
-    }
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request,
-                                            HttpServletResponse response,
-                                            FilterChain chain,
-                                            Authentication authResult) throws IOException {
-
-        Employee employee = (Employee) authResult.getPrincipal();
-
-        String token = jwtUtil.generateToken(employee.getUser().getEmail(), employee.getFoodVenue().getId(), employee.getUser().getRole());
-
-        response.setStatus(HttpStatus.OK.value());
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.addHeader("Authorization", "Bearer " + token);
-
-        Map<String, Object> httpResponse = new HashMap<>();
-        httpResponse.put("token", token);
-        httpResponse.put("message", "Authentication successful");
-        httpResponse.put("username", employee.getUser().getEmail());
-
-        response.getWriter().write(new ObjectMapper().writeValueAsString(httpResponse));
-        response.getWriter().flush();
-    }
-
-    @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              AuthenticationException failed) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("message", "Authentication failed");
-        errorResponse.put("error", failed.getMessage());
-
-        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
-        response.getWriter().flush();
+        filterChain.doFilter(request, response);
     }
 }
