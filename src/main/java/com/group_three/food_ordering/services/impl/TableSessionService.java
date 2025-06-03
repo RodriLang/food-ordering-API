@@ -3,23 +3,25 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dtos.response.AuthResponse;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.exceptions.TableSessionNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
-import com.group_three.food_ordering.models.Client;
-import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.Table;
-import com.group_three.food_ordering.models.TableSession;
+import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.ITableSessionRepository;
+import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.services.interfaces.IClientService;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +33,8 @@ public class TableSessionService implements ITableSessionService {
     private final TableService tableService;
     private final IClientService clientService;
     private final TenantContext tenantContext;
+
+    private final IUserRepository userRepository;
 
     @Override
     public TableSessionResponseDto create(TableSessionCreateDto tableSessionCreateDto) {
@@ -159,5 +163,29 @@ public class TableSessionService implements ITableSessionService {
         TableSession updatedTableSession = tableSessionRepository.save(tableSession);
 
         return tableSessionMapper.toDTO(updatedTableSession);
+    }
+
+    @Override
+    public TableSessionResponseDto openSession(UUID tableId, SecurityContextHolder securityContextHolder) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Usuario no encontrado"));
+
+
+
+        throw new BadCredentialsException("Usuario o contraseña incorrectos");
+
+        return null;
+    }
+
+    @Override
+    public TableSessionResponseDto joinSession(UUID tableId) {
+        return null;
+    }
+
+    @Override
+    public TableSessionResponseDto closeSession(UUID tableId) {
+        return null;
     }
 }
