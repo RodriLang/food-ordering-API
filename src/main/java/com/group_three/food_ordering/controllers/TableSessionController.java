@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -199,5 +202,18 @@ public class TableSessionController {
             @Parameter(description = "UUID del cliente a agregar", required = true)
             @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
+    }
+
+    @PostMapping("/{tableSessionId}/open")
+    public ResponseEntity<TableSessionResponseDto> openSession(
+            @PathVariable UUID tableSessionId,
+            @RequestBody LoginRequest loginRequest
+    ) {
+        TableSessionResponseDto response = tableSessionService.openSession(
+                tableSessionId,
+                loginRequest
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

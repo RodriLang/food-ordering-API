@@ -1,28 +1,32 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.AuthResponse;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.TableSessionNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
+import com.group_three.food_ordering.repositories.IClientRepository;
 import com.group_three.food_ordering.repositories.ITableSessionRepository;
 import com.group_three.food_ordering.repositories.IUserRepository;
+import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.interfaces.IClientService;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,9 @@ public class TableSessionService implements ITableSessionService {
     private final TenantContext tenantContext;
 
     private final IUserRepository userRepository;
+    private final IClientRepository clientRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public TableSessionResponseDto create(TableSessionCreateDto tableSessionCreateDto) {
@@ -165,18 +172,104 @@ public class TableSessionService implements ITableSessionService {
         return tableSessionMapper.toDTO(updatedTableSession);
     }
 
+
+
     @Override
-    public TableSessionResponseDto openSession(UUID tableId, SecurityContextHolder securityContextHolder) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+    public TableSessionResponseDto openSession(UUID tableSessionId, LoginRequest loginRequest) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new BadCredentialsException("Usuario no encontrado"));
+        Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
+
+        //User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
+        TableSession tableSession = tableSessionRepository.findById(tableSessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Mesa no encontrada"));
+        Table table = tableSession.getTable();
+        FoodVenue foodVenue = tableSession.getFoodVenue();
+
+
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+
+
+            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                throw new BadCredentialsException("Usuario o contraseña incorrectos");
+            }
+
+
+            Client client = clientRepository.findByUser_Email(user.getEmail())
+                    .orElseThrow(() -> new BadCredentialsException("Cliente no encontrado"));
+
+            user.setRole(RoleType.ROLE_CLIENT);
+            userRepository.save(user);
+            clientRepository.save(client);
+
+            tableSession.setHostClient(client);
+            tableSession.setParticipants(new ArrayList<>(List.of(client)));
+
+            List<Client> participants = tableSession.getParticipants();
+            if (participants == null) {
+                participants = new ArrayList<>();
+            }
+            if (!participants.contains(client)) {
+                participants.add(client);
+            }
+            tableSession.setParticipants(participants);
+            tableSessionRepository.save(tableSession);
 
 
 
-        throw new BadCredentialsException("Usuario o contraseña incorrectos");
+            String token = jwtService.generateToken(user.getEmail(), foodVenue.getId(), user.getRole().name());
 
-        return null;
+            return TableSessionResponseDto.builder()
+                    .id(tableSession.getId())
+                    .tableId(table.getId())
+                    .tableNumber(table.getNumber())
+                    .startTime(tableSession.getStartTime())
+                    .endTime(tableSession.getEndTime())
+                    .hostClientId(client.getId())
+                    .participantsIds(tableSession.getParticipants().stream().map(Client::getId).toList())
+                    .token(token)
+                    .build();
+        }
+        else {
+            return guestInit(table, foodVenue, tableSession);
+        }
+    }
+
+
+    private TableSessionResponseDto guestInit(Table table, FoodVenue foodVenue, TableSession tableSession) {
+        String guestEmail = "guest@guest.local";
+
+        Client client = Client.builder()
+                .id(UUID.randomUUID())
+                .nickname("Guest")
+                .build();
+        String token = jwtService.generateToken(
+                guestEmail,
+                foodVenue.getId(),
+                RoleType.ROLE_GUEST.name()
+        );
+
+        List<Client> participants = tableSession.getParticipants();
+        if (participants == null) {
+            participants = new ArrayList<>();
+        }
+        if (!participants.contains(client)) {
+            participants.add(client);
+        }
+        /*
+        tableSession.setParticipants(participants);
+        tableSessionRepository.save(tableSession);
+         */
+        return TableSessionResponseDto.builder()
+                .id(tableSession.getId())
+                .tableId(table.getId())
+                .tableNumber(table.getNumber())
+                .startTime(tableSession.getStartTime())
+                .endTime(null)
+                .hostClientId(null)
+                .participantsIds(participants.stream().map(Client::getId).toList())
+                .token(token)
+                .build();
     }
 
     @Override

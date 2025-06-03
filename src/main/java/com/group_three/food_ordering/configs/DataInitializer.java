@@ -170,7 +170,7 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
 
                 // Client
-                User client = User.builder()
+                User clientUser = User.builder()
                         .name("Client")
                         .lastName("Customer")
                         .email("client@test.com")
@@ -181,6 +181,11 @@ public class DataInitializer implements CommandLineRunner {
                         .role(RoleType.ROLE_CLIENT)
                         .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
                         .build();
+                Client client = Client.builder()
+                        .nickname("cliente")
+                        .user(clientUser)
+                        .build();
+
 
                 // Usuario de prueba general
                 User testUser = User.builder()
@@ -195,8 +200,9 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
                         .build();
 
-                userRepository.saveAll(List.of(admin, client,employeeUser,managerUser, testUser));
+                userRepository.saveAll(List.of(admin, clientUser,employeeUser,managerUser, testUser));
                 employeeRepository.saveAll(List.of(employee1, employeeManager));
+                clientRepository.saveAll(List.of(client));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
                 System.out.println("🔑 Admin: admin@test.com / admin123");
@@ -224,13 +230,13 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             User u2 = User.builder()
                     .role(RoleType.ROLE_CLIENT)
-                    .email("user2@example.com")
+                    .email("cliente@cliente.com")
                     .name("David")
                     .lastName("Fernandez")
                     .birthDate(LocalDate.of(2000, 1, 1))
                     .createdAt(LocalDateTime.now())
                     .password(passwordEncoder.encode("1234"))
-                    .phone("1234567890")
+                    .phone("1234")
                     .build();
             User u3 = User.builder()
                     .role(RoleType.ROLE_CLIENT)
@@ -284,6 +290,14 @@ public class DataInitializer implements CommandLineRunner {
                     .startTime(LocalDateTime.now())
                     .build();
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
+
+
+
+            System.out.println("HOLAAAAAAAAAAAAAA");
+            System.out.println("SOY EL ID DE LA TABLE SESSION 1");
+            System.out.println(ts1.getId().toString());
+
+
 
             // Orders and OrderDetails + Payments
             Order o1 = Order.builder()
