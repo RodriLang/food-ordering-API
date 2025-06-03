@@ -17,8 +17,9 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    //AGREGUE EL NULLABLE LUEGO DEL REFERENCEDCOLUMNNAME
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = true)
     private User user;
 
     @Column(nullable = false, unique = true)

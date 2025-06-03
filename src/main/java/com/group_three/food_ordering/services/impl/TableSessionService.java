@@ -175,96 +175,97 @@ public class TableSessionService implements ITableSessionService {
 
 
     @Override
-    public TableSessionResponseDto openSession(UUID tableSessionId, LoginRequest loginRequest) {
+    public TableSessionResponseDto openSession(UUID tableId, LoginRequest loginRequest) {
 
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
 
-        //User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
-        TableSession tableSession = tableSessionRepository.findById(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException("Mesa no encontrada"));
-        Table table = tableSession.getTable();
-        FoodVenue foodVenue = tableSession.getFoodVenue();
+        Table table = tableService.getEntityById(tableId);
 
+        FoodVenue foodVenue = table.getFoodVenue();
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
 
-
             if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 throw new BadCredentialsException("Usuario o contraseña incorrectos");
             }
-
 
             Client client = clientRepository.findByUser_Email(user.getEmail())
                     .orElseThrow(() -> new BadCredentialsException("Cliente no encontrado"));
 
             user.setRole(RoleType.ROLE_CLIENT);
             userRepository.save(user);
+
             clientRepository.save(client);
 
-            tableSession.setHostClient(client);
-            tableSession.setParticipants(new ArrayList<>(List.of(client)));
+            List<Client> participants = new ArrayList<>();
+            participants.add(client);
 
-            List<Client> participants = tableSession.getParticipants();
-            if (participants == null) {
-                participants = new ArrayList<>();
-            }
-            if (!participants.contains(client)) {
-                participants.add(client);
-            }
-            tableSession.setParticipants(participants);
-            tableSessionRepository.save(tableSession);
+            TableSession ts = TableSession.builder()
+                    .foodVenue(foodVenue)
+                    .table(table)
+                    .hostClient(client)
+                    .participants(participants)
+                    .startTime(LocalDateTime.now())
+                    .build();
 
-
+            tableSessionRepository.save(ts);
 
             String token = jwtService.generateToken(user.getEmail(), foodVenue.getId(), user.getRole().name());
 
             return TableSessionResponseDto.builder()
-                    .id(tableSession.getId())
+                    .id(ts.getId())
                     .tableId(table.getId())
                     .tableNumber(table.getNumber())
-                    .startTime(tableSession.getStartTime())
-                    .endTime(tableSession.getEndTime())
+                    .startTime(ts.getStartTime())
+                    .endTime(ts.getEndTime())
                     .hostClientId(client.getId())
-                    .participantsIds(tableSession.getParticipants().stream().map(Client::getId).toList())
+                    .participantsIds(ts.getParticipants().stream()
+                            .map(Client::getId)
+                            .toList())
                     .token(token)
                     .build();
         }
         else {
-            return guestInit(table, foodVenue, tableSession);
+            return guestInit(table, foodVenue);
         }
     }
 
 
-    private TableSessionResponseDto guestInit(Table table, FoodVenue foodVenue, TableSession tableSession) {
-        String guestEmail = "guest@guest.local";
+    private TableSessionResponseDto guestInit(Table table, FoodVenue foodVenue) {
 
         Client client = Client.builder()
-                .id(UUID.randomUUID())
-                .nickname("Guest")
+                .nickname("Guest-")
+                .user(null)
                 .build();
+        clientRepository.save(client);
+        client.setNickname(client.getNickname()+client.getId().toString().substring(0,8));
+        clientRepository.save(client);
+
         String token = jwtService.generateToken(
-                guestEmail,
+                client.getNickname(),
                 foodVenue.getId(),
                 RoleType.ROLE_GUEST.name()
         );
 
-        List<Client> participants = tableSession.getParticipants();
-        if (participants == null) {
-            participants = new ArrayList<>();
-        }
-        if (!participants.contains(client)) {
-            participants.add(client);
-        }
-        /*
-        tableSession.setParticipants(participants);
-        tableSessionRepository.save(tableSession);
-         */
+
+        List<Client> participants = new ArrayList<>();
+        participants.add(client);
+
+        TableSession ts = TableSession.builder()
+                .foodVenue(foodVenue)
+                .table(table)
+                .hostClient(client)
+                .participants(participants)
+                .startTime(LocalDateTime.now())
+                .build();
+
+        tableSessionRepository.save(ts);
         return TableSessionResponseDto.builder()
-                .id(tableSession.getId())
+                .id(ts.getId())
                 .tableId(table.getId())
                 .tableNumber(table.getNumber())
-                .startTime(tableSession.getStartTime())
+                .startTime(ts.getStartTime())
                 .endTime(null)
                 .hostClientId(null)
                 .participantsIds(participants.stream().map(Client::getId).toList())

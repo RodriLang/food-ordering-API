@@ -270,6 +270,10 @@ public class DataInitializer implements CommandLineRunner {
             Table t3 = Table.builder().number(3).capacity(6).foodVenue(v3).build();
             tableRepository.saveAll(List.of(t1, t2, t3));
 
+
+
+            System.out.println("\n MESAAA");
+            System.out.println(t1.getId());
             // TableSessions
             TableSession ts1 = TableSession.builder()
                     .table(t1)
@@ -293,7 +297,7 @@ public class DataInitializer implements CommandLineRunner {
 
 
 
-            System.out.println("HOLAAAAAAAAAAAAAA");
+            System.out.println("\nHOLAAAAAAAAAAAAAA");
             System.out.println("SOY EL ID DE LA TABLE SESSION 1");
             System.out.println(ts1.getId().toString());
 

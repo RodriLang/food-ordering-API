@@ -204,13 +204,13 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
     }
 
-    @PostMapping("/{tableSessionId}/open")
+    @PostMapping("/{tableId}/open")
     public ResponseEntity<TableSessionResponseDto> openSession(
-            @PathVariable UUID tableSessionId,
+            @PathVariable UUID tableId,
             @RequestBody LoginRequest loginRequest
     ) {
         TableSessionResponseDto response = tableSessionService.openSession(
-                tableSessionId,
+                tableId,
                 loginRequest
         );
 
