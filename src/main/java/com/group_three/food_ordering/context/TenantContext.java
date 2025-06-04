@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.context;
 
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,22 +17,22 @@ public class TenantContext {
 
     private final IFoodVenueRepository foodVenueRepository;
 
-    private UUID currentTenantId;
-    private FoodVenue currentTenant;
+    private UUID currentFoodVenueId;
+    private FoodVenue currentFoodVenue;
 
-    public void setCurrentTenantId(String tenantId) {
-        this.currentTenantId = UUID.fromString(tenantId);
+    public void setCurrentFoodVenueId(String tenantId) {
+        this.currentFoodVenueId = UUID.fromString(tenantId);
     }
 
-    public FoodVenue getCurrentTenant() {
-        if (currentTenant == null && currentTenantId != null) {
-            currentTenant = foodVenueRepository.findById(currentTenantId)
-                    .orElseThrow(() -> new RuntimeException("FoodVenue no encontrado con ID: " + currentTenantId));
+    public FoodVenue getCurrentFoodVenue() {
+        if (currentFoodVenue == null && currentFoodVenueId != null) {
+            currentFoodVenue = foodVenueRepository.findById(currentFoodVenueId)
+                    .orElseThrow(() -> new EntityNotFoundException("FoodVenue", currentFoodVenueId.toString()));
         }
-        return currentTenant;
+        return currentFoodVenue;
     }
 
-    public UUID getCurrentTenantId() {
-        return getCurrentTenant().getId();
+    public UUID getCurrentFoodVenueId() {
+        return getCurrentFoodVenue().getId();
     }
 }
