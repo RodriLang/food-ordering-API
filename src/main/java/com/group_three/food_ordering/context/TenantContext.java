@@ -2,34 +2,36 @@ package com.group_three.food_ordering.context;
 
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
-@Setter
+
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+@RequiredArgsConstructor
 public class TenantContext {
 
     private final IFoodVenueRepository foodVenueRepository;
-    private FoodVenue cachedVenue;
-    private String cachedVenueId;
 
-    public TenantContext(IFoodVenueRepository foodVenueRepository) {
-        this.foodVenueRepository = foodVenueRepository;
+    private UUID currentTenantId;
+    private FoodVenue currentTenant;
+
+    public void setCurrentTenantId(String tenantId) {
+        this.currentTenantId = UUID.fromString(tenantId);
     }
 
-    public FoodVenue getCurrentFoodVenue() {
-        if (cachedVenue == null) {
-            String email = "contact@burgerhouse.com";
-
-            cachedVenue = foodVenueRepository.findById(UUID.fromString(cachedVenueId))
-                    .orElseThrow(() -> new RuntimeException("No se encontró el FoodVenue con email: " + email));
+    public FoodVenue getCurrentTenant() {
+        if (currentTenant == null && currentTenantId != null) {
+            currentTenant = foodVenueRepository.findById(currentTenantId)
+                    .orElseThrow(() -> new RuntimeException("FoodVenue no encontrado con ID: " + currentTenantId));
         }
-        return cachedVenue;
+        return currentTenant;
     }
 
-    public UUID getCurrentFoodVenueId() {
-        return getCurrentFoodVenue().getId();
+    public UUID getCurrentTenantId() {
+        return getCurrentTenant().getId();
     }
-
 }
