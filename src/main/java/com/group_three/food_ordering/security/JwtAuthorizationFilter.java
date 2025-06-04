@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.security;
 
+import com.group_three.food_ordering.context.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TenantContext tenantContext;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,13 +40,16 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String token = authHeader.replace("Bearer ", "");
 
             try {
-                if (jwtUtil.isTokenValid(token)) {
+                if (Boolean.TRUE.equals(jwtUtil.isTokenValid(token))) {
                     String username = jwtUtil.getUsernameFromToken(token);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    String foodVenueId = jwtUtil.getFoodVenueId(token);
+                    tenantContext.setCachedVenueId(foodVenueId);
                 }
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
