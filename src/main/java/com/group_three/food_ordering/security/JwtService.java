@@ -84,6 +84,10 @@ public class JwtService {
                 .getPayload();
     }
 
+    public String getFoodVenueId(String token) {
+        return getClaim(token, claims -> claims.get("foodVenueId", String.class));
+    }
+
     // Alternative method for getting claims (same functionality)
     private Claims getClaims(String token) {
         return extractAllClaims(token);

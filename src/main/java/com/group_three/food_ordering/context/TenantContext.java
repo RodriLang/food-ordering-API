@@ -1,33 +1,38 @@
 package com.group_three.food_ordering.context;
 
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.IFoodVenueRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
+@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+@RequiredArgsConstructor
 public class TenantContext {
 
     private final IFoodVenueRepository foodVenueRepository;
-    private FoodVenue cachedVenue;
 
-    public TenantContext(IFoodVenueRepository foodVenueRepository) {
-        this.foodVenueRepository = foodVenueRepository;
+    private UUID currentFoodVenueId;
+    private FoodVenue currentFoodVenue;
+
+    public void setCurrentFoodVenueId(String tenantId) {
+        this.currentFoodVenueId = UUID.fromString(tenantId);
     }
 
     public FoodVenue getCurrentFoodVenue() {
-        if (cachedVenue == null) {
-            String email = "contact@burgerhouse.com";
-
-            cachedVenue = foodVenueRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new RuntimeException("No se encontró el FoodVenue con email: " + email));
+        if (currentFoodVenue == null && currentFoodVenueId != null) {
+            currentFoodVenue = foodVenueRepository.findById(currentFoodVenueId)
+                    .orElseThrow(() -> new EntityNotFoundException("FoodVenue", currentFoodVenueId.toString()));
         }
-        return cachedVenue;
+        return currentFoodVenue;
     }
 
     public UUID getCurrentFoodVenueId() {
         return getCurrentFoodVenue().getId();
     }
-
 }
