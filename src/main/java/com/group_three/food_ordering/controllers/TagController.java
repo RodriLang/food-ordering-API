@@ -6,6 +6,9 @@ import com.group_three.food_ordering.dtos.create.TagCreateDto;
 import com.group_three.food_ordering.dtos.response.TagResponseDto;
 import com.group_three.food_ordering.dtos.update.TagUpdateDto;
 import com.group_three.food_ordering.services.interfaces.ITagService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,32 +24,50 @@ public class TagController {
 
     private final ITagService tagService;
 
-
+    @Operation(summary = "Crear una nueva etiqueta")
+    @ApiResponse(responseCode = "200", description = "Etiqueta creada correctamente")
     @PostMapping
     public ResponseEntity<TagResponseDto> createTag(
             @RequestBody @Valid TagCreateDto tagCreateDto) {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.create(tagCreateDto));
     }
+
+    @Operation(summary = "Listar todas las etiquetas")
+    @ApiResponse(responseCode = "200", description = "Listado de etiquetas")
     @GetMapping
     public ResponseEntity<List<TagResponseDto>> getAllTags() {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getAll());
     }
 
+    @Operation(summary = "Obtener una etiqueta por ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Etiqueta encontrada"),
+            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<TagResponseDto> getTagById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getById(id));
     }
 
+    @Operation(summary = "Eliminar una etiqueta")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Etiqueta eliminada correctamente"),
+            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<TagResponseDto> deleteTag(@PathVariable Long id) {
         tagService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Actualizar una etiqueta existente")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Etiqueta actualizada correctamente"),
+            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
+    })
     @PutMapping("/{id}")
     public ResponseEntity<TagResponseDto> updateTag(@PathVariable Long id,
-                                                    @RequestBody @Valid TagCreateDto tagCreateDto)
-    {
+                                                    @RequestBody @Valid TagCreateDto tagCreateDto) {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.update(id, tagCreateDto));
     }
 }

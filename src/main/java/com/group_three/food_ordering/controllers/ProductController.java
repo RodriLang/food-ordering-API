@@ -5,6 +5,9 @@ import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
 import com.group_three.food_ordering.services.interfaces.IProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping(ApiPaths.PRODUCT_BASE)
 @RequiredArgsConstructor
@@ -20,40 +22,56 @@ public class ProductController {
 
     private final IProductService productService;
 
+    @Operation(summary = "Crear un nuevo producto")
+    @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(
             @RequestBody @Valid ProductCreateDto productCreateDto) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.create(productCreateDto));
     }
 
+    @Operation(summary = "Listar todos los productos")
+    @ApiResponse(responseCode = "200", description = "Listado de productos")
     @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getProducts()
-    {
+    public ResponseEntity<List<ProductResponseDto>> getProducts() {
         return ResponseEntity.ok(productService.getAll());
     }
+
+    @Operation(summary = "Listar productos disponibles")
+    @ApiResponse(responseCode = "200", description = "Listado de productos disponibles")
     @GetMapping("/available")
-    public ResponseEntity<List<ProductResponseDto>> getProductsAvailable()
-    {
+    public ResponseEntity<List<ProductResponseDto>> getProductsAvailable() {
         return ResponseEntity.ok(productService.getAllAvailable());
     }
 
+    @Operation(summary = "Obtener un producto por ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));
     }
 
+    @Operation(summary = "Reemplazar un producto")
+    @ApiResponse(responseCode = "200", description = "Producto reemplazado correctamente")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> replaceProduct(
-            @PathVariable Long id,@Valid @RequestBody ProductCreateDto productCreateDto) {
+            @PathVariable Long id, @Valid @RequestBody ProductCreateDto productCreateDto) {
         return ResponseEntity.ok(productService.replace(id, productCreateDto));
     }
+
+    @Operation(summary = "Actualizar parcialmente un producto")
+    @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
     @PatchMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable Long id, @Valid @RequestBody ProductUpdateDto productUpdateDto)
-    {
+            @PathVariable Long id, @Valid @RequestBody ProductUpdateDto productUpdateDto) {
         return ResponseEntity.ok(productService.update(id, productUpdateDto));
     }
 
+    @Operation(summary = "Eliminar un producto")
+    @ApiResponse(responseCode = "204", description = "Producto eliminado correctamente")
     @DeleteMapping("/{id}")
     public ResponseEntity<ProductResponseDto> deleteProduct(@PathVariable Long id) {
         productService.delete(id);
