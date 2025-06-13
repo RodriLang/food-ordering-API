@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class TableController {
 
     private final ITableService tableService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Crear una nueva mesa",
             description = "Crea una mesa nueva en el sistema.",
@@ -42,6 +44,7 @@ public class TableController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tableService.create(tableCreateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener todas las mesas",
             description = "Devuelve una lista con todas las mesas registradas.",
@@ -55,6 +58,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.getAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener mesa por UUID",
             description = "Obtiene una mesa según su identificador UUID.",
@@ -71,6 +75,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener mesa por número",
             description = "Busca una mesa mediante su número único.",
@@ -87,6 +92,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.getByNumber(number));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener mesas filtradas",
             description = "Filtra mesas por estado y/o capacidad. Ambos parámetros son opcionales.",
@@ -104,6 +110,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.getByFilters(status, capacity));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Actualizar una mesa",
             description = "Actualiza todos los datos de una mesa existente.",
@@ -122,6 +129,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.update(tableUpdateDto, id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Modificar parcialmente una mesa",
             description = "Modifica parcialmente los datos de una mesa.",
@@ -140,6 +148,7 @@ public class TableController {
         return ResponseEntity.ok(tableService.update(tableUpdateDto, id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Eliminar una mesa",
             description = "Elimina una mesa del sistema usando su UUID.",

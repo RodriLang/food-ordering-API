@@ -35,6 +35,7 @@ public class TableSessionController {
     private final ITableSessionService tableSessionService;
     private final IOrderService orderService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Crear una nueva sesión de mesa",
             description = "Crea una sesión asociada a una mesa con los datos proporcionados.",
@@ -51,6 +52,7 @@ public class TableSessionController {
                 body(tableSessionService.create(tableSessionCreateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener todas las sesiones de mesa",
             description = "Devuelve una lista con todas las sesiones de mesa registradas.",
@@ -64,6 +66,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesión por UUID",
             description = "Obtiene una sesión de mesa mediante su identificador UUID.",
@@ -80,6 +83,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones por número de mesa",
             description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa específico.",
@@ -95,6 +99,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getByTable(tableNumber));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones por número de mesa y rango de tiempo",
             description = "Obtiene sesiones de una mesa dentro de un rango de fechas y horas. El parámetro 'end' es opcional.",
@@ -103,6 +108,7 @@ public class TableSessionController {
                             content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
             }
     )
+
     @GetMapping("/table/{tableNumber}/time-range")
     public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             @Parameter(description = "Número de la mesa", required = true)
@@ -114,6 +120,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones activas",
             description = "Devuelve una lista con todas las sesiones que están activas actualmente.",
@@ -127,6 +134,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getActiveSessions());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones por cliente anfitrión",
             description = "Devuelve todas las sesiones donde un cliente específico es el anfitrión.",
@@ -142,6 +150,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getByHostClient(clientId));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones pasadas por participante",
             description = "Devuelve todas las sesiones pasadas en las que un cliente participó.",
@@ -157,6 +166,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener la última sesión de una mesa",
             description = "Devuelve la sesión más reciente asociada a una mesa determinada.",
@@ -173,6 +183,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getLatestByTable(tableId));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Actualizar sesión de mesa",
             description = "Actualiza la información completa de una sesión existente.",
@@ -191,6 +202,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.update(tableSessionUpdateDto, id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Agregar un cliente a una sesión",
             description = "Agrega un cliente participante a una sesión de mesa existente.",
@@ -209,7 +221,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
     }
 
-    @PreAuthorize("hasAnyRole('CLIENT','STAFF','ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
     @GetMapping("/{id}/orders")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")

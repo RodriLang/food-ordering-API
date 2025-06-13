@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public class CategoryController {
     private final ICategoryService categoryService;
     private final TreeCodec treeCodec;
 
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva categoría")
     @ApiResponse(responseCode = "200", description = "Categoría creada correctamente")
     @PostMapping
@@ -31,6 +34,8 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.create(categoryCreateDto));
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar una categoría existente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Categoría actualizada correctamente"),
@@ -42,6 +47,8 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(id, categoryCreateDto));
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Listar todas las categorías")
     @ApiResponse(responseCode = "200", description = "Listado de categorías")
     @GetMapping
@@ -49,6 +56,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener una categoría por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Categoría encontrada"),
@@ -59,6 +67,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Eliminar una categoría")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Categoría eliminada correctamente"),

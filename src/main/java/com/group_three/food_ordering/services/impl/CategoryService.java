@@ -25,13 +25,11 @@ public class CategoryService implements ICategoryService {
     @Override
     public CategoryResponseDto create(CategoryCreateDto categoryCreateDto) {
         Category category = categoryMapper.toEntity(categoryCreateDto);
-
         if (categoryCreateDto.getParentCategoryId() != null) {
             Category parent = categoryRepository.findById(categoryCreateDto.getParentCategoryId())
                     .orElseThrow(() -> new NoSuchElementException("Parent category not found"));
             category.setParentCategory(parent);
         }
-
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 

@@ -29,6 +29,7 @@ public class OrderController {
 
     private final IOrderService orderService;
 
+    @PreAuthorize("hasAnyRole('ADMIN','CLIENT','INVITED', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Crear una nueva orden",
             description = "Crea una orden con los datos proporcionados en el cuerpo de la solicitud."
@@ -45,7 +46,7 @@ public class OrderController {
 
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener órdenes con filtros opcionales",
             description = "Devuelve una lista de órdenes que pueden ser filtradas por rango de fechas y estado."
@@ -68,7 +69,7 @@ public class OrderController {
     }
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener las órdenes del dia",
             description = "Devuelve una lista de órdenes del dia en curso que pueden ser filtralas por estado."
@@ -86,7 +87,7 @@ public class OrderController {
     }
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener una orden por ID",
             description = "Devuelve los detalles de una orden específica identificada por su UUID."
@@ -105,7 +106,7 @@ public class OrderController {
 
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener una orden por fecha y número de orden",
             description = "Devuelve los detalles de una orden específica identificada por la fecha y el número de orden del día."
@@ -129,7 +130,7 @@ public class OrderController {
 
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Actualizar requisitos especiales de una orden",
             description = "Actualiza los requisitos especiales o notas específicas asociados a una orden."
@@ -151,7 +152,7 @@ public class OrderController {
 
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Cancelar una orden",
             description = "Marca una orden como cancelada."
@@ -168,7 +169,7 @@ public class OrderController {
     }
 
 
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Actualizar el estado de una orden",
             description = "Actualiza el estado de una orden. Ejemplo: PENDING, SERVED, CANCELLED."

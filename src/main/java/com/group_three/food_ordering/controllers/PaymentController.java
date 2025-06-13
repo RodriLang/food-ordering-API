@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class PaymentController {
 
     private final IPaymentService paymentService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo pago")
     @PostMapping
     public ResponseEntity<PaymentResponseDto> createPayment(
@@ -35,6 +37,7 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener todos los pagos")
     @GetMapping
     public ResponseEntity<List<PaymentResponseDto>> getAllPayments() {
@@ -42,6 +45,7 @@ public class PaymentController {
         return ResponseEntity.ok(payments);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener pago por ID")
     @GetMapping("/{id}")
     public ResponseEntity<PaymentResponseDto> getPaymentById(
@@ -51,6 +55,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar un pago")
     @PutMapping("/{id}")
     public ResponseEntity<PaymentResponseDto> updatePayment(
@@ -62,6 +67,7 @@ public class PaymentController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
             description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )
@@ -73,6 +79,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
             description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )

@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,8 @@ public class EmployeeController {
 
     private final IEmployeeService employeeService;
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @PostMapping
     @Operation(
             summary = "Crear un nuevo empleado",
@@ -46,6 +49,7 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.create(dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Actualizar completamente un empleado",
@@ -61,6 +65,7 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.update(id, dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Actualizar parcialmente un empleado",
@@ -77,6 +82,7 @@ public class EmployeeController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/all")
     @Operation(
             summary = "Listar todos los empleados",
@@ -86,6 +92,8 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getAll());
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar un empleado por ID",
@@ -99,6 +107,7 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Eliminar un empleado",
@@ -113,6 +122,7 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/actives")
     @Operation(
             summary = "Listar empleados activos",
@@ -125,6 +135,7 @@ public class EmployeeController {
         return ResponseEntity.ok(actives);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar empleados eliminados",

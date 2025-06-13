@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class OrderDetailController {
 
     private final IOrderDetailService orderDetailService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Agregar detalle a una orden", description = "Agrega un nuevo detalle (producto, cantidad, instrucciones) a una orden existente.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Detalle creado correctamente",
@@ -51,6 +53,7 @@ public class OrderDetailController {
                 orderDetailService.create(orderId, orderDetailRequestDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener detalles de una orden", description = "Obtiene la lista de todos los detalles asociados a una orden específica.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de detalles obtenida correctamente",
@@ -64,6 +67,7 @@ public class OrderDetailController {
         return ResponseEntity.ok(orderDetailService.getOrderDetailsByOrderId(orderId));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Eliminar un detalle de una orden (borrado lógico)", description = "Realiza un borrado lógico de un detalle específico de una orden, marcándolo como inactivo.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Detalle eliminado correctamente (soft delete)", content = @Content),

@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class UserController {
 
     private final IUserService userService;
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
@@ -41,6 +43,7 @@ public class UserController {
         return userService.create(dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @GetMapping("/{id}")
     @Operation(
             summary = "Obtener usuario por ID",
@@ -54,6 +57,7 @@ public class UserController {
         return userService.getById(id);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/all")
     @Operation(
             summary = "Listar todos los usuarios",
@@ -63,6 +67,7 @@ public class UserController {
         return userService.getAll();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/actives")
     @Operation(
             summary = "Listar usuarios activos",
@@ -72,6 +77,8 @@ public class UserController {
         return userService.getActiveUsers();
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar usuarios eliminados",
@@ -81,6 +88,8 @@ public class UserController {
         return userService.getDeletedUsers();
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Actualizar completamente un usuario",
@@ -96,6 +105,7 @@ public class UserController {
         return userService.update(id, dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Actualizar parcialmente un usuario",
@@ -111,6 +121,7 @@ public class UserController {
         return userService.update(id, dto);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(

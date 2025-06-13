@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class FoodVenueController {
 
     private final IFoodVenueService foodVenueService;
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Crear un nuevo lugar de comida",
             description = "Crea un nuevo lugar de comida. Solo usuarios con rol root pueden crear un lugar.",
@@ -42,6 +44,7 @@ public class FoodVenueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(foodVenueService.create(foodVenueCreateDto));
     }
 
+    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Obtener todos los lugares de comida",
             description = "Devuelve la lista completa de lugares de comida. Solo usuarios con rol root pueden acceder.",
@@ -56,6 +59,7 @@ public class FoodVenueController {
         return ResponseEntity.ok(foodVenueService.getAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener un lugar de comida por ID",
             description = "Devuelve un lugar de comida identificado por su UUID. Accesible para roles admin y root.",
@@ -73,9 +77,10 @@ public class FoodVenueController {
         return ResponseEntity.ok(foodVenueService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Actualizar un lugar de comida",
-            description = "Actualiza un lugar de comida existente. Admin puede actualizar cualquiera; root solo el propio.",
+            description = "Actualiza un lugar de comida existente. Root puede actualizar cualquiera; Admin solo el propio.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lugar de comida actualizado correctamente",
                             content = @Content(schema = @Schema(implementation = FoodVenueResponseDto.class))),
@@ -90,6 +95,7 @@ public class FoodVenueController {
         return ResponseEntity.ok(foodVenueService.update(foodVenueUpdateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Modificar parcialmente un lugar de comida",
             description = "Actualiza parcialmente un lugar de comida. Permisos idénticos al método PUT.",
@@ -107,6 +113,7 @@ public class FoodVenueController {
         return ResponseEntity.ok(foodVenueService.update(foodVenueUpdateDto));
     }
 
+    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Eliminar un lugar de comida",
             description = "Elimina un lugar de comida por su UUID. Admin puede eliminar cualquiera; root solo el propio.",

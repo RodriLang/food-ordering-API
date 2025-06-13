@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class ClientController {
 
     private final IClientService clientService;
 
+
     @PostMapping
     @Operation(
             summary = "Crear un nuevo cliente",
@@ -38,6 +40,7 @@ public class ClientController {
                     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
             }
     )
+
     public ResponseEntity<ClientResponseDto> create(
             @Valid
             @org.springframework.web.bind.annotation.RequestBody
@@ -46,6 +49,8 @@ public class ClientController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdClient);
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping
     @Operation(
             summary = "Obtener todos los clientes",
@@ -55,6 +60,8 @@ public class ClientController {
         return ResponseEntity.ok(clientService.getAll());
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar cliente por ID",
@@ -69,6 +76,7 @@ public class ClientController {
         return ResponseEntity.ok(clientService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Eliminar cliente lógicamente",
@@ -79,6 +87,7 @@ public class ClientController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT','CLIENT')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Reemplazar completamente un cliente",
@@ -94,6 +103,7 @@ public class ClientController {
         return ResponseEntity.ok(clientService.replace(id, dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT','CLIENT')")
     @PatchMapping("/{id}")
     @Operation(
             summary = "Actualizar parcialmente un cliente",
@@ -109,6 +119,7 @@ public class ClientController {
         return ResponseEntity.ok(clientService.partialUpdate(id, dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/all")
     @Operation(
             summary = "Listar todos los clientes",
@@ -118,6 +129,8 @@ public class ClientController {
         return ResponseEntity.ok(clientService.getAll());
     }
 
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/actives")
     @Operation(
             summary = "Listar clientes activos",
@@ -130,6 +143,7 @@ public class ClientController {
         return ResponseEntity.ok(actives);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar clientes eliminados",

@@ -23,7 +23,7 @@ public class ProductController {
 
     private final IProductService productService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo producto")
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
     @PostMapping
@@ -53,7 +53,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
 
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));

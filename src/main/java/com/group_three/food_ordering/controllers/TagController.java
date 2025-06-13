@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class TagController {
 
     private final ITagService tagService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva etiqueta")
     @ApiResponse(responseCode = "200", description = "Etiqueta creada correctamente")
     @PostMapping
@@ -32,6 +34,7 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.create(tagCreateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Listar todas las etiquetas")
     @ApiResponse(responseCode = "200", description = "Listado de etiquetas")
     @GetMapping
@@ -39,6 +42,7 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener una etiqueta por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Etiqueta encontrada"),
@@ -49,6 +53,7 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Eliminar una etiqueta")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Etiqueta eliminada correctamente"),
@@ -60,6 +65,7 @@ public class TagController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar una etiqueta existente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Etiqueta actualizada correctamente"),

@@ -14,10 +14,7 @@ import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.mappers.OrderMapper;
-import com.group_three.food_ordering.repositories.IClientRepository;
-import com.group_three.food_ordering.repositories.IOrderDetailRepository;
-import com.group_three.food_ordering.repositories.IOrderRepository;
-import com.group_three.food_ordering.repositories.IProductRepository;
+import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +38,7 @@ public class OrderService implements IOrderService {
     private final TenantContext tenantContext;
     private final IClientRepository clientRepository;
     private final AuthService authService;
+    private final ITableSessionRepository tableSessionRepository;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -116,9 +114,11 @@ public class OrderService implements IOrderService {
         Client currentClient = authService.getCurrentClient();
 
 
-        TableSession session = authService.getCurrentTableSession();
+        //TableSession session = authService.getCurrentTableSession();
+        TableSession session = tableSessionRepository.findById(tableSessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Table session not found"));
 
-
+        System.out.println(session.getParticipants().toString());
         if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentClient)) {
 
