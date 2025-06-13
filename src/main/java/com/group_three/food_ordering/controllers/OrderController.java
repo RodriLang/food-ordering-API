@@ -4,7 +4,6 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.OrderRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -105,6 +105,7 @@ public class OrderController {
 
 
 
+
     @Operation(
             summary = "Obtener una orden por fecha y número de orden",
             description = "Devuelve los detalles de una orden específica identificada por la fecha y el número de orden del día."
@@ -187,9 +188,16 @@ public class OrderController {
         return ResponseEntity.ok(orderService.updateStatus(id, status));
     }
 
+
+    @PreAuthorize("hasAnyRole('CLIENT','STAFF','ADMIN','ROOT')")
+    @GetMapping("/{tableSessionId}")
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByTableSession(
+        @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
+        @PathVariable UUID tableSessionId){
+
+        return ResponseEntity.ok(orderService.getOrdersByTableSession(tableSessionId));
+    }
 }
-
-
 
 
 

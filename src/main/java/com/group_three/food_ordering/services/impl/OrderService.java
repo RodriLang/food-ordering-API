@@ -7,6 +7,8 @@ import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
+import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.exceptions.AccessDeniedException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
@@ -18,6 +20,8 @@ import com.group_three.food_ordering.repositories.IOrderRepository;
 import com.group_three.food_ordering.repositories.IProductRepository;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -38,6 +42,7 @@ public class OrderService implements IOrderService {
     private final OrderDetailMapper orderDetailMapper;
     private final TenantContext tenantContext;
     private final IClientRepository clientRepository;
+    private final AuthService authService;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -56,7 +61,7 @@ public class OrderService implements IOrderService {
                 .map(dto -> {
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
                     Product product = productRepository.findById(dto.getProductId())
-                            .orElseThrow(() -> new EntityNotFoundException("Poduct", dto.getProductId().toString()));
+                            .orElseThrow(() -> new EntityNotFoundException("Product", dto.getProductId().toString()));
                     detail.setProduct(product);
                     detail.setOrder(order);
                     detail.setQuantity(1);
@@ -67,7 +72,6 @@ public class OrderService implements IOrderService {
 
         order.setOrderDetails(orderDetails);
         this.updateTotalPrice(order);
-        System.out.println(orderMapper.toDTO(order));
         return orderMapper.toDTO(orderRepository.save(order));
     }
 
@@ -79,7 +83,8 @@ public class OrderService implements IOrderService {
     }
     @Override
 
-    public List<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus status) {
+    public List<OrderResponseDto> getOrdersByFilters(
+            LocalDate from, LocalDate to, OrderStatus status) {
         LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : null;
         LocalDateTime toDateTime = (to != null) ? to.atTime(LocalTime.MAX) : null;
 
@@ -88,14 +93,66 @@ public class OrderService implements IOrderService {
 
     @Override
     public List<OrderResponseDto> getOrdersForToday(OrderStatus status) {
-        FoodVenue currentVenue = tenantContext.getCurrentFoodVenue();
         LocalDateTime opening = LocalDate.now().atStartOfDay();
         LocalDateTime closing = opening.plusDays(1);
 
         return fetchOrders(opening, closing, status);
     }
 
-    private List<OrderResponseDto> fetchOrders(LocalDateTime from, LocalDateTime to, OrderStatus status) {
+    @Override
+    public List<OrderResponseDto> getOrdersByTableSession(UUID tableSessionId) {
+        return orderRepository.findOrderByTableSession_Id(tableSessionId)
+                .stream()
+                .map(orderMapper::toDTO)
+                .toList();
+    }
+
+
+    public List<OrderResponseDto> getOrdersByTableSession(UUID tableSessionId, OrderStatus status) {
+        Client currentClient = authService.getCurrentClient();
+        TableSession session = authService.getCurrentTableSession();
+
+        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)) {
+            if (!session.getParticipants().contains(currentClient)) {
+                throw new AccessDeniedException("No tenés acceso a esta mesa");
+            }
+        }
+
+        //filtra por estado
+        List<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findOrderByTableSession_IdAndStatus(tableSessionId, status);
+        } else {
+            orders = orderRepository.findOrderByTableSession_Id(tableSessionId);
+        }
+
+        return orders.stream().map(orderMapper::toDTO).toList();
+
+    }
+
+
+    public List<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status) {
+        Client currentClient = authService.getCurrentClient();
+
+
+        // Se filtra por estado
+        List<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findOrdersByClient(clientId);
+        } else {
+            orders = orderRepository.findOrdersByClientAndStatus(clientId, status);
+        }
+
+        return orders.stream().map(orderMapper::toDTO).toList();
+
+    }
+
+
+
+    // permite recibir parámetros opcionalmente
+    // omitiendo el filtro que no fue especificado en la consulta
+    private List<OrderResponseDto> fetchOrders(
+            LocalDateTime from, LocalDateTime to, OrderStatus status) {
         UUID venueId = tenantContext.getCurrentFoodVenueId();
         List<Order> orders;
 
@@ -229,7 +286,8 @@ public class OrderService implements IOrderService {
         LocalDate today = LocalDate.now();
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
-        int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(tenantContext.getCurrentFoodVenueId(), start, end));
+        int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(
+                tenantContext.getCurrentFoodVenueId(), start, end));
 
         return ordersCount + 1;
     }

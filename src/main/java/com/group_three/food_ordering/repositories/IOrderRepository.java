@@ -33,9 +33,15 @@ public interface IOrderRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findOrderByTableSession_Id(UUID tableSessionId);
 
+    List<Order> findOrderByTableSession_IdAndStatus(UUID tableSessionId, OrderStatus status);
+
     List<Order> getOrdersByPayment_Status(PaymentStatus status);
 
-     @Query("SELECT COUNT(o) " +
+    List<Order> findOrdersByClient(UUID clientId);
+
+    List<Order> findOrdersByClientAndStatus(UUID clientId, OrderStatus status);
+
+    @Query("SELECT COUNT(o) " +
             "FROM Order o " +
             "WHERE o.foodVenue.id = :venueId " +
             "AND o.creationDate >= :start " +
