@@ -4,7 +4,6 @@ import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
 import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
-import com.group_three.food_ordering.exceptions.ProductNotFoundException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.OrderDetail;
@@ -46,7 +45,7 @@ public class OrderDetailService implements IOrderDetailService {
         Order existingOrder = orderService.getEntityById(orderId);
 
         Product product = productRepository.findById(orderDetailRequestDto.getProductId())
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(()-> new EntityNotFoundException("Product not found"));
 
         updateProductStock(product, -1);
 

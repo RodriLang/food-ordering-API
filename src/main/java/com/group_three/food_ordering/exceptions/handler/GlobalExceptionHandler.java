@@ -1,8 +1,6 @@
 package com.group_three.food_ordering.exceptions.handler;
 
-import com.group_three.food_ordering.exceptions.EntityNotFoundException;
-import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
-import com.group_three.food_ordering.exceptions.OrderInProgressException;
+import com.group_three.food_ordering.exceptions.*;
 import com.group_three.food_ordering.exceptions.responses.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -33,9 +31,23 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e, HttpStatus.CONFLICT, request);
     }
 
-    // Agregar metodos para manejar otras excepciones aca :)
+    // Error de acceso denegado
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.FORBIDDEN, request);
+    }
 
+    // Error de intento de registrar un usuario con un email ya existente
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyUsed(EmailAlreadyUsedException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
+    }
 
+    // Error de solicitar más productos que los disponibles
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStock(InsufficientStockException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.CONFLICT, request);
+    }
 
 
     // Errores de validación de DTO (@Valid fallidos)

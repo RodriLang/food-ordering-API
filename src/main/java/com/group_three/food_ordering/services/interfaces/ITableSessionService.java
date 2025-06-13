@@ -1,12 +1,9 @@
 package com.group_three.food_ordering.services.interfaces;
 
-import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.AuthResponse;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +22,6 @@ public interface ITableSessionService {
     TableSessionResponseDto getLatestByTable(UUID tableId);
     TableSessionResponseDto update(TableSessionUpdateDto tableSessionUpdateDto, UUID id);
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
-  //  TableSessionResponseDto openSession(UUID tableId, LoginRequest loginRequest);
     TableSessionResponseDto joinSession(UUID tableId);
     TableSessionResponseDto closeSession(UUID tableId);
 }

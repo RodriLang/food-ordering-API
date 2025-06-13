@@ -6,9 +6,10 @@ import com.group_three.food_ordering.dtos.update.AddressUpdateDto;
 import com.group_three.food_ordering.dtos.update.ClientPatchDto;
 import com.group_three.food_ordering.dtos.update.ClientUpdateDto;
 import com.group_three.food_ordering.dtos.update.UserPatchDto;
-import com.group_three.food_ordering.exceptions.ClientNotFoundException;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.mappers.ClientMapper;
+import com.group_three.food_ordering.models.Address;
 import com.group_three.food_ordering.models.Client;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -110,20 +110,20 @@ public class ClientService implements IClientService {
     public List<ClientResponseDto> getAll() {
         return clientRepository.findAll().stream()
                 .map(clientMapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public ClientResponseDto getById(UUID id) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
         return clientMapper.toResponseDto(client);
     }
 
     @Override
     public void delete(UUID id) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
         client.getUser().setRemovedAt(LocalDateTime.now());
         userService.delete(client.getUser().getId());
     }
@@ -131,7 +131,7 @@ public class ClientService implements IClientService {
     @Override
     public ClientResponseDto update(UUID id, ClientUpdateDto dto) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
 
         clientMapper.updateClientFromDto(dto, client);
         clientMapper.updateUserFromDto(dto.getUser(), client.getUser());
@@ -143,13 +143,12 @@ public class ClientService implements IClientService {
     @Override
     public Client getEntityById(UUID id) {
         return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
     }
 
     @Override
     public ClientResponseDto replace(UUID id, ClientUpdateDto dto) {
-        Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+        Client client = this.findClientById(id);
 
         clientMapper.updateClientFromDto(dto, client);
         clientMapper.updateUserFromDto(dto.getUser(), client.getUser());
@@ -160,31 +159,40 @@ public class ClientService implements IClientService {
 
     @Override
     public ClientResponseDto partialUpdate(UUID id, ClientPatchDto dto) {
-        Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new ClientNotFoundException("Client not found with id: " + id));
+        Client client = this.findClientById(id);
 
         if (dto.getUser() != null) {
-            User user = client.getUser();
-            UserPatchDto userDto = dto.getUser();
-
-            if (userDto.getName() != null) user.setName(userDto.getName());
-            if (userDto.getLastName() != null) user.setLastName(userDto.getLastName());
-            if (userDto.getPhone() != null) user.setPhone(userDto.getPhone());
-            if (userDto.getBirthDate() != null) user.setBirthDate(userDto.getBirthDate());
-
-            if (userDto.getAddress() != null && user.getAddress() != null) {
-                AddressUpdateDto addr = userDto.getAddress();
-
-                if (addr.getStreet() != null) user.getAddress().setStreet(addr.getStreet());
-                if (addr.getNumber() != null) user.getAddress().setNumber(addr.getNumber());
-                if (addr.getCity() != null) user.getAddress().setCity(addr.getCity());
-                if (addr.getProvince() != null) user.getAddress().setProvince(addr.getProvince());
-                if (addr.getPostalCode() != null) user.getAddress().setPostalCode(addr.getPostalCode());
-                if (addr.getCountry() != null) user.getAddress().setCountry(addr.getCountry());
-            }
+            updateUserFields(client.getUser(), dto.getUser());
         }
 
         Client updated = clientRepository.save(client);
         return clientMapper.toResponseDto(updated);
     }
+
+    private void updateUserFields(User user, UserPatchDto userDto) {
+        if (userDto.getName() != null) user.setName(userDto.getName());
+        if (userDto.getLastName() != null) user.setLastName(userDto.getLastName());
+        if (userDto.getPhone() != null) user.setPhone(userDto.getPhone());
+        if (userDto.getBirthDate() != null) user.setBirthDate(userDto.getBirthDate());
+
+        if (userDto.getAddress() != null && user.getAddress() != null) {
+            updateAddressFields(user.getAddress(), userDto.getAddress());
+        }
+    }
+
+    private void updateAddressFields(Address address, AddressUpdateDto addr) {
+        if (addr.getStreet() != null) address.setStreet(addr.getStreet());
+        if (addr.getNumber() != null) address.setNumber(addr.getNumber());
+        if (addr.getCity() != null) address.setCity(addr.getCity());
+        if (addr.getProvince() != null) address.setProvince(addr.getProvince());
+        if (addr.getPostalCode() != null) address.setPostalCode(addr.getPostalCode());
+        if (addr.getCountry() != null) address.setCountry(addr.getCountry());
+    }
+
+
+    private Client findClientById(UUID id) {
+        return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
+                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+    }
+
 }

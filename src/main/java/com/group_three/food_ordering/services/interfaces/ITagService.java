@@ -2,7 +2,6 @@ package com.group_three.food_ordering.services.interfaces;
 
 import com.group_three.food_ordering.dtos.create.TagCreateDto;
 import com.group_three.food_ordering.dtos.response.TagResponseDto;
-import com.group_three.food_ordering.dtos.update.TagUpdateDto;
 
 import java.util.List;
 

@@ -5,7 +5,7 @@ import com.group_three.food_ordering.dtos.create.TableCreateDto;
 import com.group_three.food_ordering.dtos.response.TableResponseDto;
 import com.group_three.food_ordering.dtos.update.TableUpdateDto;
 import com.group_three.food_ordering.enums.TableStatus;
-import com.group_three.food_ordering.exceptions.TableNotFoundException;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.TableMapper;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Table;
@@ -47,21 +47,20 @@ public class TableService implements ITableService {
 
     @Override
     public TableResponseDto getById(UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
-                .orElseThrow(TableNotFoundException::new);
+        Table table = this.getEntityById(id);
         return tableMapper.toDTO(table);
     }
 
     @Override
-    public Table getEntityById(UUID id) {
-        return tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
-                .orElseThrow(TableNotFoundException::new);
+    public Table getEntityById(UUID tableId) {
+        return tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenueId(), tableId)
+                .orElseThrow(() -> new EntityNotFoundException("Table" + tableId));
     }
 
     @Override
     public TableResponseDto getByNumber(Integer number) {
         Table table = tableRepository.findByFoodVenueIdAndNumber(tenantContext.getCurrentFoodVenue().getId(), number)
-                .orElseThrow(TableNotFoundException::new);
+                .orElseThrow(() -> new EntityNotFoundException("Table not Found with number " + number));
         return tableMapper.toDTO(table);
     }
 
@@ -74,8 +73,7 @@ public class TableService implements ITableService {
 
     @Override
     public TableResponseDto update(TableUpdateDto tableUpdateDto, UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
-                .orElseThrow(TableNotFoundException::new);
+        Table table = this.getEntityById(id);
 
         table.setNumber(tableUpdateDto.getNumber());
         table.setCapacity(tableUpdateDto.getCapacity());
@@ -92,9 +90,9 @@ public class TableService implements ITableService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        Table table = tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenue().getId(), id)
-                .orElseThrow(TableNotFoundException::new);
+        Table table = this.getEntityById(id);
 
         table.getFoodVenue().getTables().remove(table);
     }
+
 }

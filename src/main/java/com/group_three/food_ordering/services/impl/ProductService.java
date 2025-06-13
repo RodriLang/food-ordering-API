@@ -4,8 +4,8 @@ import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dtos.create.ProductCreateDto;
 import com.group_three.food_ordering.dtos.response.ProductResponseDto;
 import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
-import com.group_three.food_ordering.exceptions.ProductNotFoundException;
 import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -45,7 +45,7 @@ public class ProductService implements IProductService {
 
         if (productCreateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productCreateDto.getCategoryId())
-                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Category"+productCreateDto.getCategoryId()));
             product.setCategory(category);
         }
 

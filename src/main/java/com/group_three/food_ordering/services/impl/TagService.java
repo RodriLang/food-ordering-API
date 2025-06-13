@@ -2,7 +2,6 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dtos.create.TagCreateDto;
 import com.group_three.food_ordering.dtos.response.TagResponseDto;
-import com.group_three.food_ordering.dtos.update.TagUpdateDto;
 import com.group_three.food_ordering.mappers.TagMapper;
 import com.group_three.food_ordering.models.Tag;
 import com.group_three.food_ordering.repositories.ITagRepository;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +30,7 @@ public class TagService implements ITagService {
     public List<TagResponseDto> getAll() {
         return tagRepository.findAll().stream()
                 .map(tagMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

@@ -114,11 +114,9 @@ public class OrderService implements IOrderService {
         Client currentClient = authService.getCurrentClient();
 
 
-        //TableSession session = authService.getCurrentTableSession();
         TableSession session = tableSessionRepository.findById(tableSessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Table session not found"));
 
-        System.out.println(session.getParticipants().toString());
         if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentClient)) {
 
@@ -139,8 +137,6 @@ public class OrderService implements IOrderService {
 
 
     public List<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status) {
-        Client currentClient = authService.getCurrentClient();
-
 
         // Se filtra por estado
         List<Order> orders;

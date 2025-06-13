@@ -4,7 +4,7 @@ import com.group_three.food_ordering.dtos.create.UserCreateDto;
 import com.group_three.food_ordering.dtos.update.UserUpdateDto;
 import com.group_three.food_ordering.dtos.response.UserResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
-import com.group_three.food_ordering.exceptions.UserNotFoundException;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
 import com.group_three.food_ordering.models.User;
@@ -56,8 +56,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto getById(UUID id) {
-        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User userEntity = this.getEntityById(id);
         return userMapper.toResponseDto(userEntity);
     }
 
@@ -87,8 +86,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto update(UUID id, UserUpdateDto dto) {
-        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User userEntity = this.getEntityById(id);
 
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
@@ -109,8 +107,7 @@ public class UserService implements IUserService {
 
     @Override
     public void delete(UUID id) {
-        User userEntity = userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User userEntity = this.getEntityById(id);
 
         userEntity.setRemovedAt(LocalDateTime.now());
         userRepository.save(userEntity);
@@ -119,6 +116,6 @@ public class UserService implements IUserService {
     @Override
     public User getEntityById(UUID id) {
         return userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("User" + id));
     }
 }

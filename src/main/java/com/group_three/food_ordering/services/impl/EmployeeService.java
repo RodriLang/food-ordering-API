@@ -6,7 +6,7 @@ import com.group_three.food_ordering.dtos.update.EmployeePatchDto;
 import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
-import com.group_three.food_ordering.exceptions.EmployeeNotFoundException;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmployeeMapper;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +54,7 @@ public class EmployeeService implements IEmployeeService {
 
         // Asignar local gastronómico
         FoodVenue foodVenue = foodVenueRepository.findById(dto.getFoodVenueId())
-                .orElseThrow(() -> new IllegalArgumentException("Food venue not found with ID: " + dto.getFoodVenueId()));
+                .orElseThrow(() -> new EntityNotFoundException("Food venue" + dto.getFoodVenueId()));
         employee.setFoodVenue(foodVenue);
 
         // Guardar y retornar
@@ -67,20 +66,20 @@ public class EmployeeService implements IEmployeeService {
     public List<EmployeeResponseDto> getAll() {
         return employeeRepository.findAll().stream()
                 .map(employeeMapper::toResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public EmployeeResponseDto getById(UUID id) {
         Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
         return employeeMapper.toResponseDto(employee);
     }
 
     @Override
     public void delete(UUID id) {
         Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
 
         employee.getUser().setRemovedAt(LocalDateTime.now());
         userService.delete(employee.getUser().getId());
@@ -88,8 +87,7 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto update(UUID id, EmployeeUpdateDto dto) {
-        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+        Employee employee = this.getEntityById(id);
 
         // Actualizar campos del employee y del user
         employeeMapper.updateEmployeeFromDto(dto, employee);
@@ -102,7 +100,7 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public Employee getEntityById(UUID id) {
         return employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
     }
 
     @Override
@@ -112,8 +110,7 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public EmployeeResponseDto partialUpdate(UUID id, EmployeePatchDto dto) {
-        Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EmployeeNotFoundException(id));
+        Employee employee = this.getEntityById(id);
 
         // Solo actualizar lo que viene no nulo
         if (dto.getPosition() != null) {
