@@ -1,10 +1,13 @@
 package com.group_three.food_ordering.models;
 
+import com.group_three.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -16,7 +19,8 @@ import java.util.*;
 @Builder
 public class TableSession {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column(name = "start_time", nullable = false)
@@ -47,4 +51,9 @@ public class TableSession {
             inverseJoinColumns = @JoinColumn(name = "client_id")
     )
     private List<Client> participants = new ArrayList<>();
+
+    @PrePersist
+    public void onCreate() {
+        if (this.id == null) this.id = UUID.randomUUID();
+    }
 }

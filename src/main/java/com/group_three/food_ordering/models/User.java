@@ -4,6 +4,8 @@ import com.group_three.food_ordering.enums.RoleType;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +23,8 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column(length = 50)
@@ -52,4 +55,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.id == null) this.id = UUID.randomUUID();
+    }
 }

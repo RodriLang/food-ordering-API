@@ -63,6 +63,7 @@ public class TableSessionService implements ITableSessionService {
         tableSession.setTable(table);
         tableSession.setStartTime(LocalDateTime.now());
         tableSession.setEndTime(null);
+        tableSession.setId(UUID.randomUUID());
 
         Client hostClient = authService.getCurrentClient();
 

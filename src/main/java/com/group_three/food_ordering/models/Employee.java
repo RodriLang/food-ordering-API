@@ -27,4 +27,9 @@ public class Employee {
 
     @Column(nullable = false)
     private String position;
+
+    @PrePersist
+    public void onCreate() {
+        if (this.id == null) this.id = UUID.randomUUID();
+    }
 }

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,8 @@ import java.util.UUID;
 @Builder
 public class FoodVenue {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column(length = 50)
@@ -46,4 +49,9 @@ public class FoodVenue {
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Table> tables = new ArrayList<>();
+
+    @PrePersist
+    public void onCreate() {
+        if (this.id == null) this.id = UUID.randomUUID();
+    }
 }

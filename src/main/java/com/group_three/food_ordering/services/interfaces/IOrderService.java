@@ -35,7 +35,9 @@ public interface IOrderService {
 
     List<OrderResponseDto> getOrdersForToday(OrderStatus orderStatus);
 
-    List<OrderResponseDto> getOrdersByTableSession(UUID tableSessionId);
+    List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId);
+
+    List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus);
 
     List<OrderDetailResponseDto>getOrderDetailsByOrderId(UUID orderId);
 

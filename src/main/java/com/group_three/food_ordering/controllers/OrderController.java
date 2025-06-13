@@ -189,14 +189,7 @@ public class OrderController {
     }
 
 
-    @PreAuthorize("hasAnyRole('CLIENT','STAFF','ADMIN','ROOT')")
-    @GetMapping("/{tableSessionId}")
-    public ResponseEntity<List<OrderResponseDto>> getOrdersByTableSession(
-        @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
-        @PathVariable UUID tableSessionId){
 
-        return ResponseEntity.ok(orderService.getOrdersByTableSession(tableSessionId));
-    }
 }
 
 

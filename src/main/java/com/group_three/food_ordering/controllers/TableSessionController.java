@@ -1,11 +1,13 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dtos.response.AuthResponse;
+import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.services.interfaces.IOrderService;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,13 +15,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ import java.util.UUID;
 public class TableSessionController {
 
     private final ITableSessionService tableSessionService;
+    private final IOrderService orderService;
 
     @Operation(
             summary = "Crear una nueva sesión de mesa",
@@ -205,6 +207,15 @@ public class TableSessionController {
             @Parameter(description = "UUID del cliente a agregar", required = true)
             @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
+    }
+
+    @PreAuthorize("hasAnyRole('CLIENT','STAFF','ADMIN','ROOT')")
+    @GetMapping("/{id}/orders")
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByTableSession(
+            @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id,
+            @RequestParam(required = false) OrderStatus status) {
+        return ResponseEntity.ok(orderService.getOrdersByTableSessionAndStatus(id, status));
     }
 
 }

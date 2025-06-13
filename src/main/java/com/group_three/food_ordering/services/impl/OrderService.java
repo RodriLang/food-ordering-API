@@ -20,8 +20,6 @@ import com.group_three.food_ordering.repositories.IOrderRepository;
 import com.group_three.food_ordering.repositories.IProductRepository;
 import com.group_three.food_ordering.services.interfaces.IOrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -100,23 +98,26 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public List<OrderResponseDto> getOrdersByTableSession(UUID tableSessionId) {
+    public List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId) {
         return orderRepository.findOrderByTableSession_Id(tableSessionId)
                 .stream()
                 .map(orderMapper::toDTO)
                 .toList();
     }
 
+    @Override
+    public List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status) {
 
-    public List<OrderResponseDto> getOrdersByTableSession(UUID tableSessionId, OrderStatus status) {
         Client currentClient = authService.getCurrentClient();
-        TableSession session = authService.getCurrentTableSession();
+        System.out.println("currentClient: " + currentClient.getId());
 
-        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)) {
-            if (!session.getParticipants().contains(currentClient)) {
-                throw new AccessDeniedException("No tenés acceso a esta mesa");
+        TableSession session = authService.getCurrentTableSession();
+        System.out.println("session: " + session.getId());
+        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+                && !session.getParticipants().contains(currentClient)) {
+
+                throw new AccessDeniedException("You do not have access to this table session");
             }
-        }
 
         //filtra por estado
         List<Order> orders;
@@ -138,9 +139,9 @@ public class OrderService implements IOrderService {
         // Se filtra por estado
         List<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrdersByClient(clientId);
+            orders = orderRepository.findOrdersByClient_Id(clientId);
         } else {
-            orders = orderRepository.findOrdersByClientAndStatus(clientId, status);
+            orders = orderRepository.findOrdersByClient_IdAndStatus(clientId, status);
         }
 
         return orders.stream().map(orderMapper::toDTO).toList();

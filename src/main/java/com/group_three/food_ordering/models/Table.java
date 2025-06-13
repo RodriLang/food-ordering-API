@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +23,8 @@ import java.util.UUID;
 @Builder
 public class Table {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36)
     private UUID id;
 
     @Column(nullable = false)
@@ -42,6 +45,7 @@ public class Table {
 
     @PrePersist
     public void onCreate() {
+        if (this.id == null) this.id = UUID.randomUUID();
         this.status = TableStatus.AVAILABLE;
     }
 }
