@@ -92,6 +92,7 @@ public class DataInitializer implements CommandLineRunner {
                     .category(cats.get(1)) // Food
                     .tags(List.of(tags.get(0))) // Spicy
                     .build();
+
             Product p2 = Product.builder()
                     .foodVenue(v2)
                     .name("Spaghetti Carbonara")
@@ -120,7 +121,7 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("🚀 Creando usuarios de desarrollo...");
 
                 // Admin/Super Admin
-                User admin = User.builder()
+                User adminUser = User.builder()
                         .name("Admin")
                         .lastName("System")
                         .email("admin@test.com")
@@ -130,6 +131,11 @@ public class DataInitializer implements CommandLineRunner {
                         .createdAt(LocalDateTime.now())
                         .role(RoleType.ROLE_ADMIN)
                         .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
+                        .build();
+                Employee adminEmployee = Employee.builder()
+                        .foodVenue(v1)
+                        .position("Owner")
+                        .user(adminUser)
                         .build();
 
                 // Manager
@@ -200,8 +206,8 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
                         .build();
 
-                userRepository.saveAll(List.of(admin, clientUser,employeeUser,managerUser, testUser));
-                employeeRepository.saveAll(List.of(employee1, employeeManager));
+                userRepository.saveAll(List.of(adminUser, clientUser,employeeUser,managerUser, testUser));
+                employeeRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
                 clientRepository.saveAll(List.of(client));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
@@ -271,7 +277,6 @@ public class DataInitializer implements CommandLineRunner {
             tableRepository.saveAll(List.of(t1, t2, t3));
 
 
-
             System.out.println("\n MESAAA");
             System.out.println(t1.getId());
             // TableSessions
@@ -294,12 +299,6 @@ public class DataInitializer implements CommandLineRunner {
                     .startTime(LocalDateTime.now())
                     .build();
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
-
-
-
-            System.out.println("\nHOLAAAAAAAAAAAAAA");
-            System.out.println("SOY EL ID DE LA TABLE SESSION 1");
-            System.out.println(ts1.getId().toString());
 
 
 

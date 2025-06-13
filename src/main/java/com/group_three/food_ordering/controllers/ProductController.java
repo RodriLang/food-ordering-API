@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class ProductController {
 
     private final IProductService productService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Crear un nuevo producto")
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
     @PostMapping
@@ -29,7 +31,7 @@ public class ProductController {
             @RequestBody @Valid ProductCreateDto productCreateDto) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.create(productCreateDto));
     }
-
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Listar todos los productos")
     @ApiResponse(responseCode = "200", description = "Listado de productos")
     @GetMapping
@@ -37,6 +39,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAll());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Listar productos disponibles")
     @ApiResponse(responseCode = "200", description = "Listado de productos disponibles")
     @GetMapping("/available")
@@ -49,11 +52,14 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Reemplazar un producto")
     @ApiResponse(responseCode = "200", description = "Producto reemplazado correctamente")
     @PutMapping("/{id}")
@@ -62,6 +68,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.replace(id, productCreateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar parcialmente un producto")
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
     @PatchMapping("/{id}")
@@ -70,6 +77,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.update(id, productUpdateDto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Eliminar un producto")
     @ApiResponse(responseCode = "204", description = "Producto eliminado correctamente")
     @DeleteMapping("/{id}")

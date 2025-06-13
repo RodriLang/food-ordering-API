@@ -127,7 +127,7 @@ public class ProductService implements IProductService {
 
     @Override
     public List<ProductResponseDto> getAll() {
-        return productRepository.findAll().stream()
+       return productRepository.findAllByFoodVenue_Id(tenantContext.getCurrentFoodVenue().getId()).stream()
                 .map(productMapper::toDTO)
                 .toList();
     }

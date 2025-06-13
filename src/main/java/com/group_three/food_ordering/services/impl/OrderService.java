@@ -53,6 +53,11 @@ public class OrderService implements IOrderService {
 
         FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
 
+        /// method added for setting Table Session Id in the order
+        TableSession tableSession = authService.getCurrentTableSession();
+        order.setTableSession(tableSession);
+
+
         order.setFoodVenue(currentFoodVenue);
         List<OrderDetail> orderDetails = orderRequestDto.getOrderDetails()
                 .stream()
@@ -109,10 +114,11 @@ public class OrderService implements IOrderService {
     public List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status) {
 
         Client currentClient = authService.getCurrentClient();
-        System.out.println("currentClient: " + currentClient.getId());
+
 
         TableSession session = authService.getCurrentTableSession();
-        System.out.println("session: " + session.getId());
+
+
         if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentClient)) {
 
