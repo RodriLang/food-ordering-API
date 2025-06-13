@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.LoginRequest;
 import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dtos.response.AuthResponse;
 import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.services.interfaces.ITableSessionService;
@@ -17,6 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,9 +43,10 @@ public class TableSessionController {
             }
     )
     @PostMapping
-    public ResponseEntity<TableSessionResponseDto> createTableSession(
+    public ResponseEntity<AuthResponse> createTableSession(
             @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(tableSessionService.create(tableSessionCreateDto));
+        return ResponseEntity.status(HttpStatus.CREATED).
+                body(tableSessionService.create(tableSessionCreateDto));
     }
 
     @Operation(
@@ -204,16 +207,4 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
     }
 
-    @PostMapping("/{tableId}/open")
-    public ResponseEntity<TableSessionResponseDto> openSession(
-            @PathVariable UUID tableId,
-            @RequestBody LoginRequest loginRequest
-    ) {
-        TableSessionResponseDto response = tableSessionService.openSession(
-                tableId,
-                loginRequest
-        );
-
-        return ResponseEntity.ok(response);
-    }
 }

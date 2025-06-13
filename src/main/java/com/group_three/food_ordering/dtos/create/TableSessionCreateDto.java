@@ -17,6 +17,5 @@ public class TableSessionCreateDto {
     @NotNull(message = "Table ID is required")
     private UUID tableId;
 
-    private UUID hostClientId;
 }
 

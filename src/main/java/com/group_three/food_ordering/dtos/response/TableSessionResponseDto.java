@@ -22,5 +22,5 @@ public class TableSessionResponseDto {
     private Integer tableNumber;
     private UUID hostClientId;
     private List<UUID> participantsIds;
-    private String token;
+
 }

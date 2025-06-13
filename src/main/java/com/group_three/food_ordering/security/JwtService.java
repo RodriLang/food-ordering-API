@@ -25,10 +25,15 @@ public class JwtService {
     @Value("${jwt.expirationMs:86400000}")
     private long jwtExpirationMs;
 
-    public String generateToken(String email, UUID foodVenueId, String role) {
+    public String generateToken(String email,
+                                UUID foodVenueId,
+                                String role,
+                                UUID tableSessionId,
+                                UUID clientId) {
         Map<String, Object> claims = new HashMap<>();
-
         claims.put("foodVenueId", foodVenueId);
+        claims.put("tableSessionId", tableSessionId);
+        claims.put("clientId", clientId);
         claims.put("role", role);
 
         return Jwts.builder()

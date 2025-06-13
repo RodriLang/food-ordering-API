@@ -13,6 +13,7 @@ import com.group_three.food_ordering.exceptions.TableSessionNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.IClientRepository;
+import com.group_three.food_ordering.repositories.ITableRepository;
 import com.group_three.food_ordering.repositories.ITableSessionRepository;
 import com.group_three.food_ordering.repositories.IUserRepository;
 import com.group_three.food_ordering.security.JwtService;
@@ -38,26 +39,33 @@ public class TableSessionService implements ITableSessionService {
     private final IClientService clientService;
     private final TenantContext tenantContext;
 
+    private final ITableRepository tableRepository;
     private final IUserRepository userRepository;
     private final IClientRepository clientRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @Override
-    public TableSessionResponseDto create(TableSessionCreateDto tableSessionCreateDto) {
+    public AuthResponse create(TableSessionCreateDto tableSessionCreateDto) {
         TableSession tableSession = tableSessionMapper.toEntity(tableSessionCreateDto);
 
-        FoodVenue foodVenue = new FoodVenue();
-        foodVenue.setId(tenantContext.getCurrentFoodVenue().getId());
+        Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
+                .orElseThrow(()-> new EntityNotFoundException("Table not found"));
+
+        //Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());
+        System.out.println(table.getId());
+        FoodVenue foodVenue = table.getFoodVenue();
+
+        tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
+
         tableSession.setFoodVenue(foodVenue);
-
-        Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());
-
         tableSession.setTable(table);
         tableSession.setStartTime(LocalDateTime.now());
         tableSession.setEndTime(null);
 
-        Client hostClient = clientService.getEntityById(tableSessionCreateDto.getHostClientId());
+        Client hostClient = authService.getCurrentClient();
+
         tableSession.setHostClient(hostClient);
 
         List<Client> participants = new ArrayList<>();
@@ -65,7 +73,17 @@ public class TableSessionService implements ITableSessionService {
 
         tableSession.setParticipants(participants);
 
-        return tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
+        AuthResponse response = AuthResponse.builder()
+                                .token(jwtService.generateToken(hostClient.getUser().getEmail(),
+                                foodVenue.getId(),
+                                hostClient.getUser().getRole().name(),
+                                tableSession.getId(),
+                                hostClient.getId()))
+                                .build();
+
+        tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
+
+        return response;
     }
 
     @Override
@@ -173,7 +191,7 @@ public class TableSessionService implements ITableSessionService {
     }
 
 
-
+/*
     @Override
     public TableSessionResponseDto openSession(UUID tableId, LoginRequest loginRequest) {
 
@@ -223,7 +241,6 @@ public class TableSessionService implements ITableSessionService {
                     .participantsIds(ts.getParticipants().stream()
                             .map(Client::getId)
                             .toList())
-                    .token(token)
                     .build();
         }
         else {
@@ -269,12 +286,16 @@ public class TableSessionService implements ITableSessionService {
                 .endTime(null)
                 .hostClientId(null)
                 .participantsIds(participants.stream().map(Client::getId).toList())
-                .token(token)
                 .build();
     }
-
+*/
     @Override
     public TableSessionResponseDto joinSession(UUID tableId) {
+        Client client = authService.getCurrentClient();
+        TableSession session = authService.getCurrentTableSession();
+
+        session.getParticipants().add(client);
+        tableSessionRepository.save(session);
         return null;
     }
 
