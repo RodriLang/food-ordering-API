@@ -8,7 +8,7 @@ import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.exceptions.AccessDeniedException;
+import com.group_three.food_ordering.exceptions.LogicalAccessDeniedException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
@@ -46,7 +46,7 @@ public class OrderService implements IOrderService {
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(this.generateOrderNumber());
         order.setClient(clientRepository.findById(orderRequestDto.getClientId()).orElseThrow(
-                ()-> new EntityNotFoundException(Client.class.getSimpleName(), orderRequestDto.getClientId().toString())
+                () -> new EntityNotFoundException(Client.class.getSimpleName(), orderRequestDto.getClientId().toString())
         ));
 
         FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
@@ -82,6 +82,7 @@ public class OrderService implements IOrderService {
                 .map(orderMapper::toDTO)
                 .toList();
     }
+
     @Override
 
     public List<OrderResponseDto> getOrdersByFilters(
@@ -120,8 +121,8 @@ public class OrderService implements IOrderService {
         if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentClient)) {
 
-                throw new AccessDeniedException("You do not have access to this table session");
-            }
+            throw new LogicalAccessDeniedException("You do not have access to this table session");
+        }
 
         //filtra por estado
         List<Order> orders;
@@ -138,6 +139,14 @@ public class OrderService implements IOrderService {
 
     public List<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status) {
 
+        Client currentClient = authService.getCurrentClient();
+
+        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+                && !currentClient.getId().equals(clientId)) {
+
+            throw new LogicalAccessDeniedException("You do not have access to this table session");
+        }
+
         // Se filtra por estado
         List<Order> orders;
         if (status != null) {
@@ -149,7 +158,6 @@ public class OrderService implements IOrderService {
         return orders.stream().map(orderMapper::toDTO).toList();
 
     }
-
 
 
     // permite recibir parámetros opcionalmente
@@ -175,7 +183,6 @@ public class OrderService implements IOrderService {
                 .map(orderMapper::toDTO)
                 .toList();
     }
-
 
 
     @Override
@@ -228,7 +235,7 @@ public class OrderService implements IOrderService {
         return orderMapper.toDTO(orderRepository
                 .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
                         tenantContext.getCurrentFoodVenue().getId(), orderNumber, start, end)
-                .orElseThrow(()-> new EntityNotFoundException("Order not found")));
+                .orElseThrow(() -> new EntityNotFoundException("Order not found")));
     }
 
 
@@ -257,7 +264,7 @@ public class OrderService implements IOrderService {
     @Override
     public Order getEntityById(UUID id) {
         return orderRepository.findById(id)
-                .orElseThrow(()-> new EntityNotFoundException(Order.class.getName() + id));
+                .orElseThrow(() -> new EntityNotFoundException(Order.class.getName() + id));
     }
 
 

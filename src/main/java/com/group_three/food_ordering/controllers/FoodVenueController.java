@@ -44,7 +44,7 @@ public class FoodVenueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(foodVenueService.create(foodVenueCreateDto));
     }
 
-    @PreAuthorize("hasRole('ROOT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
             summary = "Obtener todos los lugares de comida",
             description = "Devuelve la lista completa de lugares de comida. Solo usuarios con rol root pueden acceder.",
