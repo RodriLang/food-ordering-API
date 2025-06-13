@@ -264,7 +264,7 @@ public class OrderService implements IOrderService {
     @Override
     public Order getEntityById(UUID id) {
         return orderRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Order.class.getName() + id));
+                .orElseThrow(() -> new EntityNotFoundException("Order", id.toString()));
     }
 
 

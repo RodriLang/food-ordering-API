@@ -37,7 +37,7 @@ public class TableSessionService implements ITableSessionService {
         TableSession tableSession = tableSessionMapper.toEntity(tableSessionCreateDto);
 
         Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
-                .orElseThrow(() -> new EntityNotFoundException("Table" + tableSessionCreateDto.getTableId()));
+                .orElseThrow(() -> new EntityNotFoundException("Table", tableSessionCreateDto.getTableId().toString()));
 
         FoodVenue foodVenue = table.getFoodVenue();
 
@@ -195,6 +195,6 @@ public class TableSessionService implements ITableSessionService {
 
     private TableSession findById(UUID id) {
       return  tableSessionRepository.findById(id)
-              .orElseThrow(()-> new EntityNotFoundException("TableSession"+id));
+              .orElseThrow(()-> new EntityNotFoundException("TableSession", id.toString()));
     }
 }

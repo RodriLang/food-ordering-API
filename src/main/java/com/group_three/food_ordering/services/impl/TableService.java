@@ -54,7 +54,7 @@ public class TableService implements ITableService {
     @Override
     public Table getEntityById(UUID tableId) {
         return tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenueId(), tableId)
-                .orElseThrow(() -> new EntityNotFoundException("Table" + tableId));
+                .orElseThrow(() -> new EntityNotFoundException("Table", tableId.toString()));
     }
 
     @Override
