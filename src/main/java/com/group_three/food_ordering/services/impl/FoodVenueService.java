@@ -42,7 +42,7 @@ public class FoodVenueService implements IFoodVenueService {
     @Override
     public FoodVenueResponseDto getById(UUID id) {
         FoodVenue foodVenue = foodVenueRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Food Venue" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Food Venue", id.toString()));
         return foodVenueMapper.toDTO(foodVenue);
     }
 

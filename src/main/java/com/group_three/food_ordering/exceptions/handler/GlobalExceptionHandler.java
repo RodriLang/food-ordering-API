@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -31,10 +32,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e, HttpStatus.CONFLICT, request);
     }
 
-    // Error de acceso denegado
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e, HttpServletRequest request) {
-        return buildErrorResponse(e, HttpStatus.FORBIDDEN, request);
+    // Error de acceso denegado por lógica de negocio
+    @ExceptionHandler(LogicalAccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleLogicalAccessDenied(LogicalAccessDeniedException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.UNAUTHORIZED, request);
     }
 
     // Error de intento de registrar un usuario con un email ya existente
@@ -78,6 +79,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllOtherExceptions(Exception e, HttpServletRequest request) {
         return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    // Error de acceso denegado
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.FORBIDDEN, request);
     }
 
     private ResponseEntity<ErrorResponse> buildErrorResponse(Exception e, HttpStatus status, HttpServletRequest request) {

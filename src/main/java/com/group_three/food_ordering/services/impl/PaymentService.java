@@ -56,7 +56,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public PaymentResponseDto getById(UUID id) {
         return paymentMapper.toDTO(paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Payment.class.getName(), id.toString())));
+                .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString())));
     }
 
     @Transactional
@@ -120,7 +120,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public void delete(UUID id) {
         if (!paymentRepository.existsById(id)) {
-            throw new EntityNotFoundException(Payment.class.getName(), id.toString());
+            throw new EntityNotFoundException("Payment", id.toString());
         }
         paymentRepository.deleteById(id);
     }
@@ -135,7 +135,7 @@ public class PaymentService implements IPaymentService {
 
     private Payment getPaymentEntityByID(UUID id) {
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(Payment.class.getName(), id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString()));
     }
 
 }

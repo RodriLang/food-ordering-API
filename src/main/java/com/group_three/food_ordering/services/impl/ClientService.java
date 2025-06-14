@@ -116,14 +116,14 @@ public class ClientService implements IClientService {
     @Override
     public ClientResponseDto getById(UUID id) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
         return clientMapper.toResponseDto(client);
     }
 
     @Override
     public void delete(UUID id) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
         client.getUser().setRemovedAt(LocalDateTime.now());
         userService.delete(client.getUser().getId());
     }
@@ -131,7 +131,7 @@ public class ClientService implements IClientService {
     @Override
     public ClientResponseDto update(UUID id, ClientUpdateDto dto) {
         Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
 
         clientMapper.updateClientFromDto(dto, client);
         clientMapper.updateUserFromDto(dto.getUser(), client.getUser());
@@ -143,7 +143,7 @@ public class ClientService implements IClientService {
     @Override
     public Client getEntityById(UUID id) {
         return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
     }
 
     @Override
@@ -192,7 +192,7 @@ public class ClientService implements IClientService {
 
     private Client findClientById(UUID id) {
         return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
     }
 
 }

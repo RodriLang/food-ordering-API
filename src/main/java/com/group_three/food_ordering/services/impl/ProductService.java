@@ -45,7 +45,7 @@ public class ProductService implements IProductService {
 
         if (productCreateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productCreateDto.getCategoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("Category"+productCreateDto.getCategoryId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Category", productCreateDto.getCategoryId().toString()));
             product.setCategory(category);
         }
 

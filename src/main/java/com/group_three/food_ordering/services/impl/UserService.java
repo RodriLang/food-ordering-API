@@ -116,6 +116,6 @@ public class UserService implements IUserService {
     @Override
     public User getEntityById(UUID id) {
         return userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("User" + id));
+                .orElseThrow(() -> new EntityNotFoundException("User", id.toString()));
     }
 }

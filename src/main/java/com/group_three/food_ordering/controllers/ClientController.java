@@ -3,15 +3,17 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dtos.create.ClientCreateDto;
 import com.group_three.food_ordering.dtos.response.ClientResponseDto;
+import com.group_three.food_ordering.dtos.response.OrderResponseDto;
 import com.group_three.food_ordering.dtos.update.ClientPatchDto;
 import com.group_three.food_ordering.dtos.update.ClientUpdateDto;
+import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.interfaces.IClientService;
+import com.group_three.food_ordering.services.interfaces.IOrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class ClientController {
 
     private final IClientService clientService;
+    private final IOrderService orderService;
 
 
     @PostMapping
@@ -156,4 +159,3 @@ public class ClientController {
         return ResponseEntity.ok(deleted);
     }
 }
-

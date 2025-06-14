@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +56,7 @@ public class CategoryService implements ICategoryService {
 
         return roots.stream()
                 .map(categoryMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -65,6 +64,6 @@ public class CategoryService implements ICategoryService {
        List<Category> children = categoryRepository.findByParentCategoryId(id);
        return children.stream()
                .map(categoryMapper::toDto)
-               .collect(Collectors.toList());
+               .toList();
     }
 }

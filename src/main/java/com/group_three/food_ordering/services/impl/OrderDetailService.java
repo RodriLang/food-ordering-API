@@ -81,7 +81,7 @@ public class OrderDetailService implements IOrderDetailService {
     @Override
     public OrderDetailResponseDto getOrderDetailById(Long orderDetailId) {
         OrderDetail orderDetail = orderDetailRepository.findByIdAndDeletedFalse(orderDetailId)
-                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), orderDetailId.toString()));
+                .orElseThrow(()-> new EntityNotFoundException("Order Detail", orderDetailId.toString()));
         return orderDetailMapper.toDTO(orderDetail);
     }
 
@@ -142,7 +142,7 @@ public class OrderDetailService implements IOrderDetailService {
     @Transactional
     public OrderDetailResponseDto updateSpecialInstructions(Long id, String instructions) {
         OrderDetail detail = orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), id.toString()));
+                .orElseThrow(()-> new EntityNotFoundException("Order Detail", id.toString()));
 
         detail.setSpecialInstructions(instructions);
         OrderDetail saved = orderDetailRepository.save(detail);
@@ -168,6 +168,6 @@ public class OrderDetailService implements IOrderDetailService {
      */
     private OrderDetail getOrderDetailEntityById(Long id) {
         return orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(()-> new EntityNotFoundException(OrderDetail.class.getName(), id.toString()));
+                .orElseThrow(()-> new EntityNotFoundException("Order Detail", id.toString()));
     }
 }

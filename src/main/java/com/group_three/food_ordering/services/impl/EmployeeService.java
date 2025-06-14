@@ -54,7 +54,7 @@ public class EmployeeService implements IEmployeeService {
 
         // Asignar local gastronómico
         FoodVenue foodVenue = foodVenueRepository.findById(dto.getFoodVenueId())
-                .orElseThrow(() -> new EntityNotFoundException("Food venue" + dto.getFoodVenueId()));
+                .orElseThrow(() -> new EntityNotFoundException("Food venue", dto.getFoodVenueId().toString()));
         employee.setFoodVenue(foodVenue);
 
         // Guardar y retornar
@@ -72,14 +72,14 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public EmployeeResponseDto getById(UUID id) {
         Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee", id.toString()));
         return employeeMapper.toResponseDto(employee);
     }
 
     @Override
     public void delete(UUID id) {
         Employee employee = employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee", id.toString()));
 
         employee.getUser().setRemovedAt(LocalDateTime.now());
         userService.delete(employee.getUser().getId());
@@ -100,7 +100,7 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public Employee getEntityById(UUID id) {
         return employeeRepository.findByIdAndUser_RemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employee" + id));
+                .orElseThrow(() -> new EntityNotFoundException("Employee", id.toString()));
     }
 
     @Override
