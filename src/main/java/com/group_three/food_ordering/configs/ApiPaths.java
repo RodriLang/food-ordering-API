@@ -18,5 +18,6 @@ public class ApiPaths {
         public static final String CLIENT_BASE = URI_BASE_V1 + "/clients";
         public static final String ORDER_DETAIL_URI = "/{orderId}/details";
         public static final String AUTH_URI = URI_BASE_V1 + "/auth";
+        public static final String MENU_URI = URI_BASE_V1 + "/menu";
 }
 

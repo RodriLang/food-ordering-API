@@ -39,11 +39,58 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         initializeUsers();
         // Categories
+
         if (categoryRepository.count() == 0) {
+
+            // Categorías raíz
             Category drinks = Category.builder().name("Drinks").build();
             Category food = Category.builder().name("Food").build();
             Category desserts = Category.builder().name("Desserts").build();
+
             categoryRepository.saveAll(List.of(drinks, food, desserts));
+
+            // Subcategorías de Food
+            Category mainCourses = Category.builder().name("Main Courses").parentCategory(food).build();
+            Category appetizers = Category.builder().name("Appetizers").parentCategory(food).build();
+
+            categoryRepository.saveAll(List.of(mainCourses, appetizers));
+
+            // Subcategorías de Drinks
+            Category alcoholic = Category.builder().name("Alcoholic").parentCategory(drinks).build();
+            Category nonAlcoholic = Category.builder().name("Non-Alcoholic").parentCategory(drinks).build();
+
+            categoryRepository.saveAll(List.of(alcoholic, nonAlcoholic));
+
+            // Subcategorías de Desserts
+            Category sweet = Category.builder().name("Sweet").parentCategory(desserts).build();
+            Category savory = Category.builder().name("Savory").parentCategory(desserts).build();
+
+            categoryRepository.saveAll(List.of(sweet, savory));
+
+            // Subcategorías de Main Courses
+            Category pizzas = Category.builder().name("Pizzas").parentCategory(mainCourses).build();
+            Category burgers = Category.builder().name("Burgers").parentCategory(mainCourses).build();
+
+            categoryRepository.saveAll(List.of(pizzas, burgers));
+
+            // Subcategorías de Appetizers
+            Category frenchFries = Category.builder().name("French Fries").parentCategory(appetizers).build();
+            Category calamari = Category.builder().name("Calamari").parentCategory(appetizers).build();
+
+            categoryRepository.saveAll(List.of(frenchFries, calamari));
+
+            // Subcategorías de Alcoholic
+            Category beers = Category.builder().name("Beers").parentCategory(alcoholic).build();
+            Category wines = Category.builder().name("Wines").parentCategory(alcoholic).build();
+            Category cocktails = Category.builder().name("Cocktails").parentCategory(alcoholic).build();
+
+            categoryRepository.saveAll(List.of(beers, wines, cocktails));
+
+            // Subcategorías de Non-Alcoholic
+            Category sodas = Category.builder().name("Sodas").parentCategory(nonAlcoholic).build();
+            Category waters = Category.builder().name("Waters").parentCategory(nonAlcoholic).build();
+
+            categoryRepository.saveAll(List.of(sodas, waters));
         }
 
         // Tags
@@ -51,6 +98,7 @@ public class DataInitializer implements CommandLineRunner {
             Tag spicy = Tag.builder().label("Spicy").build();
             Tag vegan = Tag.builder().label("Vegan").build();
             Tag glutenFree = Tag.builder().label("Gluten-Free").build();
+            Tag fresh = Tag.builder().label("Fresh").build();
             tagRepository.saveAll(List.of(spicy, vegan, glutenFree));
         }
 
@@ -82,6 +130,15 @@ public class DataInitializer implements CommandLineRunner {
             // Products
             List<Category> cats = categoryRepository.findAll();
             List<Tag> tags = tagRepository.findAll();
+
+
+            Category burgers = cats.stream().filter(c -> c.getName().equals("Burgers")).findFirst().orElse(null);
+            Category beers = cats.stream().filter(c -> c.getName().equals("Beers")).findFirst().orElse(null);
+            Category wines = cats.stream().filter(c -> c.getName().equals("Wines")).findFirst().orElse(null);
+            Category cocktails = cats.stream().filter(c -> c.getName().equals("Cocktails")).findFirst().orElse(null);
+            Category sweet = cats.stream().filter(c -> c.getName().equals("Sweets")).findFirst().orElse(null);
+            Category savory = cats.stream().filter(c -> c.getName().equals("Savory")).findFirst().orElse(null);
+
             Product p1 = Product.builder()
                     .foodVenue(v1)
                     .name("Classic Burger")
@@ -89,11 +146,112 @@ public class DataInitializer implements CommandLineRunner {
                     .price(new BigDecimal("1500"))
                     .imageUrl("https://example.com/burger1.jpg")
                     .stock(20)
-                    .category(cats.get(1)) // Food
-                    .tags(List.of(tags.get(0))) // Spicy
+                    .category(burgers)
+                    .tags(List.of(tags.getFirst())) // Ej: Spicy
                     .build();
 
             Product p2 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Cheese Burger")
+                    .description("Burger with cheddar cheese")
+                    .price(new BigDecimal("1600"))
+                    .imageUrl("https://example.com/burger2.jpg")
+                    .stock(25)
+                    .category(burgers)
+                    .tags(List.of(tags.getFirst()))
+                    .build();
+
+            Product p3 = Product.builder()
+                    .foodVenue(v1)
+                    .name("IPA Patagonia")
+                    .description("Craft beer with intense hops")
+                    .price(new BigDecimal("1200"))
+                    .imageUrl("https://example.com/ipa.jpg")
+                    .stock(30)
+                    .category(beers)
+                    .tags(List.of())
+                    .build();
+
+            Product p4 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Blonde Ale Andes")
+                    .description("Smooth and refreshing ale")
+                    .price(new BigDecimal("1100"))
+                    .imageUrl("https://example.com/blonde.jpg")
+                    .stock(30)
+                    .category(beers)
+                    .tags(List.of())
+                    .build();
+
+            Product p5 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Don Valentín Lacrado Malbec")
+                    .description("Classic Argentine red wine")
+                    .price(new BigDecimal("2000"))
+                    .imageUrl("https://example.com/donvalentin.jpg")
+                    .stock(15)
+                    .category(wines)
+                    .tags(List.of())
+                    .build();
+
+            Product p6 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Trumpeter Cabernet")
+                    .description("Robust and full-bodied wine")
+                    .price(new BigDecimal("2500"))
+                    .imageUrl("https://example.com/trumpeter.jpg")
+                    .stock(10)
+                    .category(wines)
+                    .tags(List.of())
+                    .build();
+
+            Product p7 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Sex on the Beach")
+                    .description("Fruity cocktail with peach and orange")
+                    .price(new BigDecimal("1800"))
+                    .imageUrl("https://example.com/sexonthebeach.jpg")
+                    .stock(20)
+                    .category(cocktails)
+                    .tags(List.of())
+                    .build();
+
+            Product p8 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Rosé Vermouth")
+                    .description("Delicate herbal rosé aperitif")
+                    .price(new BigDecimal("1700"))
+                    .imageUrl("https://example.com/rosevermouth.jpg")
+                    .stock(15)
+                    .category(cocktails)
+                    .tags(List.of())
+                    .build();
+
+            Product p9 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Ice Cream Sundae")
+                    .description("Vanilla and chocolate with toppings")
+                    .price(new BigDecimal("900"))
+                    .imageUrl("https://example.com/icecream.jpg")
+                    .stock(50)
+                    .category(sweet)
+                    .tags(List.of())
+                    .build();
+
+            Product p10 = Product.builder()
+                    .foodVenue(v1)
+                    .name("Cheese and Quince")
+                    .description("Classic 'Postre Vigilante'")
+                    .price(new BigDecimal("950"))
+                    .imageUrl("https://example.com/quince.jpg")
+                    .stock(40)
+                    .category(savory)
+                    .tags(List.of())
+                    .build();
+
+            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10));
+
+            Product p11 = Product.builder()
                     .foodVenue(v2)
                     .name("Spaghetti Carbonara")
                     .description("Creamy pasta with bacon")
@@ -103,7 +261,7 @@ public class DataInitializer implements CommandLineRunner {
                     .category(cats.get(1))
                     .tags(List.of(tags.get(1))) // Vegan for demo
                     .build();
-            Product p3 = Product.builder()
+            Product p12 = Product.builder()
                     .foodVenue(v3)
                     .name("Beef Taco")
                     .description("Spicy beef taco")

@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .requestMatchers(ApiPaths.AUTH_URI+"/login",
-                                ApiPaths.AUTH_URI+"/register").permitAll()
+                                ApiPaths.AUTH_URI+"/register",
+                                ApiPaths.MENU_URI).permitAll()
                         .requestMatchers(HttpMethod.POST,ApiPaths.CLIENT_BASE).permitAll()
                         .anyRequest().authenticated()
                 )
