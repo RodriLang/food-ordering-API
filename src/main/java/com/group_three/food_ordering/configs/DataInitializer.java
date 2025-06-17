@@ -429,9 +429,9 @@ public class DataInitializer implements CommandLineRunner {
             clientRepository.saveAll(List.of(c1, c2, c3));
 
             // Tables
-            Table t1 = Table.builder().number(1).capacity(4).foodVenue(v1).build();
-            Table t2 = Table.builder().number(2).capacity(2).foodVenue(v2).build();
-            Table t3 = Table.builder().number(3).capacity(6).foodVenue(v3).build();
+            Table t1 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8")).number(1).capacity(4).foodVenue(v1).build();
+            Table t2 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e14098")).number(2).capacity(2).foodVenue(v2).build();
+            Table t3 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556")).number(3).capacity(6).foodVenue(v3).build();
             tableRepository.saveAll(List.of(t1, t2, t3));
 
 
