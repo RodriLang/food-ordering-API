@@ -1,5 +1,12 @@
 # 🍽️ Food Ordering API
 
+![Java](https://img.shields.io/badge/Java-21-blue?logo=java)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-brightgreen?logo=spring)
+![MySQL](https://img.shields.io/badge/Database-MySQL-blue?logo=mysql)
+![Security](https://img.shields.io/badge/Security-JWT%20%7C%20Spring%20Security-red?logo=springsecurity)
+![Last Commit](https://img.shields.io/github/last-commit/RodriLang/tennis-tournaments-API)
+![License](https://img.shields.io/github/license/RodriLang/tennis-tournaments-API)
+
 API RESTful desarrollada con **Spring Boot** para gestionar pedidos de comida en un entorno de restaurante digital. Soporta múltiples roles de usuario, gestión de productos, mesas, sesiones, órdenes, pagos, usuarios, etiquetas, etc.
 
 ---
