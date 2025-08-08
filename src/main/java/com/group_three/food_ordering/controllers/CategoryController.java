@@ -22,8 +22,6 @@ import java.util.List;
 public class CategoryController {
 
     private final ICategoryService categoryService;
-    private final TreeCodec treeCodec;
-
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva categoría")
