@@ -1,12 +1,12 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dtos.create.EmployeeCreateDto;
-import com.group_three.food_ordering.dtos.create.UserCreateDto;
-import com.group_three.food_ordering.dtos.response.EmployeeResponseDto;
-import com.group_three.food_ordering.dtos.response.UserResponseDto;
-import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
-import com.group_three.food_ordering.dtos.update.UserPatchDto;
-import com.group_three.food_ordering.dtos.update.UserUpdateDto;
+import com.group_three.food_ordering.dto.request.EmployeeCreateDto;
+import com.group_three.food_ordering.dto.request.UserCreateDto;
+import com.group_three.food_ordering.dto.response.EmployeeResponseDto;
+import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.update.EmployeeUpdateDto;
+import com.group_three.food_ordering.dto.update.UserPatchDto;
+import com.group_three.food_ordering.dto.update.UserUpdateDto;
 import com.group_three.food_ordering.models.Employee;
 import com.group_three.food_ordering.models.User;
 import org.mapstruct.*;

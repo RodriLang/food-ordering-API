@@ -1,15 +1,14 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.UserCreateDto;
-import com.group_three.food_ordering.dtos.update.UserUpdateDto;
-import com.group_three.food_ordering.dtos.response.UserResponseDto;
-import com.group_three.food_ordering.services.interfaces.IUserService;
+import com.group_three.food_ordering.dto.request.UserCreateDto;
+import com.group_three.food_ordering.dto.update.UserUpdateDto;
+import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Tag(name = "Users", description = "Operaciones relacionadas con usuarios del sistema (Staff, Clientes, Invitados)")
 public class UserController {
 
-    private final IUserService userService;
+    private final UserService userService;
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @PostMapping

@@ -1,11 +1,9 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.CategoryCreateDto;
-import com.group_three.food_ordering.dtos.create.TagCreateDto;
-import com.group_three.food_ordering.dtos.response.TagResponseDto;
-import com.group_three.food_ordering.dtos.update.TagUpdateDto;
-import com.group_three.food_ordering.services.interfaces.ITagService;
+import com.group_three.food_ordering.dto.request.TagCreateDto;
+import com.group_three.food_ordering.dto.response.TagResponseDto;
+import com.group_three.food_ordering.services.TagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -23,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TagController {
 
-    private final ITagService tagService;
+    private final TagService tagService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva etiqueta")

@@ -1,0 +1,54 @@
+package com.group_three.food_ordering.controllers.impl;
+
+import com.group_three.food_ordering.controllers.OrderController;
+import com.group_three.food_ordering.dto.request.OrderRequestDto;
+import com.group_three.food_ordering.dto.response.OrderResponseDto;
+import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.services.OrderService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequiredArgsConstructor
+public class OrderControllerImpl implements OrderController {
+
+    private final OrderService orderService;
+
+    public ResponseEntity<OrderResponseDto> createOrder(OrderRequestDto order) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
+    }
+
+    public ResponseEntity<List<OrderResponseDto>> getOrders(LocalDate from, LocalDate to, OrderStatus status) {
+        return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status));
+    }
+
+    public ResponseEntity<List<OrderResponseDto>> getDailyOrders(OrderStatus status) {
+        return ResponseEntity.ok(orderService.getOrdersForToday(status));
+    }
+
+    public ResponseEntity<OrderResponseDto> getOrderById(UUID id) {
+        return ResponseEntity.ok(orderService.getById(id));
+    }
+
+    public ResponseEntity<OrderResponseDto> getOrderByDateAndOrderNumber(LocalDate date, Integer orderNumber) {
+        return ResponseEntity.ok(orderService.getOrderByDateAndOrderNumber(date, orderNumber));
+    }
+
+    public ResponseEntity<OrderResponseDto> updateOrderRequirements(UUID id, String requirements) {
+        return ResponseEntity.ok(orderService.updateSpecialRequirements(id, requirements));
+    }
+
+    public ResponseEntity<OrderResponseDto> cancelOrder(UUID id) {
+        return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.CANCELLED));
+    }
+
+    public ResponseEntity<OrderResponseDto> updateOrderStatus(UUID id, OrderStatus status) {
+        return ResponseEntity.ok(orderService.updateStatus(id, status));
+    }
+}

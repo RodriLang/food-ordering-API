@@ -1,10 +1,10 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.ProductCreateDto;
-import com.group_three.food_ordering.dtos.response.ProductResponseDto;
-import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
-import com.group_three.food_ordering.services.interfaces.IProductService;
+import com.group_three.food_ordering.dto.request.ProductCreateDto;
+import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.dto.update.ProductUpdateDto;
+import com.group_three.food_ordering.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final IProductService productService;
+    private final ProductService productService;
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo producto")

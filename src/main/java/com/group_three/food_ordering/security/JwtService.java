@@ -6,7 +6,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -93,12 +92,7 @@ public class JwtService {
         return getClaim(token, claims -> claims.get("foodVenueId", String.class));
     }
 
-    // Alternative method for getting claims (same functionality)
-    private Claims getClaims(String token) {
-        return extractAllClaims(token);
-    }
-
-    // Obtain signature key
+      // Obtain signature key
     private SecretKey getSignatureKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);

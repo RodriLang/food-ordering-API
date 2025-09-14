@@ -1,11 +1,11 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.PaymentRequestDto;
-import com.group_three.food_ordering.dtos.response.PaymentResponseDto;
-import com.group_three.food_ordering.dtos.update.PaymentUpdateDto;
+import com.group_three.food_ordering.dto.request.PaymentRequestDto;
+import com.group_three.food_ordering.dto.response.PaymentResponseDto;
+import com.group_three.food_ordering.dto.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
-import com.group_three.food_ordering.services.interfaces.IPaymentService;
+import com.group_three.food_ordering.services.PaymentService;
 import com.group_three.food_ordering.utils.constants.ApiDocConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @Tag(name = "payment-controller", description = "Operaciones para gestionar pagos")
 public class PaymentController {
 
-    private final IPaymentService paymentService;
+    private final PaymentService paymentService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo pago")

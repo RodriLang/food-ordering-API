@@ -63,7 +63,8 @@ public class Order {
     @JoinColumn(name = "table_session_id")
     private TableSession tableSession;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "order_id")
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
     @PrePersist

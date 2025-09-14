@@ -1,21 +1,20 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dtos.response.AuthResponse;
-import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dtos.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.dto.request.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.OrderResponseDto;
+import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
+import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.services.interfaces.IOrderService;
-import com.group_three.food_ordering.services.interfaces.ITableSessionService;
+import com.group_three.food_ordering.services.OrderService;
+import com.group_three.food_ordering.services.TableSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,8 +31,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TableSessionController {
 
-    private final ITableSessionService tableSessionService;
-    private final IOrderService orderService;
+    private final TableSessionService tableSessionService;
+    private final OrderService orderService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(

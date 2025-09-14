@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.dtos.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentMethod;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import jakarta.persistence.*;

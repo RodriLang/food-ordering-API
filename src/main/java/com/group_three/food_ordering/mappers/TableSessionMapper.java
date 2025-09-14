@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
+import com.group_three.food_ordering.dto.request.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.models.TableSession;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

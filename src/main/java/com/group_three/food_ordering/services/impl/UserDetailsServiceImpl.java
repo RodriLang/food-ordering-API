@@ -2,7 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 
 import com.group_three.food_ordering.models.User;
-import com.group_three.food_ordering.repositories.IUserRepository;
+import com.group_three.food_ordering.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final IUserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

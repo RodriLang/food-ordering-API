@@ -1,10 +1,10 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.FoodVenueCreateDto;
-import com.group_three.food_ordering.dtos.response.FoodVenueResponseDto;
-import com.group_three.food_ordering.dtos.update.FoodVenueUpdateDto;
-import com.group_three.food_ordering.services.interfaces.IFoodVenueService;
+import com.group_three.food_ordering.dto.request.FoodVenueCreateDto;
+import com.group_three.food_ordering.dto.response.FoodVenueResponseDto;
+import com.group_three.food_ordering.dto.update.FoodVenueUpdateDto;
+import com.group_three.food_ordering.services.FoodVenueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FoodVenueController {
 
-    private final IFoodVenueService foodVenueService;
+    private final FoodVenueService foodVenueService;
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(

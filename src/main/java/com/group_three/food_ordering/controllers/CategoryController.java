@@ -1,10 +1,9 @@
 package com.group_three.food_ordering.controllers;
 
-import com.fasterxml.jackson.core.TreeCodec;
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.CategoryCreateDto;
-import com.group_three.food_ordering.dtos.response.CategoryResponseDto;
-import com.group_three.food_ordering.services.interfaces.ICategoryService;
+import com.group_three.food_ordering.dto.request.CategoryCreateDto;
+import com.group_three.food_ordering.dto.response.CategoryResponseDto;
+import com.group_three.food_ordering.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final ICategoryService categoryService;
+    private final CategoryService categoryService;
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva categoría")

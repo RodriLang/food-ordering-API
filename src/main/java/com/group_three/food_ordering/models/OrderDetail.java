@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-@ToString(exclude = "order")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,16 +25,12 @@ public class OrderDetail {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(length = 255)
+    @Column
     private String specialInstructions;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "order_id")
-    private Order order;
 
     @Column(nullable = false)
     private Boolean deleted;

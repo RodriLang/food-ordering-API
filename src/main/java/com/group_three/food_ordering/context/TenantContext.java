@@ -2,7 +2,7 @@ package com.group_three.food_ordering.context;
 
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.repositories.IFoodVenueRepository;
+import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TenantContext {
 
-    private final IFoodVenueRepository foodVenueRepository;
+    private final FoodVenueRepository foodVenueRepository;
 
     private UUID currentFoodVenueId;
     private FoodVenue currentFoodVenue;

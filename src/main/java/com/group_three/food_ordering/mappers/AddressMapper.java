@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dtos.create.AddressCreateDto;
-import com.group_three.food_ordering.dtos.response.AddressResponseDto;
-import com.group_three.food_ordering.dtos.update.AddressUpdateDto;
+import com.group_three.food_ordering.dto.request.AddressCreateDto;
+import com.group_three.food_ordering.dto.response.AddressResponseDto;
+import com.group_three.food_ordering.dto.update.AddressUpdateDto;
 import com.group_three.food_ordering.models.Address;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

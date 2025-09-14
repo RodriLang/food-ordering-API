@@ -1,11 +1,11 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.TableCreateDto;
-import com.group_three.food_ordering.dtos.response.TableResponseDto;
-import com.group_three.food_ordering.dtos.update.TableUpdateDto;
+import com.group_three.food_ordering.dto.request.TableCreateDto;
+import com.group_three.food_ordering.dto.response.TableResponseDto;
+import com.group_three.food_ordering.dto.update.TableUpdateDto;
 import com.group_three.food_ordering.enums.TableStatus;
-import com.group_three.food_ordering.services.interfaces.ITableService;
+import com.group_three.food_ordering.services.TableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TableController {
 
-    private final ITableService tableService;
+    private final TableService tableService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @Operation(

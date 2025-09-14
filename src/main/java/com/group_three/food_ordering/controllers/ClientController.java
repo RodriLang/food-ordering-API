@@ -1,16 +1,13 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.ClientCreateDto;
-import com.group_three.food_ordering.dtos.response.ClientResponseDto;
-import com.group_three.food_ordering.dtos.response.OrderResponseDto;
-import com.group_three.food_ordering.dtos.update.ClientPatchDto;
-import com.group_three.food_ordering.dtos.update.ClientUpdateDto;
-import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.services.interfaces.IClientService;
-import com.group_three.food_ordering.services.interfaces.IOrderService;
+import com.group_three.food_ordering.dto.request.ClientCreateDto;
+import com.group_three.food_ordering.dto.response.ClientResponseDto;
+import com.group_three.food_ordering.dto.update.ClientPatchDto;
+import com.group_three.food_ordering.dto.update.ClientUpdateDto;
+import com.group_three.food_ordering.services.ClientService;
+import com.group_three.food_ordering.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,8 +27,8 @@ import java.util.UUID;
 @Tag(name = "Clients", description = "Gestión de clientes registrados e invitados.")
 public class ClientController {
 
-    private final IClientService clientService;
-    private final IOrderService orderService;
+    private final ClientService clientService;
+    private final OrderService orderService;
 
 
     @PostMapping

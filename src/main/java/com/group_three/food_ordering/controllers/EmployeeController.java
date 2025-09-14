@@ -1,11 +1,11 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.EmployeeCreateDto;
-import com.group_three.food_ordering.dtos.response.EmployeeResponseDto;
-import com.group_three.food_ordering.dtos.update.EmployeePatchDto;
-import com.group_three.food_ordering.dtos.update.EmployeeUpdateDto;
-import com.group_three.food_ordering.services.interfaces.IEmployeeService;
+import com.group_three.food_ordering.dto.request.EmployeeCreateDto;
+import com.group_three.food_ordering.dto.response.EmployeeResponseDto;
+import com.group_three.food_ordering.dto.update.EmployeePatchDto;
+import com.group_three.food_ordering.dto.update.EmployeeUpdateDto;
+import com.group_three.food_ordering.services.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EmployeeController {
 
-    private final IEmployeeService employeeService;
+    private final EmployeeService employeeService;
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")

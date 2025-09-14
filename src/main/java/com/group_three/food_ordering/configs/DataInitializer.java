@@ -19,21 +19,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private final ICategoryRepository categoryRepository;
-    private final ITagRepository tagRepository;
-    private final IFoodVenueRepository foodVenueRepository;
-    private final IProductRepository productRepository;
-    private final IClientRepository clientRepository;
-    private final IUserRepository userRepository;
-    private final ITableRepository tableRepository;
-    private final ITableSessionRepository tableSessionRepository;
-    private final IOrderRepository orderRepository;
-    private final IOrderDetailRepository orderDetailRepository;
-    private final IPaymentRepository paymentRepository;
+    private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
+    private final FoodVenueRepository foodVenueRepository;
+    private final ProductRepository productRepository;
+    private final ClientRepository clientRepository;
+    private final UserRepository userRepository;
+    private final TableRepository tableRepository;
+    private final TableSessionRepository tableSessionRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
 
 
-    private final IEmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -492,19 +492,16 @@ public class DataInitializer implements CommandLineRunner {
             orderRepository.saveAll(List.of(o1, o2, o3));
 
             OrderDetail od1 = OrderDetail.builder()
-                    .order(o1)
                     .product(p1)
                     .quantity(2)
                     .price(p1.getPrice())
                     .build();
             OrderDetail od2 = OrderDetail.builder()
-                    .order(o2)
                     .product(p2)
                     .quantity(1)
                     .price(p2.getPrice())
                     .build();
             OrderDetail od3 = OrderDetail.builder()
-                    .order(o3)
                     .product(p3)
                     .quantity(3)
                     .price(p3.getPrice())
