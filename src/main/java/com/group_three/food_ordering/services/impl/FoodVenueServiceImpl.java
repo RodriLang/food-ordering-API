@@ -32,7 +32,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     }
 
     @Override
-    public Page<FoodVenueAdminResponseDto> getAll(Pageable pageable) {
+    public Page<FoodVenueAdminResponseDto> getAllAdmin(Pageable pageable) {
         return foodVenueRepository.findAllByDeletedFalse(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
@@ -41,6 +41,12 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     public Page<FoodVenueAdminResponseDto> getDeleted(Pageable pageable) {
         return foodVenueRepository.findAllByDeletedTrue(pageable)
                 .map(foodVenueMapper::toAdminDto);
+    }
+
+    @Override
+    public Page<FoodVenuePublicResponseDto> getAllPublic(Pageable pageable) {
+        return foodVenueRepository.findAllByDeletedFalse(pageable)
+                .map(foodVenueMapper::toPublicDto);
     }
 
     @Override

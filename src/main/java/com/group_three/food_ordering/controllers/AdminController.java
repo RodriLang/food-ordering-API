@@ -2,36 +2,35 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.create.UserCreateDto;
-import com.group_three.food_ordering.dto.update.UserUpdateDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.update.UserUpdateDto;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import jakarta.annotation.security.PermitAll;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.USER_BASE)
-@Tag(name = "Users", description = "Operaciones relacionadas con usuarios del sistema (Staff, Clientes, Invitados)")
-public interface UserController {
+@Tag(name = "Users", description = "Operaciones relacionadas con usuarios administradores del sistema (Staff, Admin, Super Admin)")
+public interface AdminController {
 
     @PostMapping
     @Operation(
-            summary = "Registrar un nuevo usuario",
-            description = "Crea un usuario con todos sus datos. El correo electrónico debe ser único.",
+            summary = "Registrar un nuevo usuario administrador",
+            description = "Crea un admin vinculando a un User existente con un Lugar de comida.",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
+                    @ApiResponse(responseCode = "201", description = "Admin creado exitosamente"),
+                    @ApiResponse(responseCode = "404", description = "Usuario o Lugar de comida no encontrados"),
                     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
             }
     )
-    ResponseEntity<UserResponseDto> register(
+    ResponseEntity<UserResponseDto> registerAdmin(
             @Valid @RequestBody UserCreateDto dto);
 
     @GetMapping("/root/{id}")
@@ -90,7 +89,7 @@ public interface UserController {
     )
     ResponseEntity<UserResponseDto> patchUserById(
             @PathVariable UUID id,
-            @Valid @org.springframework.web.bind.annotation.RequestBody UserUpdateDto dto);
+            @Valid @RequestBody UserUpdateDto dto);
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

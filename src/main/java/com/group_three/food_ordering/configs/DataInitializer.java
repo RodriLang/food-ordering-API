@@ -105,6 +105,7 @@ public class DataInitializer implements CommandLineRunner {
         // FoodVenues
         if (foodVenueRepository.count() == 0) {
             FoodVenue v1 = FoodVenue.builder()
+                    .id(UUID.fromString("46b63071-f6fb-48bf-a2e0-4f7144e5a09b"))
                     .name("Burger House")
                     .email("contact@burgerhouse.com")
                     .phone("1234567890")
@@ -112,6 +113,7 @@ public class DataInitializer implements CommandLineRunner {
                     .address(new Address("Main St", "123", "CityA", "ProvinceA", "CountryA", "1000"))
                     .build();
             FoodVenue v2 = FoodVenue.builder()
+                    .id(UUID.fromString("a9ff20fc-606b-49cd-a19f-8e434eb0af44"))
                     .name("Pasta Palace")
                     .email("hello@pastapalace.com")
                     .phone("0987654321")
@@ -119,6 +121,7 @@ public class DataInitializer implements CommandLineRunner {
                     .address(new Address("Second St", "456", "CityB", "ProvinceB", "CountryB", "2000"))
                     .build();
             FoodVenue v3 = FoodVenue.builder()
+                    .id(UUID.fromString("df365b85-dc66-4437-96fc-da7e8f0e5a4a"))
                     .name("Taco Town")
                     .email("info@tacotown.com")
                     .phone("5555555555")

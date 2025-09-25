@@ -15,9 +15,11 @@ public interface FoodVenueService {
 
     FoodVenue findEntityById(UUID id);
 
-    Page<FoodVenueAdminResponseDto> getAll(Pageable pageable);
+    Page<FoodVenueAdminResponseDto> getAllAdmin(Pageable pageable);
 
     Page<FoodVenueAdminResponseDto> getDeleted(Pageable pageable);
+
+    Page<FoodVenuePublicResponseDto> getAllPublic(Pageable pageable);
 
     FoodVenueAdminResponseDto getById(UUID id);
 

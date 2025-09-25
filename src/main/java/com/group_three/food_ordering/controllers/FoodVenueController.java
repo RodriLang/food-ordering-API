@@ -4,31 +4,24 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
-import com.group_three.food_ordering.services.FoodVenueService;
+import com.group_three.food_ordering.utils.OnCreate;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RestController
 @RequestMapping(ApiPaths.VENUE_BASE)
-@RequiredArgsConstructor
-public class FoodVenueController {
+public interface FoodVenueController {
 
-    private final FoodVenueService foodVenueService;
-
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Crear un nuevo lugar de comida",
             description = "Crea un nuevo lugar de comida. Solo usuarios con rol root pueden crear un lugar.",
@@ -40,27 +33,21 @@ public class FoodVenueController {
             }
     )
     @PostMapping
-    public ResponseEntity<FoodVenueAdminResponseDto> createFoodVenue(
-            @RequestBody @Valid FoodVenueRequestDto foodVenueRequestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(foodVenueService.create(foodVenueRequestDto));
-    }
+    ResponseEntity<FoodVenueAdminResponseDto> createFoodVenue(
+            @RequestBody @Validated(OnCreate.class) FoodVenueRequestDto foodVenueRequestDto);
 
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Obtener todos los lugares de comida",
             description = "Devuelve la lista completa de lugares de comida. Solo usuarios con rol root pueden acceder.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de lugares de comida",
-                            content = @Content(schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array"))),
+                    @ApiResponse(responseCode = "200", description = "Lista de lugares de comida", content = @Content(
+                            schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array"))),
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @GetMapping
-    public ResponseEntity<Page<FoodVenueAdminResponseDto>> getFoodVenues(@Parameter Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getAll(pageable));
-    }
+    @GetMapping("/root")
+    ResponseEntity<Page<FoodVenueAdminResponseDto>> getFoodVenues(@Parameter Pageable pageable);
 
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Obtener los lugares de comida eliminados",
             description = "Devuelve la lista de lugares de comida que han sido borrados de forma lógica. Solo usuarios con rol root pueden acceder.",
@@ -70,12 +57,9 @@ public class FoodVenueController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @GetMapping("/deleted")
-    public ResponseEntity<Page<FoodVenueAdminResponseDto>> getDeletedFoodVenues(@Parameter Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getDeleted(pageable));
-    }
+    @GetMapping("/root/deleted")
+    ResponseEntity<Page<FoodVenueAdminResponseDto>> getDeletedFoodVenues(@Parameter Pageable pageable);
 
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Obtener un lugar de comida por ID",
             description = "Devuelve un lugar de comida identificado por su UUID. Accesible para roles root.",
@@ -86,14 +70,11 @@ public class FoodVenueController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @GetMapping("/{id}")
-    public ResponseEntity<FoodVenueAdminResponseDto> getFoodVenueById(
+    @GetMapping("/root/{id}")
+    ResponseEntity<FoodVenueAdminResponseDto> getFoodVenueById(
             @Parameter(description = "UUID del lugar de comida a obtener", required = true)
-            @PathVariable UUID id) {
-        return ResponseEntity.ok(foodVenueService.getById(id));
-    }
+            @PathVariable UUID id);
 
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Actualizar un lugar de comida por ID",
             description = "Actualiza un lugar de comida identificado por su UUID. Accesible para roles root.",
@@ -105,14 +86,11 @@ public class FoodVenueController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @PatchMapping("/{id}")
-    public ResponseEntity<FoodVenueAdminResponseDto> patch(
+    @PatchMapping("/root/{id}")
+    ResponseEntity<FoodVenueAdminResponseDto> updateById(
             @PathVariable UUID id,
-            @RequestBody @Valid FoodVenueRequestDto foodVenueRequestDto) {
-        return ResponseEntity.ok(foodVenueService.update(id, foodVenueRequestDto));
-    }
+            @RequestBody @Validated(OnUpdate.class) FoodVenueRequestDto foodVenueRequestDto);
 
-    @PreAuthorize("hasRole('ROOT')")
     @Operation(
             summary = "Eliminar un lugar de comida",
             description = "Elimina un lugar de comida por su UUID. Accesible para root.",
@@ -122,15 +100,23 @@ public class FoodVenueController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFoodVenue(
+    @DeleteMapping("/root/{id}")
+    ResponseEntity<Void> deleteFoodVenue(
             @Parameter(description = "UUID del lugar de comida a eliminar", required = true)
-            @PathVariable UUID id) {
-        foodVenueService.softDelete(id);
-        return ResponseEntity.noContent().build();
-    }
+            @PathVariable UUID id);
 
-    @PreAuthorize("hasAnyRole('GUEST', 'CLIENT', 'STAFF', 'ADMIN', 'SUPER_ADMIN')")
+    @Operation(
+            summary = "Obtener todos los lugares de comida",
+            description = "Devuelve la lista con datos reducidos de lugares de comida.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de lugares de comida", content = @Content(
+                            schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array"))),
+                    @ApiResponse(responseCode = "403", description = "Acceso denegado")
+            }
+    )
+    @GetMapping()
+    ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(@Parameter Pageable pageable);
+
     @Operation(
             summary = "Obtener el lugar de comida",
             description = "Devuelve el lugar de comida asociado al usuario, o en que tenga una mesa activa.",
@@ -142,11 +128,8 @@ public class FoodVenueController {
             }
     )
     @GetMapping("/current")
-    public ResponseEntity<FoodVenuePublicResponseDto> getMyCurrentFoodVenue() {
-        return ResponseEntity.ok(foodVenueService.getMyCurrentFoodVenue());
-    }
+    ResponseEntity<FoodVenuePublicResponseDto> getMyCurrentFoodVenue();
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(
             summary = "Actualizar un lugar de comida",
             description = "Actualiza el lugar de comida asociado al usuario registrado. accesible para admin",
@@ -158,9 +141,7 @@ public class FoodVenueController {
                     @ApiResponse(responseCode = "403", description = "Acceso denegado")
             }
     )
-    @PatchMapping("/current")
-    public ResponseEntity<FoodVenuePublicResponseDto> updateMyCurrentFoodVenue(
-            @RequestBody @Valid FoodVenueRequestDto foodVenueRequestDto) {
-        return ResponseEntity.ok(foodVenueService.updateMyCurrentFoodVenue(foodVenueRequestDto));
-    }
+    @PatchMapping("/admin/current")
+    ResponseEntity<FoodVenuePublicResponseDto> updateMyCurrentFoodVenue(
+            @RequestBody @Validated(OnUpdate.class) FoodVenueRequestDto foodVenueRequestDto);
 }

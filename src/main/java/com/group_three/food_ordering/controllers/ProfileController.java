@@ -26,10 +26,10 @@ public interface ProfileController {
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
 
-    @PostMapping
+    @PostMapping("/table-sessions")
     ResponseEntity<AuthResponse> createTableSession(@RequestBody @Valid TableSessionCreateDto tableSessionCreateDto);
 
-    @GetMapping
+    @GetMapping("/table-sessions")
     ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
