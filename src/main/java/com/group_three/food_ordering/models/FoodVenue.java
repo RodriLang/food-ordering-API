@@ -1,13 +1,11 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,17 +33,31 @@ public class FoodVenue {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(nullable = false, length = 200)
+    @Column
     private String imageUrl;
 
+    @Column(nullable = false)
+    private Boolean deleted;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime creationDate;
+
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime lastUpdateDate;
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Employee> employees = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Product> products = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Table> tables = new ArrayList<>();
@@ -53,5 +65,12 @@ public class FoodVenue {
     @PrePersist
     public void onCreate() {
         if (this.id == null) this.id = UUID.randomUUID();
+        if (this.deleted == null) this.deleted = Boolean.FALSE;
+        creationDate = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        lastUpdateDate = LocalDateTime.now();
     }
 }

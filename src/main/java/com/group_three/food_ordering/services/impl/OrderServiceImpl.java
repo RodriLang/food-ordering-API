@@ -3,7 +3,6 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.OrderRequestDto;
-import com.group_three.food_ordering.dto.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.RoleType;
@@ -17,6 +16,9 @@ import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.utils.OrderServiceHelper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,12 +27,12 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
@@ -41,6 +43,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
+        log.debug("::: Creando nueva Order : {} :::", orderRequestDto);
+        FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
 
         Client client = authService.getCurrentClient();
 
@@ -48,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderNumber(orderServiceHelper.generateOrderNumber());
         order.setClient(client);
 
-        FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
+        log.info("::: Generando Order para con el Tenant del Food Venue ID: {} :::", currentFoodVenue.getId());
 
         /// method added for setting Table Session ID in the order
         TableSession tableSession = authService.getCurrentTableSession();
@@ -75,46 +79,32 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponseDto> getAll() {
-        return orderRepository.findAll().stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
 
-    @Override
-
-    public List<OrderResponseDto> getOrdersByFilters(
-            LocalDate from, LocalDate to, OrderStatus status) {
+    public Page<OrderResponseDto> getOrdersByFilters(
+            LocalDate from, LocalDate to, OrderStatus status, Pageable pageable) {
         LocalDateTime fromDateTime = (from != null) ? from.atStartOfDay() : null;
         LocalDateTime toDateTime = (to != null) ? to.atTime(LocalTime.MAX) : null;
 
-        return fetchOrders(fromDateTime, toDateTime, status);
+        return fetchOrders(fromDateTime, toDateTime, status, pageable);
     }
 
     @Override
-    public List<OrderResponseDto> getOrdersForToday(OrderStatus status) {
+    public Page<OrderResponseDto> getOrdersForToday(OrderStatus status, Pageable pageable) {
         LocalDateTime opening = LocalDate.now().atStartOfDay();
         LocalDateTime closing = opening.plusDays(1);
 
-        return fetchOrders(opening, closing, status);
+        return fetchOrders(opening, closing, status, pageable);
     }
 
-    @Override
-    public List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId) {
-        return orderRepository.findOrderByTableSession_Id(tableSessionId)
-                .stream()
-                .map(orderMapper::toDTO)
-                .toList();
-    }
 
     @Override
-    public List<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status) {
+    public Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
         Client currentClient = authService.getCurrentClient();
 
 
         TableSession session = tableSessionRepository.findById(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException("Table session not found"));
+                .orElseThrow(() -> new EntityNotFoundException("TableSession", tableSessionId.toString()));
 
         if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentClient)) {
@@ -123,18 +113,25 @@ public class OrderServiceImpl implements OrderService {
         }
 
         //filtra por estado
-        List<Order> orders;
+        Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrderByTableSession_IdAndStatus(tableSessionId, status);
+            orders = orderRepository.findOrderByTableSession_IdAndStatus(tableSessionId, status, pageable);
         } else {
-            orders = orderRepository.findOrderByTableSession_Id(tableSessionId);
+            orders = orderRepository.findOrderByTableSession_Id(tableSessionId, pageable);
         }
 
-        return orders.stream().map(orderMapper::toDTO).toList();
+        return orders.map(orderMapper::toDTO);
 
     }
 
-    public List<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status) {
+    @Override
+    public Page<OrderResponseDto> getOrdersByAuthenticatedClient(OrderStatus status, Pageable pageable) {
+        var authenticatedClientId = authService.getCurrentClient().getId();
+
+        return getOrdersByClient(authenticatedClientId, status, pageable);
+    }
+
+    public Page<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status, Pageable pageable) {
 
         Client currentClient = authService.getCurrentClient();
 
@@ -145,51 +142,82 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Se filtra por estado
-        List<Order> orders;
+        Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrdersByClient_IdAndStatus(clientId, status);
+            orders = orderRepository.findOrdersByClient_IdAndStatus(clientId, status, pageable);
         } else {
-            orders = orderRepository.findOrdersByClient_Id(clientId);
+            orders = orderRepository.findOrdersByClient_Id(clientId, pageable);
         }
 
-        return orders.stream().map(orderMapper::toDTO).toList();
+        return orders.map(orderMapper::toDTO);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndStatus(OrderStatus status, Pageable pageable) {
+
+        var currentClientId = authService.getCurrentClient().getId();
+
+        return getOrdersByClient(currentClientId, status, pageable);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndCurrentTableSessionAndStatus(
+            OrderStatus status, Pageable pageable) {
+
+        var currentClientId = authService.getCurrentClient().getId();
+        var currentTableSessionId = authService.getCurrentTableSession().getId();
+
+        return getOrdersByClientAndTableSessionAndStatus(currentClientId, currentTableSessionId, status, pageable);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getOrdersByClientAndTableSessionAndStatus(
+            UUID clientId, UUID tableSessionId, OrderStatus status, Pageable pageable) {
+
+        var currentClientId = authService.getCurrentClient().getId();
+        var currentTableSessionId = authService.getCurrentTableSession().getId();
+
+        return orderRepository.findOrdersByClient_IdAndTableSession_IdAndStatus(
+                currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDTO);
     }
 
 
     // permite recibir parámetros opcionalmente
     // omitiendo el filtro que no fue especificado en la consulta
-    private List<OrderResponseDto> fetchOrders(
-            LocalDateTime from, LocalDateTime to, OrderStatus status) {
-        UUID venueId = tenantContext.getCurrentFoodVenueId();
-        List<Order> orders;
+    private Page<OrderResponseDto> fetchOrders(
+            LocalDateTime from,
+            LocalDateTime to,
+            OrderStatus status,
+            Pageable pageable
+    ) {
+        UUID venueId = tenantContext.determineCurrentFoodVenue().getId();
+        Page<Order> orders;
 
         if (from != null && to != null) {
             if (status != null) {
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(venueId, from, to, status);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(venueId, from, to, status, pageable);
             } else {
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(venueId, from, to);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(venueId, from, to, pageable);
             }
         } else if (status != null) {
-            orders = orderRepository.findByFoodVenue_IdAndStatus(venueId, status);
+            orders = orderRepository.findByFoodVenue_IdAndStatus(venueId, status, pageable);
         } else {
-            orders = orderRepository.findByFoodVenue_Id(venueId);
+            orders = orderRepository.findByFoodVenue_Id(venueId, pageable);
         }
 
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .toList();
+        return orders.map(orderMapper::toDTO);
     }
 
 
     @Override
-    public OrderResponseDto getById(UUID id) {
+    public OrderResponseDto getByIdAndTenantContext(UUID id) {
 
-        return orderMapper.toDTO(this.getEntityById(id));
+        return orderMapper.toDTO(this.getEntityByIdAndTenantContext(id));
     }
 
     @Override
     public OrderResponseDto updateSpecialRequirements(UUID orderId, String specialRequirements) {
-        Order existingOrder = this.getEntityById(orderId);
+        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
 
         existingOrder.setSpecialRequirements(specialRequirements);
 
@@ -206,7 +234,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto updateStatus(UUID id, OrderStatus orderStatus) {
-        Order existingOrder = this.getEntityById(id);
+        Order existingOrder = this.getEntityByIdAndTenantContext(id);
 
         existingOrder.setStatus(orderStatus);
         orderRepository.save(existingOrder);
@@ -220,17 +248,19 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = start.plusDays(1);
 
-        return orderMapper.toDTO(orderRepository
+        Order foundOrder = orderRepository
                 .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
                         tenantContext.getCurrentFoodVenue().getId(), orderNumber, start, end)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found")));
+                .orElseThrow(() -> new EntityNotFoundException("Order"));
+
+        return orderMapper.toDTO(foundOrder);
     }
 
 
     @Override
     public void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail) {
 
-        Order existingOrder = this.getEntityById(orderId);
+        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
         orderServiceHelper.validateUpdate(existingOrder);
         existingOrder.getOrderDetails().remove(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
@@ -241,7 +271,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail) {
 
-        Order existingOrder = this.getEntityById(orderId);
+        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
         orderServiceHelper.validateUpdate(existingOrder);
         existingOrder.getOrderDetails().add(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
@@ -250,7 +280,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getEntityById(UUID id) {
+    public Order getEntityByIdAndTenantContext(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order", id.toString()));
     }

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.request.CategoryCreateDto;
+import com.group_three.food_ordering.dto.create.CategoryCreateDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.mappers.CategoryMapper;
 import com.group_three.food_ordering.models.Category;

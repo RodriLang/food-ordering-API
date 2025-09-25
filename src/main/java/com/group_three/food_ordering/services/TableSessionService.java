@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;

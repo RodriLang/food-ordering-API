@@ -278,6 +278,19 @@ public class DataInitializer implements CommandLineRunner {
             if (userRepository.count() == 0) {
                 System.out.println("🚀 Creando usuarios de desarrollo...");
 
+                // Root
+                User rootUser = User.builder()
+                        .name("Root")
+                        .lastName("System")
+                        .email("root@test.com")
+                        .password(passwordEncoder.encode("root123"))
+                        .birthDate(LocalDate.of(1990, 1, 1))
+                        .phone("1111111111")
+                        .createdAt(LocalDateTime.now())
+                        .role(RoleType.ROLE_ROOT)
+                        .address(new Address("Root St", "1", "Root City", "Root Province", "Root Country", "0000"))
+                        .build();
+
                 // Admin/Super Admin
                 User adminUser = User.builder()
                         .name("Admin")
@@ -364,7 +377,7 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
                         .build();
 
-                userRepository.saveAll(List.of(adminUser, clientUser,employeeUser,managerUser, testUser));
+                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, testUser));
                 employeeRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
                 clientRepository.saveAll(List.of(client));
 

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.ClientCreateDto;
+import com.group_three.food_ordering.dto.create.ClientCreateDto;
 import com.group_three.food_ordering.dto.update.ClientPatchDto;
 import com.group_three.food_ordering.dto.update.ClientUpdateDto;
 import com.group_three.food_ordering.dto.response.ClientResponseDto;

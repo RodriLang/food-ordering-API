@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.request.UserCreateDto;
+import com.group_three.food_ordering.dto.create.UserCreateDto;
 import com.group_three.food_ordering.dto.update.UserUpdateDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
@@ -9,6 +9,7 @@ import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
+import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
+    private final AuthService authService;
 
     @Override
     public UserResponseDto create(UserCreateDto dto) {
@@ -52,6 +54,11 @@ public class UserServiceImpl implements UserService {
         userEntity.setCreatedAt(LocalDateTime.now());
 
         return userRepository.save(userEntity);
+    }
+
+    @Override
+    public UserResponseDto getAuthenticatedUser() {
+        return userMapper.toResponseDto(authService.getCurrentUser());
     }
 
     @Override

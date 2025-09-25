@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.request.ClientCreateDto;
+import com.group_three.food_ordering.dto.create.ClientCreateDto;
 import com.group_three.food_ordering.dto.response.ClientResponseDto;
 import com.group_three.food_ordering.dto.update.ClientPatchDto;
 import com.group_three.food_ordering.dto.update.ClientUpdateDto;

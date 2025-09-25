@@ -1,26 +1,31 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.FoodVenueCreateDto;
-import com.group_three.food_ordering.dto.response.FoodVenueResponseDto;
-import com.group_three.food_ordering.dto.update.FoodVenueUpdateDto;
+import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
+import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
+import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
+import com.group_three.food_ordering.models.FoodVenue;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface FoodVenueService {
 
-    // Only root can create a food venue
-    FoodVenueResponseDto create(FoodVenueCreateDto foodVenueCreateDto);
+    FoodVenueAdminResponseDto create(FoodVenueRequestDto foodVenueRequestDto);
 
-    // Only root can view all food venues
-    List<FoodVenueResponseDto> getAll();
+    FoodVenue findEntityById(UUID id);
 
-    // Admin and root can view food venue by id
-    FoodVenueResponseDto getById(UUID id);
+    Page<FoodVenueAdminResponseDto> getAll(Pageable pageable);
 
-    // Admin can update any food venue, root can update its food venue
-    FoodVenueResponseDto update(FoodVenueUpdateDto foodVenueUpdateDto);
+    Page<FoodVenueAdminResponseDto> getDeleted(Pageable pageable);
 
-    // Admin can delete any food venue, root can delete its food venue
-    void delete(UUID id);
+    FoodVenueAdminResponseDto getById(UUID id);
+
+    FoodVenuePublicResponseDto getMyCurrentFoodVenue();
+
+    FoodVenueAdminResponseDto update(UUID foodVenueId , FoodVenueRequestDto foodVenueUpdateDto);
+
+    FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueUpdateDto);
+
+    void softDelete(UUID id);
 }

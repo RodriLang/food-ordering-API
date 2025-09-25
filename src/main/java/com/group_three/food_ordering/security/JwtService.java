@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+@Slf4j
 @Component
 public class JwtService {
 
@@ -89,6 +91,7 @@ public class JwtService {
     }
 
     public String getFoodVenueId(String token) {
+        log.debug("[JwtService] Extracting foodVenueId from JWT token={}", token);
         return getClaim(token, claims -> claims.get("foodVenueId", String.class));
     }
 

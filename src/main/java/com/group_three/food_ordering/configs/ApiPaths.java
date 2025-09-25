@@ -19,5 +19,6 @@ public class ApiPaths {
         public static final String ORDER_DETAIL_URI = "/details";
         public static final String AUTH_URI = URI_BASE_V1 + "/auth";
         public static final String MENU_URI = URI_BASE_V1 + "/menu";
+        public static final String CURRENT_USER = URI_BASE_V1 + "/me";
 }
 

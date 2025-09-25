@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.CategoryCreateDto;
+import com.group_three.food_ordering.dto.create.CategoryCreateDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 
 import java.util.List;

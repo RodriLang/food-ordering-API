@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.dto.request;
+package com.group_three.food_ordering.dto.create;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;

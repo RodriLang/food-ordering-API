@@ -3,6 +3,7 @@ package com.group_three.food_ordering.exceptions.handler;
 import com.group_three.food_ordering.exceptions.*;
 import com.group_three.food_ordering.exceptions.responses.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,12 +12,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // Error de entidad no encontrada en la base de datos
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException e, HttpServletRequest request) {
+        log.warn("[{}] {}", e.getEntityName(), e.getMessage());
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
 
@@ -48,6 +51,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientStock(InsufficientStockException e, HttpServletRequest request) {
         return buildErrorResponse(e, HttpStatus.CONFLICT, request);
+    }
+
+    // Error de contexto indeterminado cuando no se puede obtener el Food Venue
+    @ExceptionHandler(MissingTenantContextException.class)
+    public ResponseEntity<ErrorResponse> handleIndeterminateTenantContext(MissingTenantContextException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
 
 

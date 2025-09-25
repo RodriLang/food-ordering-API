@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.request.ClientCreateDto;
+import com.group_three.food_ordering.dto.create.UserCreateDto;
+import com.group_three.food_ordering.dto.create.ClientCreateDto;
 import com.group_three.food_ordering.dto.response.ClientResponseDto;
 import com.group_three.food_ordering.dto.update.AddressUpdateDto;
 import com.group_three.food_ordering.dto.update.ClientPatchDto;
@@ -93,8 +94,8 @@ public class ClientServiceImpl implements ClientService {
     }
 
     /// Metodo auxiliar para convertir User a UserCreateDto para invitado
-    private com.group_three.food_ordering.dto.request.UserCreateDto toDtoFromEntity(User user) {
-        return com.group_three.food_ordering.dto.request.UserCreateDto.builder()
+    private UserCreateDto toDtoFromEntity(User user) {
+        return UserCreateDto.builder()
                 .name(user.getName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())

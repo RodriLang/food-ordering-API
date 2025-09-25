@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.TableCreateDto;
+import com.group_three.food_ordering.dto.create.TableCreateDto;
 import com.group_three.food_ordering.dto.response.TableResponseDto;
 import com.group_three.food_ordering.dto.update.TableUpdateDto;
 import com.group_three.food_ordering.enums.TableStatus;

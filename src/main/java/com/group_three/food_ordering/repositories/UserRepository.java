@@ -20,4 +20,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByIdAndRemovedAtIsNull(UUID id);
 
     List<User> findAllByRemovedAtIsNotNull();
+
 }

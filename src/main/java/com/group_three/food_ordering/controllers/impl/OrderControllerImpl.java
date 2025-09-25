@@ -6,14 +6,17 @@ import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class OrderControllerImpl implements OrderController {
@@ -24,16 +27,16 @@ public class OrderControllerImpl implements OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
     }
 
-    public ResponseEntity<List<OrderResponseDto>> getOrders(LocalDate from, LocalDate to, OrderStatus status) {
-        return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status));
+    public ResponseEntity<Page<OrderResponseDto>> getOrders(LocalDate from, LocalDate to, OrderStatus status, Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status, pageable));
     }
 
-    public ResponseEntity<List<OrderResponseDto>> getDailyOrders(OrderStatus status) {
-        return ResponseEntity.ok(orderService.getOrdersForToday(status));
+    public ResponseEntity<Page<OrderResponseDto>> getDailyOrders(OrderStatus status, Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersForToday(status, pageable));
     }
 
     public ResponseEntity<OrderResponseDto> getOrderById(UUID id) {
-        return ResponseEntity.ok(orderService.getById(id));
+        return ResponseEntity.ok(orderService.getByIdAndTenantContext(id));
     }
 
     public ResponseEntity<OrderResponseDto> getOrderByDateAndOrderNumber(LocalDate date, Integer orderNumber) {

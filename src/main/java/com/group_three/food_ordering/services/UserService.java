@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.UserCreateDto;
+import com.group_three.food_ordering.dto.create.UserCreateDto;
 import com.group_three.food_ordering.dto.update.UserUpdateDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.models.User;
@@ -27,4 +27,6 @@ public interface UserService {
     User getEntityById(UUID id);
 
     User createIfPresent(UserCreateDto dto);
+
+    UserResponseDto getAuthenticatedUser();
 }

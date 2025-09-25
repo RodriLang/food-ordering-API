@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.request.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -222,11 +224,12 @@ public class TableSessionController {
 
     @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
     @GetMapping("/{id}/orders")
-    public ResponseEntity<List<OrderResponseDto>> getOrdersByTableSession(
+    public ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
-            @RequestParam(required = false) OrderStatus status) {
-        return ResponseEntity.ok(orderService.getOrdersByTableSessionAndStatus(id, status));
+            @RequestParam(required = false) OrderStatus status,
+            @Parameter Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByTableSessionAndStatus(id, status, pageable));
     }
 
 }

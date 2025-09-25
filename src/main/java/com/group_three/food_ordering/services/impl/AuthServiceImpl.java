@@ -9,6 +9,7 @@ import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -76,11 +78,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Client getCurrentClient() {
+        log.debug("[AuthService] Obteniendo Cliente autenticado.");
         return clientRepository.findByUser_Email(getCurrentEmail())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
     }
 
     public TableSession getCurrentTableSession() {
+        log.debug("[AuthService] Obteniendo Sesión de mesa actual.");
         String token = extractTokenFromRequest();
         String sessionIdString = jwtService.getClaim(token, claims -> claims.get("tableSessionId", String.class));
 
@@ -95,7 +99,9 @@ public class AuthServiceImpl implements AuthService {
 
     private String extractTokenFromRequest() {
         final String authHeader = request.getHeader("Authorization");
+        log.info("::: Obteniendo token :::");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.error("::: Token invalido {} :::", authHeader);
             throw new IllegalStateException("Token JWT no presente o mal formado");
         }
         return authHeader.substring(7);}

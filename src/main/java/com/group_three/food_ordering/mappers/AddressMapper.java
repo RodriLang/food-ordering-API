@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dto.request.AddressCreateDto;
+import com.group_three.food_ordering.dto.create.AddressCreateDto;
 import com.group_three.food_ordering.dto.response.AddressResponseDto;
 import com.group_three.food_ordering.dto.update.AddressUpdateDto;
 import com.group_three.food_ordering.models.Address;

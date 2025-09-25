@@ -31,16 +31,17 @@ public class TenantContextFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-
             try {
-                // NO volvemos a validar el token. Asumimos que ya está validado por JwtAuthorizationFilter.
+                log.debug("[TenantContextFilter] Extracting foodVenueId from JWT token={}", token);
                 String foodVenueId = jwtService.getFoodVenueId(token);
                 if (foodVenueId != null) {
                     tenantContext.setCurrentFoodVenueId(foodVenueId);
+                    log.debug("[TenantContextFilter] Set currentFoodVenueId={}", foodVenueId);
+                } else {
+                    log.warn("[TenantContextFilter] foodVenueId extracted from token is null");
                 }
             } catch (Exception e) {
-                log.warn("No se pudo extraer el tenant del token JWT: {}", e.getMessage());
-                // Si el claim es inválido, podemos continuar sin setear el tenant, o lanzar error si es obligatorio.
+                log.warn("[TenantContextFilter] Failed to extract tenant from JWT token reason={}", e.getMessage());
             }
         }
 

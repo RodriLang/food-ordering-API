@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
-import com.group_three.food_ordering.dto.request.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
@@ -14,11 +14,13 @@ import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.ClientService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TableSessionServiceImpl implements TableSessionService {
@@ -34,6 +36,8 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public AuthResponse create(TableSessionCreateDto tableSessionCreateDto) {
+
+        log.debug("[TableSession] Initializing table session tableId={}...", tableSessionCreateDto.getTableId()); // antes de persistir
         TableSession tableSession = tableSessionMapper.toEntity(tableSessionCreateDto);
 
         Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
@@ -68,6 +72,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
 
+        log.info("[TableSession] Initialized entity successfully tableId={}...tableSessionId={}", table.getId(), tableSession.getId());
         return response;
     }
 

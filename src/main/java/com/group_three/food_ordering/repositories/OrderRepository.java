@@ -3,6 +3,8 @@ package com.group_three.food_ordering.repositories;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.models.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,28 +21,30 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
             UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
 
-    List<Order> findByFoodVenue_IdAndCreationDateBetweenAndStatus(
-            UUID foodVenueId, LocalDateTime start, LocalDateTime end, OrderStatus status
+    Optional<Order> findByIdAndFoodVenue_Id(UUID id, UUID foodVenueId);
+
+    Page<Order> findByFoodVenue_IdAndCreationDateBetweenAndStatus(
+            UUID foodVenueId, LocalDateTime start, LocalDateTime end, OrderStatus status, Pageable pageable);
+
+    Page<Order> findByFoodVenue_IdAndCreationDateBetween(
+            UUID foodVenueId, LocalDateTime start, LocalDateTime end, Pageable pageable
     );
 
-    List<Order> findByFoodVenue_IdAndCreationDateBetween(
-            UUID foodVenueId, LocalDateTime start, LocalDateTime end
-    );
+    Page<Order> findByFoodVenue_Id(UUID venueId, Pageable pageable);
 
-    List<Order> findByFoodVenue_Id(UUID venueId);
+    Page<Order> findByFoodVenue_IdAndStatus(UUID venueId, OrderStatus status, Pageable pageable);
 
-    List<Order> findByFoodVenue_IdAndStatus(UUID venueId, OrderStatus status);
+    Page<Order> findOrderByTableSession_Id(UUID tableSessionId, Pageable pageable);
 
-    List<Order> findOrderByTableSession_Id(UUID tableSessionId);
+    Page<Order> findOrderByTableSession_IdAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable);
 
-    List<Order> findOrderByTableSession_IdAndStatus(UUID tableSessionId, OrderStatus status);
+    Page<Order> findOrdersByPayment_Status(PaymentStatus status, Pageable pageable);
 
-    List<Order> getOrdersByPayment_Status(PaymentStatus status);
+    Page<Order> findOrdersByClient_Id(UUID clientId, Pageable pageable);
 
-    List<Order> findOrdersByClient_Id(UUID clientId);
+    Page<Order> findOrdersByClient_IdAndStatus(UUID clientId, OrderStatus status, Pageable pageable);
 
-
-    List<Order> findOrdersByClient_IdAndStatus(UUID clientId, OrderStatus status);
+    Page<Order> findOrdersByClient_IdAndTableSession_IdAndStatus(UUID clientId, UUID tableSessionId ,OrderStatus status, Pageable pageable);
 
     @Query("SELECT COUNT(o) " +
             "FROM Order o " +
@@ -52,4 +56,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
+
 }

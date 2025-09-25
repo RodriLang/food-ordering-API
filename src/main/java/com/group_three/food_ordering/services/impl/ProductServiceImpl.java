@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
-import com.group_three.food_ordering.dto.request.ProductCreateDto;
+import com.group_three.food_ordering.dto.create.ProductCreateDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.dto.update.ProductUpdateDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;

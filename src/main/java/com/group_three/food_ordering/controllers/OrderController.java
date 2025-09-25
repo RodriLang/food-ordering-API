@@ -10,13 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.ORDER_BASE)
@@ -46,7 +47,7 @@ public interface OrderController {
             @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
     })
     @GetMapping()
-    ResponseEntity<List<OrderResponseDto>> getOrders(
+    ResponseEntity<Page<OrderResponseDto>> getOrders(
             @Parameter(description = "Fecha desde la cual buscar órdenes (formato yyyy-MM-dd)", example = "2025-05-01")
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
 
@@ -54,7 +55,10 @@ public interface OrderController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
 
             @Parameter(description = "Estado de la orden para filtrar", example = "PENDING")
-            @RequestParam(required = false) OrderStatus status);
+            @RequestParam(required = false) OrderStatus status,
+
+            @Parameter(hidden = true) Pageable pageable
+    );
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -67,9 +71,11 @@ public interface OrderController {
             @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
     })
     @GetMapping("/today")
-    ResponseEntity<List<OrderResponseDto>> getDailyOrders(
+    ResponseEntity<Page<OrderResponseDto>> getDailyOrders(
             @Parameter(description = "Estado de la orden para filtrar", example = "PENDING")
-            @RequestParam(required = false) OrderStatus status);
+            @RequestParam(required = false) OrderStatus status,
+
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
