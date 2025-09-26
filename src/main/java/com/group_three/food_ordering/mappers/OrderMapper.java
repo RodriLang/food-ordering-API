@@ -15,7 +15,7 @@ public interface OrderMapper {
     @Mapping(source = "orderNumber",
             target = "formattedOrderNumber",
             qualifiedByName = "formatOrderNumber")
-    @Mapping(source = "client.nickname", target = "clientAlias")
+    @Mapping(source = "participant.nickname", target = "clientAlias")
     @Mapping(source = "orderDetails", target = "orderDetails")
 
     OrderResponseDto toDTO(Order order);

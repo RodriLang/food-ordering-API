@@ -22,7 +22,7 @@ public interface TableSessionRepository extends JpaRepository<TableSession, UUID
             LocalDateTime end
     );
     List<TableSession> findByFoodVenueIdAndEndTimeIsNull(UUID foodVenueId);
-    List<TableSession> findByFoodVenueIdAndHostClientId(UUID foodVenueId, UUID clientId);
+    List<TableSession> findByFoodVenueIdAndSessionHostId(UUID foodVenueId, UUID sessionHost);
 
     @Query("SELECT ts " +
             "FROM table_sessions ts " +

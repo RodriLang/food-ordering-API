@@ -37,8 +37,8 @@ public class TableSession {
     private FoodVenue foodVenue;
 
     @ManyToOne
-    @JoinColumn(name = "host_client_id")
-    private Client hostClient;
+    @JoinColumn(name = "host_id")
+    private Participant sessionHost;
 
     @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -51,7 +51,7 @@ public class TableSession {
             inverseJoinColumns = @JoinColumn(name = "client_id")
     )
     @Builder.Default
-    private List<Client> participants = new ArrayList<>();
+    private List<Participant> participants = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {

@@ -5,14 +5,11 @@ import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
-import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.TableRepository;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
-import com.group_three.food_ordering.repositories.UserRepository;
-import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ClientService;
 import com.group_three.food_ordering.services.TableSessionService;
@@ -53,19 +50,19 @@ public class TableSessionServiceImpl implements TableSessionService {
         tableSession.setFoodVenue(foodVenue);
         tableSession.setTable(table);
 
-        Client hostClient;
+        Participant hostParticipant;
 
         try {
-            hostClient = authServiceImpl.getCurrentClient();
+            hostParticipant = authServiceImpl.getCurrentClient();
 
-            tableSession.setHostClient(hostClient);
-            tableSession.getParticipants().add(hostClient);
+            tableSession.setSessionHost(hostParticipant);
+            tableSession.getParticipants().add(hostParticipant);
 
 
         } catch (EntityNotFoundException e) {
-            hostClient = clientService.getEntityById(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"));
+            hostParticipant = clientService.getEntityById(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"));
         }
-        AuthResponse authResponse = authService.initTableSession(hostClient.getUser(), foodVenue.getId(), tableSession.getId());
+        AuthResponse authResponse = authService.initTableSession(hostParticipant.getUser(), foodVenue.getId(), tableSession.getId());
 
         tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
 
@@ -130,7 +127,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public List<TableSessionResponseDto> getByHostClient(UUID clientId) {
-        return tableSessionRepository.findByFoodVenueIdAndHostClientId(
+        return tableSessionRepository.findByFoodVenueIdAndSessionHostId(
                         tenantContext.getCurrentFoodVenueId(), clientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -141,7 +138,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         UUID authClientId = tenantContext.getCurrentFoodVenue().getId();
 
-        return tableSessionRepository.findByFoodVenueIdAndHostClientId(
+        return tableSessionRepository.findByFoodVenueIdAndSessionHostId(
                         tenantContext.getCurrentFoodVenueId(), authClientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -183,10 +180,10 @@ public class TableSessionServiceImpl implements TableSessionService {
         }
 
         if (tableSessionUpdateDto.getParticipantIds() != null) {
-            List<Client> participants = new ArrayList<>();
+            List<Participant> participants = new ArrayList<>();
 
             for (UUID participantId : tableSessionUpdateDto.getParticipantIds()) {
-                Client participant = clientService.getEntityById(participantId);
+                Participant participant = clientService.getEntityById(participantId);
                 participants.add(participant);
             }
             tableSession.setParticipants(participants);
@@ -201,9 +198,9 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto addClient(UUID sessionId, UUID clientId) {
         TableSession tableSession = this.findById(sessionId);
 
-        Client client = clientService.getEntityById(clientId);
+        Participant participant = clientService.getEntityById(clientId);
 
-        tableSession.getParticipants().add(client);
+        tableSession.getParticipants().add(participant);
 
         TableSession updatedTableSession = tableSessionRepository.save(tableSession);
 
@@ -213,10 +210,10 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public TableSessionResponseDto joinSession(UUID tableId) {
-        Client client = authServiceImpl.getCurrentClient();
+        Participant participant = authServiceImpl.getCurrentClient();
         TableSession session = authServiceImpl.getCurrentTableSession();
 
-        session.getParticipants().add(client);
+        session.getParticipants().add(participant);
         tableSessionRepository.save(session);
         return null;
     }

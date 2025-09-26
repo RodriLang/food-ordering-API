@@ -361,7 +361,7 @@ public class DataInitializer implements CommandLineRunner {
                         .role(RoleType.ROLE_CLIENT)
                         .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
                         .build();
-                Client client = Client.builder()
+                Participant participant = Participant.builder()
                         .nickname("cliente")
                         .user(clientUser)
                         .build();
@@ -393,7 +393,7 @@ public class DataInitializer implements CommandLineRunner {
                         .role(RoleType.ROLE_GUEST)
                         .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
                         .build();
-                Client genericClient = Client.builder()
+                Participant genericParticipant = Participant.builder()
                         .id(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
                         .nickname("invitado")
                         .user(genericUser)
@@ -401,7 +401,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, testUser, genericUser));
                 employeeRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
-                clientRepository.saveAll(List.of(client, genericClient));
+                clientRepository.saveAll(List.of(participant, genericParticipant));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
                 System.out.println("🔑 Admin: admin@test.com / admin123");
@@ -450,14 +450,14 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.saveAll(List.of(u1, u2, u3));
 
             // Clients
-            Client c1 = Client.builder()
+            Participant c1 = Participant.builder()
                     .nickname(u1.getName())
                     .user(u1)
                     .build();
-            Client c2 = Client.builder()
+            Participant c2 = Participant.builder()
                     .nickname("Frank")
                     .build();
-            Client c3 = Client.builder()
+            Participant c3 = Participant.builder()
                     .nickname(u2.getName())
                     .user(u2)
                     .build();
@@ -476,19 +476,19 @@ public class DataInitializer implements CommandLineRunner {
             TableSession ts1 = TableSession.builder()
                     .table(t1)
                     .foodVenue(v1)
-                    .hostClient(c1)
+                    .sessionHost(c1)
                     .startTime(LocalDateTime.now())
                     .build();
             TableSession ts2 = TableSession.builder()
                     .table(t2)
                     .foodVenue(v2)
-                    .hostClient(c2)
+                    .sessionHost(c2)
                     .startTime(LocalDateTime.now())
                     .build();
             TableSession ts3 = TableSession.builder()
                     .table(t3)
                     .foodVenue(v3)
-                    .hostClient(c3)
+                    .sessionHost(c3)
                     .startTime(LocalDateTime.now())
                     .build();
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
@@ -498,7 +498,7 @@ public class DataInitializer implements CommandLineRunner {
             // Orders and OrderDetails + Payments
             Order o1 = Order.builder()
                     .id(UUID.fromString("00000000-0000-0000-0000-000123000000"))
-                    .client(c1)
+                    .participant(c1)
                     .orderNumber(1)
                     .foodVenue(v1)
                     .tableSession(ts1)
@@ -508,7 +508,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             Order o2 = Order.builder()
                     .id(UUID.fromString("00000000-0000-0000-0000-000124000000"))
-                    .client(c2)
+                    .participant(c2)
                     .orderNumber(2)
                     .foodVenue(v1)
                     .tableSession(ts2)
@@ -517,7 +517,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             Order o3 = Order.builder()
                     .id(UUID.fromString("00000000-0000-0000-0000-000125000000"))
-                    .client(c3)
+                    .participant(c3)
                     .orderNumber(456)
                     .foodVenue(v3)
                     .tableSession(ts3)

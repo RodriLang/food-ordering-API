@@ -11,7 +11,7 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.mappers.ClientMapper;
 import com.group_three.food_ordering.models.Address;
-import com.group_three.food_ordering.models.Client;
+import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.repositories.ClientRepository;
@@ -34,12 +34,12 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientResponseDto create(ClientCreateDto dto) {
-        Client client = clientMapper.toEntity(dto);
+        Participant participant = clientMapper.toEntity(dto);
 
         /// Caso 1: Se proporciona un User ID existente
         if (dto.getUserId() != null) {
             User userEntity = userService.getEntityById(dto.getUserId());
-            client.setUser(userEntity);
+            participant.setUser(userEntity);
         }
 
         /// Caso 2: Se proporciona un User embebido
@@ -52,7 +52,7 @@ public class ClientServiceImpl implements ClientService {
             dto.getUser().setRole(RoleType.ROLE_CLIENT);
 
             User userEntity = userService.createIfPresent(dto.getUser());
-            client.setUser(userEntity);
+            participant.setUser(userEntity);
         }
 
         /// Caso 3: Invitado (user == null)
@@ -69,15 +69,15 @@ public class ClientServiceImpl implements ClientService {
                     .build();
 
             User savedGuest = userService.createIfPresent(toDtoFromEntity(guest));
-            client.setUser(savedGuest);
+            participant.setUser(savedGuest);
 
             if (dto.getNickname() == null || dto.getNickname().isBlank()) {
-                client.setNickname("Invitado");
+                participant.setNickname("Invitado");
             }
         }
 
-        Client savedClient = clientRepository.save(client);
-        return clientMapper.toResponseDto(savedClient);
+        Participant savedParticipant = clientRepository.save(participant);
+        return clientMapper.toResponseDto(savedParticipant);
     }
 
 
@@ -116,57 +116,57 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ClientResponseDto getById(UUID id) {
-        Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
+        Participant participant = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
-        return clientMapper.toResponseDto(client);
+        return clientMapper.toResponseDto(participant);
     }
 
     @Override
     public void delete(UUID id) {
-        Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
+        Participant participant = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
-        client.getUser().setRemovedAt(LocalDateTime.now());
-        userService.delete(client.getUser().getId());
+        participant.getUser().setRemovedAt(LocalDateTime.now());
+        userService.delete(participant.getUser().getId());
     }
 
     @Override
     public ClientResponseDto update(UUID id, ClientUpdateDto dto) {
-        Client client = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
+        Participant participant = clientRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
 
-        clientMapper.updateClientFromDto(dto, client);
-        clientMapper.updateUserFromDto(dto.getUser(), client.getUser());
+        clientMapper.updateClientFromDto(dto, participant);
+        clientMapper.updateUserFromDto(dto.getUser(), participant.getUser());
 
-        Client updatedClient = clientRepository.save(client);
-        return clientMapper.toResponseDto(updatedClient);
+        Participant updatedParticipant = clientRepository.save(participant);
+        return clientMapper.toResponseDto(updatedParticipant);
     }
 
     @Override
-    public Client getEntityById(UUID id) {
+    public Participant getEntityById(UUID id) {
         return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
     }
 
     @Override
     public ClientResponseDto replace(UUID id, ClientUpdateDto dto) {
-        Client client = this.findClientById(id);
+        Participant participant = this.findClientById(id);
 
-        clientMapper.updateClientFromDto(dto, client);
-        clientMapper.updateUserFromDto(dto.getUser(), client.getUser());
+        clientMapper.updateClientFromDto(dto, participant);
+        clientMapper.updateUserFromDto(dto.getUser(), participant.getUser());
 
-        Client updatedClient = clientRepository.save(client);
-        return clientMapper.toResponseDto(updatedClient);
+        Participant updatedParticipant = clientRepository.save(participant);
+        return clientMapper.toResponseDto(updatedParticipant);
     }
 
     @Override
     public ClientResponseDto partialUpdate(UUID id, ClientPatchDto dto) {
-        Client client = this.findClientById(id);
+        Participant participant = this.findClientById(id);
 
         if (dto.getUser() != null) {
-            updateUserFields(client.getUser(), dto.getUser());
+            updateUserFields(participant.getUser(), dto.getUser());
         }
 
-        Client updated = clientRepository.save(client);
+        Participant updated = clientRepository.save(participant);
         return clientMapper.toResponseDto(updated);
     }
 
@@ -191,7 +191,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
 
-    private Client findClientById(UUID id) {
+    private Participant findClientById(UUID id) {
         return clientRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client", id.toString()));
     }

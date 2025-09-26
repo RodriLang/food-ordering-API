@@ -46,11 +46,11 @@ public class OrderServiceImpl implements OrderService {
         log.debug("::: Creando nueva Order : {} :::", orderRequestDto);
         FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
 
-        Client client = authService.getCurrentClient();
+        Participant participant = authService.getCurrentClient();
 
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(orderServiceHelper.generateOrderNumber());
-        order.setClient(client);
+        order.setParticipant(participant);
 
         log.info("::: Generando Order para con el Tenant del Food Venue ID: {} :::", currentFoodVenue.getId());
 
@@ -100,14 +100,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
-        Client currentClient = authService.getCurrentClient();
+        Participant currentParticipant = authService.getCurrentClient();
 
 
         TableSession session = tableSessionRepository.findById(tableSessionId)
                 .orElseThrow(() -> new EntityNotFoundException("TableSession", tableSessionId.toString()));
 
-        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
-                && !session.getParticipants().contains(currentClient)) {
+        if (currentParticipant.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+                && !session.getParticipants().contains(currentParticipant)) {
 
             throw new LogicalAccessDeniedException("You do not have access to this table session");
         }
@@ -133,10 +133,10 @@ public class OrderServiceImpl implements OrderService {
 
     public Page<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status, Pageable pageable) {
 
-        Client currentClient = authService.getCurrentClient();
+        Participant currentParticipant = authService.getCurrentClient();
 
-        if (currentClient.getUser().getRole().equals(RoleType.ROLE_CLIENT)
-                && !currentClient.getId().equals(clientId)) {
+        if (currentParticipant.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+                && !currentParticipant.getId().equals(clientId)) {
 
             throw new LogicalAccessDeniedException("You do not have access to this table session");
         }
@@ -144,9 +144,9 @@ public class OrderServiceImpl implements OrderService {
         // Se filtra por estado
         Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrdersByClient_IdAndStatus(clientId, status, pageable);
+            orders = orderRepository.findOrdersByParticipant_IdAndStatus(clientId, status, pageable);
         } else {
-            orders = orderRepository.findOrdersByClient_Id(clientId, pageable);
+            orders = orderRepository.findOrdersByParticipant_Id(clientId, pageable);
         }
 
         return orders.map(orderMapper::toDTO);
@@ -177,7 +177,7 @@ public class OrderServiceImpl implements OrderService {
         var currentClientId = authService.getCurrentClient().getId();
         var currentTableSessionId = authService.getCurrentTableSession().getId();
 
-        return orderRepository.findOrdersByClient_IdAndTableSession_IdAndStatus(
+        return orderRepository.findOrdersByParticipant_IdAndTableSession_IdAndStatus(
                 currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDTO);
     }
 

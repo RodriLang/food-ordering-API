@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Client {
+public class Participant {
 
     @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)

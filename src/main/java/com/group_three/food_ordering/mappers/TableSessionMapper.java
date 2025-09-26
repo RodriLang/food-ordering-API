@@ -13,7 +13,7 @@ public interface TableSessionMapper {
     @Mappings({
             @Mapping(source = "table.id", target = "tableId"),
             @Mapping(source = "table.number", target = "tableNumber"),
-            @Mapping(source = "hostClient.id", target = "hostClientId"),
+            @Mapping(source = "sessionHost.id", target = "hostClientId"),
             @Mapping(target = "participantsIds", expression = "java(tableSession.getParticipants().stream().map(p -> p.getId()).toList())")
     })
     TableSessionResponseDto toDTO(TableSession tableSession);

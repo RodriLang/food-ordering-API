@@ -2,7 +2,7 @@ package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
-import com.group_three.food_ordering.models.Client;
+import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 
@@ -19,7 +19,7 @@ public interface AuthService {
 
     User getCurrentUser();
 
-    Client getCurrentClient();
+    Participant getCurrentClient();
 
     TableSession getCurrentTableSession();
 

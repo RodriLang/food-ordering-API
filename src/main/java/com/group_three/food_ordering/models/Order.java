@@ -57,7 +57,7 @@ public class Order {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Client client;
+    private Participant participant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_session_id")

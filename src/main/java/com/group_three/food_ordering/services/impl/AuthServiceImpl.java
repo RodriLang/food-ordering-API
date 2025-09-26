@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
     }
 
-    public Client getCurrentClient() {
+    public Participant getCurrentClient() {
         log.debug("[AuthService] Obteniendo Cliente autenticado.");
         return clientRepository.findByUser_Email(getCurrentEmail())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));

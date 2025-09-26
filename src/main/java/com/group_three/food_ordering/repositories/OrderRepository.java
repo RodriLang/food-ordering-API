@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,11 +39,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
 
     Page<Order> findOrdersByPayment_Status(PaymentStatus status, Pageable pageable);
 
-    Page<Order> findOrdersByClient_Id(UUID clientId, Pageable pageable);
+    Page<Order> findOrdersByParticipant_Id(UUID participantId, Pageable pageable);
 
-    Page<Order> findOrdersByClient_IdAndStatus(UUID clientId, OrderStatus status, Pageable pageable);
+    Page<Order> findOrdersByParticipant_IdAndStatus(UUID participantId, OrderStatus status, Pageable pageable);
 
-    Page<Order> findOrdersByClient_IdAndTableSession_IdAndStatus(UUID clientId, UUID tableSessionId ,OrderStatus status, Pageable pageable);
+    Page<Order> findOrdersByParticipant_IdAndTableSession_IdAndStatus(UUID participantId, UUID tableSessionId , OrderStatus status, Pageable pageable);
 
     @Query("SELECT COUNT(o) " +
             "FROM Order o " +
