@@ -6,17 +6,21 @@ import com.group_three.food_ordering.models.Client;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 
+import java.util.UUID;
+
 public interface AuthService {
 
 
-     AuthResponse login(LoginRequest loginRequest);
+    AuthResponse login(LoginRequest loginRequest);
 
-     String getCurrentEmail();
+    AuthResponse initTableSession(User user, UUID foodVenueId, UUID tableSessionId);
 
-     User getCurrentUser();
+    String getCurrentEmail();
 
-     Client getCurrentClient();
+    User getCurrentUser();
 
-     TableSession getCurrentTableSession();
+    Client getCurrentClient();
+
+    TableSession getCurrentTableSession();
 
 }

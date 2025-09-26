@@ -67,6 +67,18 @@ public class AuthServiceImpl implements AuthService {
         throw new BadCredentialsException("Usuario o contraseña incorrectos");
     }
 
+    @Override
+    public AuthResponse initTableSession(User user, UUID foodVenueId, UUID tableSessionId) {
+
+        return AuthResponse.builder()
+                    .token(jwtService.generateToken(user.getEmail(),
+                            foodVenueId,
+                            user.getRole().name(),
+                            tableSessionId,
+                            user.getId()))
+                    .build();
+    }
+
     public String getCurrentEmail() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -104,5 +116,6 @@ public class AuthServiceImpl implements AuthService {
             log.error("::: Token invalido {} :::", authHeader);
             throw new IllegalStateException("Token JWT no presente o mal formado");
         }
-        return authHeader.substring(7);}
+        return authHeader.substring(7);
+    }
 }

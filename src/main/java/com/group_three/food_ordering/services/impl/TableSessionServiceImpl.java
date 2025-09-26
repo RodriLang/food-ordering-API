@@ -5,12 +5,15 @@ import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.TableRepository;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
+import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ClientService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +31,10 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final TableSessionRepository tableSessionRepository;
     private final TableSessionMapper tableSessionMapper;
     private final ClientService clientService;
-    private final TenantContext tenantContext;
+    private final TenantContext tenantContext;;
 
     private final TableRepository tableRepository;
-    private final JwtService jwtService;
+    private final AuthService authService;
     private final AuthServiceImpl authServiceImpl;
 
     @Override
@@ -49,31 +52,25 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         tableSession.setFoodVenue(foodVenue);
         tableSession.setTable(table);
-        tableSession.setStartTime(LocalDateTime.now());
-        tableSession.setEndTime(null);
-        tableSession.setId(UUID.randomUUID());
 
-        Client hostClient = authServiceImpl.getCurrentClient();
+        Client hostClient;
 
-        tableSession.setHostClient(hostClient);
+        try {
+            hostClient = authServiceImpl.getCurrentClient();
 
-        List<Client> participants = new ArrayList<>();
-        participants.add(hostClient);
+            tableSession.setHostClient(hostClient);
+            tableSession.getParticipants().add(hostClient);
 
-        tableSession.setParticipants(participants);
 
-        AuthResponse response = AuthResponse.builder()
-                .token(jwtService.generateToken(hostClient.getUser().getEmail(),
-                        foodVenue.getId(),
-                        hostClient.getUser().getRole().name(),
-                        tableSession.getId(),
-                        hostClient.getId()))
-                .build();
+        } catch (EntityNotFoundException e) {
+            hostClient = clientService.getEntityById(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"));
+        }
+        AuthResponse authResponse = authService.initTableSession(hostClient.getUser(), foodVenue.getId(), tableSession.getId());
 
         tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
 
         log.info("[TableSession] Initialized entity successfully tableId={}...tableSessionId={}", table.getId(), tableSession.getId());
-        return response;
+        return authResponse;
     }
 
     @Override
@@ -90,9 +87,18 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     @Override
-    public List<TableSessionResponseDto> getByTable(Integer tableNumber) {
-        return tableSessionRepository.findByFoodVenueIdAndTableNumber(
-                tenantContext.getCurrentFoodVenue().getId(), tableNumber).stream()
+    public List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber) {
+        return tableSessionRepository.findByFoodVenueIdAndTableNumber(foodVenueId, tableNumber).stream()
+                .map(tableSessionMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<TableSessionResponseDto> getByContextAndTable(Integer tableNumber) {
+
+        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getId();
+
+        return tableSessionRepository.findByFoodVenueIdAndTableNumber(foodVenueId, tableNumber).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -125,7 +131,18 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public List<TableSessionResponseDto> getByHostClient(UUID clientId) {
         return tableSessionRepository.findByFoodVenueIdAndHostClientId(
-                tenantContext.getCurrentFoodVenueId(), clientId).stream()
+                        tenantContext.getCurrentFoodVenueId(), clientId).stream()
+                .map(tableSessionMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<TableSessionResponseDto> getByAuthUserHostClient() {
+
+        UUID authClientId = tenantContext.getCurrentFoodVenue().getId();
+
+        return tableSessionRepository.findByFoodVenueIdAndHostClientId(
+                        tenantContext.getCurrentFoodVenueId(), authClientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -133,7 +150,18 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public List<TableSessionResponseDto> getPastByParticipant(UUID clientId) {
         return tableSessionRepository.findPastSessionsByParticipantId(
-                tenantContext.getCurrentFoodVenueId(), clientId).stream()
+                        tenantContext.getCurrentFoodVenueId(), clientId).stream()
+                .map(tableSessionMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<TableSessionResponseDto> getPastByAuthUserParticipant() {
+
+        UUID authClientId = tenantContext.getCurrentFoodVenue().getId();
+
+        return tableSessionRepository.findPastSessionsByParticipantId(
+                        tenantContext.getCurrentFoodVenueId(), authClientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -141,8 +169,8 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
         TableSession tableSession = tableSessionRepository.findTopByFoodVenueIdAndTableIdOrderByStartTimeDesc(
-                tenantContext.getCurrentFoodVenueId(), tableId)
-                .orElseThrow(()-> new EntityNotFoundException("TableSession Not Found"));
+                        tenantContext.getCurrentFoodVenueId(), tableId)
+                .orElseThrow(() -> new EntityNotFoundException("TableSession Not Found"));
         return tableSessionMapper.toDTO(tableSession);
     }
 
@@ -199,7 +227,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     private TableSession findById(UUID id) {
-      return  tableSessionRepository.findById(id)
-              .orElseThrow(()-> new EntityNotFoundException("TableSession", id.toString()));
+        return tableSessionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("TableSession", id.toString()));
     }
 }

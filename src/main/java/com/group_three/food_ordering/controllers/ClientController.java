@@ -28,7 +28,6 @@ import java.util.UUID;
 public class ClientController {
 
     private final ClientService clientService;
-    private final OrderService orderService;
 
 
     @PostMapping

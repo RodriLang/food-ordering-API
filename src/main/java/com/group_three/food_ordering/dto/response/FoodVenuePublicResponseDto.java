@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +13,6 @@ import java.util.UUID;
 public class FoodVenuePublicResponseDto {
 
     private String name;
-    private String email;
     private String phone;
     private String imageUrl;
     private Address address;

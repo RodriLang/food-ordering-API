@@ -5,7 +5,6 @@ import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import com.group_three.food_ordering.services.FoodVenueService;
-import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,12 +57,6 @@ public class FoodVenueControllerImpl implements FoodVenueController {
     public ResponseEntity<Void> deleteFoodVenue(UUID id) {
         foodVenueService.softDelete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @Override
-    @PermitAll
-    public ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getAllPublic(pageable));
     }
 
     @Override

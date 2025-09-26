@@ -105,17 +105,6 @@ public interface FoodVenueController {
             @Parameter(description = "UUID del lugar de comida a eliminar", required = true)
             @PathVariable UUID id);
 
-    @Operation(
-            summary = "Obtener todos los lugares de comida",
-            description = "Devuelve la lista con datos reducidos de lugares de comida.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de lugares de comida", content = @Content(
-                            schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array"))),
-                    @ApiResponse(responseCode = "403", description = "Acceso denegado")
-            }
-    )
-    @GetMapping()
-    ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(@Parameter Pageable pageable);
 
     @Operation(
             summary = "Obtener el lugar de comida",

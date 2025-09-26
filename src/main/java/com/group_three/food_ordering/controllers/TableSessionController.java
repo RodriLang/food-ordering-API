@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,9 +37,9 @@ public class TableSessionController {
     private final TableSessionService tableSessionService;
     private final OrderService orderService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
+    @PermitAll
     @Operation(
-            summary = "Crear una nueva sesión de mesa",
+            summary = "Iniciar una nueva sesión de mesa",
             description = "Crea una sesión asociada a una mesa con los datos proporcionados.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Sesión creada exitosamente",
@@ -46,26 +47,43 @@ public class TableSessionController {
                     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
             }
     )
-    @PostMapping
+    @PostMapping("/init")
     public ResponseEntity<AuthResponse> createTableSession(
             @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
                 body(tableSessionService.create(tableSessionCreateDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     @Operation(
             summary = "Obtener todas las sesiones de mesa",
-            description = "Devuelve una lista con todas las sesiones de mesa registradas.",
+            description = "Devuelve una lista con todas las sesiones de mesa registradas. Accesible para roles staff y admin",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista de sesiones",
                             content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
             }
     )
-    @GetMapping
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessions() {
+    @GetMapping()
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContext() {
         return ResponseEntity.ok(tableSessionService.getAll());
     }
+
+
+    @PreAuthorize("hasRole('ROOT')")
+    @Operation(
+            summary = "Obtener todas las sesiones de mesa de un Local de comida",
+            description = "Devuelve una lista con todas las sesiones de mesa registradas en un lugar específico. Acceso root",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
+    @GetMapping("/root")
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueId() {
+        return ResponseEntity.ok(tableSessionService.getAll());
+    }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -84,21 +102,42 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+
+    @PreAuthorize("hasRole('ROOT')")
+    @Operation(
+            summary = "Obtener sesiones por id del local de comida y número de mesa",
+            description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa de un Lugar de comida específico.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lista de sesiones por mesa",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
+            }
+    )
+    @GetMapping("{foodVenueId}/table/{tableNumber}")
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
+            @Parameter(description = "Número de la mesa", required = true)
+            @PathVariable Integer tableNumber,
+            @Parameter(description = "Id del FoodVenue", required = true)
+            @PathVariable UUID foodVenueId) {
+        return ResponseEntity.ok(tableSessionService.getByFoodVenueAndTable(foodVenueId, tableNumber));
+    }
+
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     @Operation(
             summary = "Obtener sesiones por número de mesa",
-            description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa específico.",
+            description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa del Lugar de comida asociado al usuario.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista de sesiones por mesa",
                             content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
             }
     )
     @GetMapping("/table/{tableNumber}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTable(
+    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContextAndTable(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber) {
-        return ResponseEntity.ok(tableSessionService.getByTable(tableNumber));
+        return ResponseEntity.ok(tableSessionService.getByContextAndTable(tableNumber));
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -109,17 +148,17 @@ public class TableSessionController {
                             content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
             }
     )
-
     @GetMapping("/table/{tableNumber}/time-range")
     public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @Parameter(description = "Fecha y hora de fin (ISO 8601)", required = false)
+            @Parameter(description = "Fecha y hora de fin (ISO 8601)")
             @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end));
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -134,6 +173,7 @@ public class TableSessionController {
     public ResponseEntity<List<TableSessionResponseDto>> getActiveSessions() {
         return ResponseEntity.ok(tableSessionService.getActiveSessions());
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -151,6 +191,7 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getByHostClient(clientId));
     }
 
+
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
             summary = "Obtener sesiones pasadas por participante",
@@ -166,6 +207,7 @@ public class TableSessionController {
             @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId));
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -184,7 +226,8 @@ public class TableSessionController {
         return ResponseEntity.ok(tableSessionService.getLatestByTable(tableId));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN', 'ROOT')")
     @Operation(
             summary = "Actualizar sesión de mesa",
             description = "Actualiza la información completa de una sesión existente.",
@@ -202,6 +245,7 @@ public class TableSessionController {
             @PathVariable UUID id) {
         return ResponseEntity.ok(tableSessionService.update(tableSessionUpdateDto, id));
     }
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -221,6 +265,7 @@ public class TableSessionController {
             @PathVariable UUID clientId) {
         return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
     }
+
 
     @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
     @GetMapping("/{id}/orders")

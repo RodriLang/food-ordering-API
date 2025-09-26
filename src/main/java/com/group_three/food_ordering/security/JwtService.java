@@ -1,10 +1,14 @@
 package com.group_three.food_ordering.security;
 
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +22,7 @@ import java.util.function.Function;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtService {
 
     @Value("${jwt.secret:myDefaultSecretKeyForJWTTokenGenerationThatShouldBeLongEnoughForSecurity}")
@@ -25,6 +30,8 @@ public class JwtService {
 
     @Value("${jwt.expirationMs:86400000}")
     private long jwtExpirationMs;
+
+    private final UserRepository userRepository;
 
     public String generateToken(String email,
                                 UUID foodVenueId,
@@ -45,6 +52,7 @@ public class JwtService {
                 .signWith(getSignatureKey())
                 .compact();
     }
+
 
     // Validate access token
     public Boolean isTokenValid(String token) {

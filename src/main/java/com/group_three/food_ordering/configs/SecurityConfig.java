@@ -30,6 +30,7 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/logout").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -40,7 +41,8 @@ public class SecurityConfig {
                         .requestMatchers(ApiPaths.AUTH_URI+"/login",
                                 ApiPaths.AUTH_URI+"/register",
                                 ApiPaths.MENU_URI).permitAll()
-                        .requestMatchers(HttpMethod.POST,ApiPaths.CLIENT_BASE).permitAll()
+                        .requestMatchers(ApiPaths.PUBLIC_BASE+"/**").permitAll()
+                        .requestMatchers(ApiPaths.TABLE_SESSION_BASE+"/init").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

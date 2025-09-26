@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,10 +37,11 @@ public class TableSession {
     private FoodVenue foodVenue;
 
     @ManyToOne
-    @JoinColumn(name = "host_client_id", nullable = false)
+    @JoinColumn(name = "host_client_id")
     private Client hostClient;
 
     @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
     @ManyToMany
@@ -50,10 +50,12 @@ public class TableSession {
             joinColumns = @JoinColumn(name = "table_session_id"),
             inverseJoinColumns = @JoinColumn(name = "client_id")
     )
+    @Builder.Default
     private List<Client> participants = new ArrayList<>();
 
     @PrePersist
     public void onCreate() {
         if (this.id == null) this.id = UUID.randomUUID();
+        startTime = LocalDateTime.now();
     }
 }

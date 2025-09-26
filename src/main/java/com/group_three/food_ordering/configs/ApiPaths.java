@@ -5,6 +5,7 @@ public class ApiPaths {
         private ApiPaths() {}
 
         public static final String URI_BASE_V1 = "/api/v1";
+        public static final String PUBLIC_BASE = URI_BASE_V1 + "/public";
         public static final String ORDER_BASE = URI_BASE_V1 + "/orders";
         public static final String USER_BASE = URI_BASE_V1 + "/users";
         public static final String VENUE_BASE = URI_BASE_V1 + "/food-venues";

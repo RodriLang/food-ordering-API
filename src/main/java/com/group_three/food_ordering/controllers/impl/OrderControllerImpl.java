@@ -25,7 +25,7 @@ public class OrderControllerImpl implements OrderController {
     private final OrderService orderService;
 
     @Override
-    @PreAuthorize("hasAnyRole('CLIENT','INVITED')")
+    @PreAuthorize("hasAnyRole('CLIENT','GUEST')")
     public ResponseEntity<OrderResponseDto> createOrder(OrderRequestDto order) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(order));
     }
@@ -55,13 +55,13 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('CLIENT', 'INVITED')")
+    @PreAuthorize("hasAnyRole('CLIENT', 'GUEST')")
     public ResponseEntity<OrderResponseDto> updateOrderRequirements(UUID id, String requirements) {
         return ResponseEntity.ok(orderService.updateSpecialRequirements(id, requirements));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','GUEST', 'SUPER_ADMIN','ROOT')")
     public ResponseEntity<OrderResponseDto> cancelOrder(UUID id) {
         return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.CANCELLED));
     }

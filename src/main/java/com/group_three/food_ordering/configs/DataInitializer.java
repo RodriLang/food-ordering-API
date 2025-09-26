@@ -380,9 +380,28 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
                         .build();
 
-                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, testUser));
+                // Generic user
+                User genericUser = User.builder()
+                        .id(UUID.fromString("00000000-0000-4437-96fc-da7e8f0e5a4a"))
+                        .name("Guest")
+                        .lastName("User")
+                        .email("guest@guest.com")
+                        .password(passwordEncoder.encode("guest"))
+                        .birthDate(LocalDate.of(1992, 6, 15))
+                        .phone("0000000000")
+                        .createdAt(LocalDateTime.now())
+                        .role(RoleType.ROLE_GUEST)
+                        .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
+                        .build();
+                Client genericClient = Client.builder()
+                        .id(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
+                        .nickname("invitado")
+                        .user(genericUser)
+                        .build();
+
+                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, testUser, genericUser));
                 employeeRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
-                clientRepository.saveAll(List.of(client));
+                clientRepository.saveAll(List.of(client, genericClient));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
                 System.out.println("🔑 Admin: admin@test.com / admin123");

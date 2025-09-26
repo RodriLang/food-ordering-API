@@ -14,11 +14,14 @@ public interface TableSessionService {
     AuthResponse create(TableSessionCreateDto tableSessionCreateDto);
     List<TableSessionResponseDto> getAll();
     TableSessionResponseDto getById(UUID sessionId);
-    List<TableSessionResponseDto> getByTable(Integer tableNumber);
+    List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber);
+    List<TableSessionResponseDto> getByContextAndTable(Integer tableNumber);
     List<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, LocalDateTime start, LocalDateTime end);
     List<TableSessionResponseDto> getActiveSessions();
     List<TableSessionResponseDto> getByHostClient(UUID clientId);
+    List<TableSessionResponseDto> getByAuthUserHostClient();
     List<TableSessionResponseDto> getPastByParticipant(UUID clientId);
+    List<TableSessionResponseDto> getPastByAuthUserParticipant();
     TableSessionResponseDto getLatestByTable(UUID tableId);
     TableSessionResponseDto update(TableSessionUpdateDto tableSessionUpdateDto, UUID id);
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
