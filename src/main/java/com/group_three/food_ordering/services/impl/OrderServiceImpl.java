@@ -312,7 +312,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private TableSession getCurrentTableSession() {
-        return authService.getCurrentTableSession();
+        return authService.getCurrentTableSession()
+                .orElseThrow(() -> new EntityNotFoundException("TableSession"));
     }
 
     CustomUserPrincipal getPrincipal() {

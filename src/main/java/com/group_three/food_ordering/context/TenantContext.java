@@ -26,7 +26,7 @@ public class TenantContext {
     public void setCurrentFoodVenueId(String tenantId) {
         try {
             this.currentFoodVenueId = UUID.fromString(tenantId);
-            log.debug("[TenantContext] Set currentFoodVenueId={}", tenantId);
+            log.debug("[TenantContext] Set context currentFoodVenueId={}", tenantId);
         } catch (Exception e) {
             this.currentFoodVenueId = null;
             log.warn("[TenantContext] Invalid tenantId={} (not a valid UUID)", tenantId);

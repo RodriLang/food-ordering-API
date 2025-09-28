@@ -28,12 +28,14 @@ public class TenantContextFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        log.debug("[TenantContextFilter] Filter Internal. Header Authorization={}", authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             try {
                 log.debug("[TenantContextFilter] Extracting foodVenueId from JWT token={}", token);
                 String foodVenueId = jwtService.getFoodVenueId(token);
+                log.debug("[TenantContextFilter] Getting food venue from token fodVenueId={}", foodVenueId);
                 if (foodVenueId != null) {
                     tenantContext.setCurrentFoodVenueId(foodVenueId);
                     log.debug("[TenantContextFilter] Set currentFoodVenueId={}", foodVenueId);
@@ -44,7 +46,6 @@ public class TenantContextFilter extends OncePerRequestFilter {
                 log.warn("[TenantContextFilter] Failed to extract tenant from JWT token reason={}", e.getMessage());
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

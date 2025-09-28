@@ -17,6 +17,6 @@ public interface AuthService {
 
     Optional<Participant> getCurrentParticipant();
 
-    TableSession getCurrentTableSession();
+    Optional<TableSession> getCurrentTableSession();
 
 }

@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
@@ -44,18 +45,29 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Transactional
     @Override
     public InitSessionResponseDto enter(TableSessionCreateDto tableSessionCreateDto) {
-
         log.debug("[TableSession] Participant enter to table session tableId={}...", tableSessionCreateDto.getTableId());
+        User authUser = authService.getCurrentUser().orElse(null);
+        TableSession tableSession = null;
 
+        if (authUser != null) {
+            tableSession = verifyActiveTableSessionForAuthUser(authUser);
+
+            if (tableSession != null) {
+                Participant curretnparticipant = authService.getCurrentParticipant()
+                        .orElseThrow(() -> new EntityNotFoundException("Participant"));
+                generateInitSessionResponseDto(tableSession, curretnparticipant);
+                InitSessionResponseDto authResponse = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
+
+                log.info("[TableSession] Redirect user to active session tableSessionId={}", tableSession.getId());
+                return authResponse;
+            }
+        }
         Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
                 .orElseThrow(() -> new EntityNotFoundException("Table", tableSessionCreateDto.getTableId().toString()));
 
         FoodVenue foodVenue = table.getFoodVenue();
         tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
 
-        User authUser = authService.getCurrentUser().orElse(null);
-
-        TableSession tableSession;
 
         TableStatus status = table.getStatus();
         switch (status) {
@@ -77,6 +89,12 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.info("[TableSession] Initialized entity successfully tableId={}...tableSessionId={}", table.getId(), tableSession.getId());
         return authResponse;
     }
+
+    private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
+        log.debug("[AuthService] Verifying active table session.");
+        return tableSessionRepository.findActiveSessionByUserId(authUser.getEmail()).orElse(null);
+    }
+
 
     private TableSession initSession(Table table, User authUser) {
         log.debug("[TableSession] Initializing table session tableId={}...", table.getId());

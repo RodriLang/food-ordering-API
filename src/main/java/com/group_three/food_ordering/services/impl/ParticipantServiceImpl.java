@@ -32,13 +32,10 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public Participant create(User user, TableSession tableSession) {
 
-        CustomUserPrincipal principal = getPrincipal();
-        RoleType role = principal.getRole();
-
         Participant participant = Participant.builder()
                 .tableSession(tableSession)
                 .nickname((user != null) ? user.getName() : "Guest" + System.nanoTime())
-                .role(role)
+                .role(user != null ? RoleType.ROLE_CLIENT : RoleType.ROLE_GUEST)
                 .user(user)
                 .build();
 

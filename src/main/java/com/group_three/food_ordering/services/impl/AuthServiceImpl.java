@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
@@ -38,61 +39,135 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
+        User loggedUser = authenticateUser(loginRequest);
+        SessionInfo sessionInfo = resolveSessionInfo(loggedUser);
+        String token = createAuthToken(loggedUser, sessionInfo);
 
-        User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("User"));
-
-        if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            String token = jwtService.generateToken(
-                    user.getEmail(),
-                    null,
-                    RoleType.ROLE_CLIENT.name(),
-                    null,
-                    null
-            );
-            if (!user.getEmployments().isEmpty()) {
-                RoleSelectionResponseDto responseDto = roleSelectionService.generateRoleSelection(user);
-                responseDto.setToken(token);
-                return responseDto;
-            }
-            return new AuthResponse(token);
-        }
-        throw new BadCredentialsException("Usuario o contraseña incorrectos");
+        return createLoginResponse(loggedUser, token);
     }
 
     @Override
     public Optional<User> getCurrentUser() {
-        log.debug("[AuthService] Getting current user from principal");
-        CustomUserPrincipal principal = getPrincipal();
-
-        if (principal == null) {
-            log.debug("[AuthService] Unregistered user. Continue as GUEST_ROLE");
-            return Optional.empty();
-        }
-        log.debug("[AuthService] Authenticated User email={}", principal.getEmail());
-        return userRepository.findByEmail(principal.getEmail());
+        return getPrincipalResource(
+                "user",
+                CustomUserPrincipal::getEmail,
+                email -> userRepository.findByEmail((String) email)
+        );
     }
 
     @Override
     public Optional<Participant> getCurrentParticipant() {
-        log.debug("[AuthService] Getting current participant from principal");
-        CustomUserPrincipal principal = getPrincipal();
-        assert principal != null;
-        log.debug("[AuthService] participant subject={}", principal.getEmail());
-        return Optional.ofNullable(principal.getParticipantId())
-                .flatMap(participantRepository::findById);
+        return getPrincipalResource(
+                "participant",
+                CustomUserPrincipal::getParticipantId,
+                id -> participantRepository.findById((UUID) id)
+        );
     }
 
     @Override
-    public TableSession getCurrentTableSession() {
-        CustomUserPrincipal principal = getPrincipal();
-        assert principal != null;
-        UUID sessionId = principal.getTableSessionId();
-        if (sessionId == null) {
-            throw new IllegalStateException("El token no contiene tableSessionId");
+    public Optional<TableSession> getCurrentTableSession() {
+        return getPrincipalResource(
+                "table session",
+                CustomUserPrincipal::getTableSessionId,
+                id -> tableSessionRepository.findById((UUID) id)
+        );
+    }
+
+
+    private User authenticateUser(LoginRequest loginRequest) {
+        User loggedUser = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("User"));
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), loggedUser.getPassword())) {
+            throw new BadCredentialsException("Usuario o contraseña incorrectos");
         }
-        return tableSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new EntityNotFoundException("TableSession no encontrada"));
+        return loggedUser;
+    }
+
+    private SessionInfo resolveSessionInfo(User loggedUser) {
+        log.debug("[AuthService] Verifying active table session.");
+        return tableSessionRepository.findActiveSessionByUserId(loggedUser.getEmail())
+                .map(tableSession -> createSessionInfoFromActiveSession(tableSession, loggedUser))
+                .orElseGet(this::createSessionInfoFromCurrentGuestSession);
+    }
+
+    private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
+        log.debug("[AuthService] Authenticated user has an active table session. They will be redirected.");
+        return new SessionInfo(
+                tableSession.getFoodVenue().getId(),
+                findParticipantIdForUser(tableSession, loggedUser),
+                tableSession.getId()
+        );
+    }
+
+    private UUID findParticipantIdForUser(TableSession tableSession, User loggedUser) {
+        return tableSession.getParticipants().stream()
+                .filter(participant -> loggedUser.getId().equals(participant.getUser().getId()))
+                .map(Participant::getId)
+                .findFirst()
+                .orElse(null);
+    }
+
+
+    private SessionInfo createSessionInfoFromCurrentGuestSession() {
+        log.debug("[AuthService] Create Session info from current Guest Session.");
+        return new SessionInfo(
+                extractFoodVenueId(),
+                getCurrentParticipant()
+                        .map(Participant::getId)
+                        .orElse(null),
+                getCurrentTableSession()
+                        .map(TableSession::getId)
+                        .orElse(null)
+        );
+    }
+
+    private UUID extractFoodVenueId() {
+        return getCurrentTableSession()
+                .map(TableSession::getFoodVenue)
+                .map(FoodVenue::getId)
+                .orElse(null);
+    }
+
+    private String createAuthToken(User loggedUser, SessionInfo sessionInfo) {
+        return jwtService.generateToken(
+                loggedUser.getEmail(),
+                sessionInfo.foodVenueId(),
+                RoleType.ROLE_CLIENT.name(),
+                sessionInfo.tableSessionId(),
+                sessionInfo.participantId()
+        );
+    }
+
+    private LoginResponse createLoginResponse(User loggedUser, String token) {
+        if (!loggedUser.getEmployments().isEmpty()) {
+            log.debug("[AuthService] Authenticated user has role options available.");
+            RoleSelectionResponseDto roleSelection = roleSelectionService.generateRoleSelection(loggedUser);
+            roleSelection.setToken(token);
+            return roleSelection;
+        }
+
+        return new AuthResponse(token);
+    }
+
+    private <T> Optional<T> getPrincipalResource(
+            String resourceName,
+            java.util.function.Function<CustomUserPrincipal, Object> principalExtractor,
+            java.util.function.Function<Object, Optional<T>> resourceFetcher) {
+
+        log.debug("[AuthService] Getting current {} from principal", resourceName);
+        CustomUserPrincipal principal = getPrincipal();
+
+        if (principal == null) {
+            log.debug("[AuthService] No authenticated principal");
+            return Optional.empty();
+        }
+
+        Object resourceId = principalExtractor.apply(principal);
+        log.debug("[AuthService] Current {}={}", resourceName, resourceId);
+
+        return Optional.ofNullable(resourceId)
+                .flatMap(resourceFetcher);
     }
 
     private CustomUserPrincipal getPrincipal() {
