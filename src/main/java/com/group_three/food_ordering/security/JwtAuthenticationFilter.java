@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.group_three.food_ordering.enums.RoleType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             email,
                             null, // no necesitamos password en JWT
                             authorities,
+                            RoleType.valueOf(role),
                             participantId,
                             tableSessionId
                     );
@@ -62,8 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                    log.debug("JWT valid for user: {}, role: {}, participantId: {}, tableSessionId: {}",
-                            email, role, participantId, tableSessionId);
+                    //log.debug("JWT valid for user: {}, role: {}, participantId: {}, tableSessionId: {}",
+                    //        email, role, participantId, tableSessionId);
                 }
             } catch (Exception e) {
                 log.error("JWT validation failed: {}", e.getMessage(), e);

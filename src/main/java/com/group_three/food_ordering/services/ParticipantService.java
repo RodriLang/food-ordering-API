@@ -1,7 +1,5 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.update.ParticipantPatchDto;
-import com.group_three.food_ordering.dto.update.ParticipantUpdateDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
@@ -18,14 +16,6 @@ public interface ParticipantService {
 
     ParticipantResponseDto getById(UUID id);
 
-    void delete(UUID id);
-
-    ParticipantResponseDto update(UUID id, ParticipantUpdateDto participantUpdateDto);
-
     Participant getEntityById(UUID id);
-
-    ParticipantResponseDto replace(UUID id, ParticipantUpdateDto dto);
-
-    ParticipantResponseDto partialUpdate(UUID id, ParticipantPatchDto dto);
 
 }

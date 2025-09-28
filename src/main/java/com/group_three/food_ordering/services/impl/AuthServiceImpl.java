@@ -3,6 +3,7 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
+import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
@@ -45,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
             String token = jwtService.generateToken(
                     user.getEmail(),
                     null,
-                    user.getRole().name(),
+                    RoleType.ROLE_CLIENT.name(),
                     null,
                     null
             );
@@ -76,6 +77,7 @@ public class AuthServiceImpl implements AuthService {
     public Optional<Participant> getCurrentParticipant() {
         log.debug("[AuthService] Getting current participant from principal");
         CustomUserPrincipal principal = getPrincipal();
+        assert principal != null;
         log.debug("[AuthService] participant subject={}", principal.getEmail());
         return Optional.ofNullable(principal.getParticipantId())
                 .flatMap(participantRepository::findById);
@@ -84,6 +86,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TableSession getCurrentTableSession() {
         CustomUserPrincipal principal = getPrincipal();
+        assert principal != null;
         UUID sessionId = principal.getTableSessionId();
         if (sessionId == null) {
             throw new IllegalStateException("El token no contiene tableSessionId");
@@ -92,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("TableSession no encontrada"));
     }
 
-    CustomUserPrincipal getPrincipal() {
+    private CustomUserPrincipal getPrincipal() {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof CustomUserPrincipal customUserPrincipal) {

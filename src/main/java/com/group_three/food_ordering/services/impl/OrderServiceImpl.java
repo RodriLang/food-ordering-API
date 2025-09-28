@@ -12,6 +12,7 @@ import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.mappers.OrderMapper;
 import com.group_three.food_ordering.repositories.*;
+import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.utils.OrderServiceHelper;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -106,7 +109,10 @@ public class OrderServiceImpl implements OrderService {
         TableSession session = tableSessionRepository.findById(tableSessionId)
                 .orElseThrow(() -> new EntityNotFoundException("TableSession", tableSessionId.toString()));
 
-        if (currentParticipant.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+        CustomUserPrincipal principal = getPrincipal();
+        RoleType role = principal.getRole();
+
+        if (role.equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentParticipant)) {
 
             throw new LogicalAccessDeniedException("You do not have access to this table session");
@@ -135,8 +141,10 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDto> getOrdersByUser(UUID userId, OrderStatus status, Pageable pageable) {
 
         Participant currentParticipant = getAuthenticatedParticipant();
+        CustomUserPrincipal principal = getPrincipal();
+        RoleType role = principal.getRole();
 
-        if (currentParticipant.getUser().getRole().equals(RoleType.ROLE_CLIENT)
+        if (role.equals(RoleType.ROLE_CLIENT)
                 && !currentParticipant.getId().equals(userId)) {
 
             throw new LogicalAccessDeniedException("You do not have access to this table session");
@@ -305,5 +313,15 @@ public class OrderServiceImpl implements OrderService {
 
     private TableSession getCurrentTableSession() {
         return authService.getCurrentTableSession();
+    }
+
+    CustomUserPrincipal getPrincipal() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserPrincipal customUserPrincipal) {
+            return customUserPrincipal;
+        } else {
+            return null;
+        }
     }
 }

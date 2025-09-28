@@ -1,29 +1,34 @@
 package com.group_three.food_ordering.services;
 
+import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.models.Employment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface EmploymentService {
 
-    EmploymentResponseDto create(EmploymentRequestDto dto);
+    EmploymentResponseDto createEmployment(EmployeeRequestDto dto);
 
-    List<RoleEmploymentResponseDto> getRoleEmploymentsByUser(UUID userId);
+    List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId);
 
-    List<EmploymentResponseDto> getAll();
+    Page<EmploymentResponseDto> getAllAndActiveTrue(Pageable pageable);
 
-    List<EmploymentResponseDto> getByUser(UUID userId);
+    Page<EmploymentResponseDto> getAllAndActiveFalse(Pageable pageable);
 
-    EmploymentResponseDto getById(UUID id);
+    Page<EmploymentResponseDto> getByUserAndActiveTrue(String email, Pageable pageable);
+
+    EmploymentResponseDto getByIdAndActiveTrue(UUID id);
 
     void delete(UUID id);
 
     EmploymentResponseDto update(UUID id, EmploymentRequestDto dto);
 
-    Employment getEntityById(UUID id);
+    Employment getEntityByIdAndActiveTrue(UUID id);
 
 }

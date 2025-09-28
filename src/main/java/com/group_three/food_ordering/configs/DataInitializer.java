@@ -290,7 +290,6 @@ public class DataInitializer implements CommandLineRunner {
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .phone("1111111111")
                         .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_ROOT)
                         .address(new Address("Root St", "1", "Root City", "Root Province", "Root Country", "0000"))
                         .build();
 
@@ -303,7 +302,6 @@ public class DataInitializer implements CommandLineRunner {
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .phone("1111111111")
                         .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_ADMIN)
                         .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
                         .build();
                 Employment adminEmployee = Employment.builder()
@@ -321,7 +319,6 @@ public class DataInitializer implements CommandLineRunner {
                         .birthDate(LocalDate.of(1985, 5, 15))
                         .phone("2222222222")
                         .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_STAFF)
                         .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
                         .build();
                 Employment employeeManager = Employment.builder()
@@ -334,7 +331,6 @@ public class DataInitializer implements CommandLineRunner {
                 User employeeUser = User.builder()
                         .email("employee@test.com")
                         .password(passwordEncoder.encode("employee123"))
-                        .role(RoleType.ROLE_STAFF)
                         .name("Diego")
                         .lastName("Torres")
                         .birthDate(LocalDate.of(1995, 8, 20))
@@ -358,13 +354,12 @@ public class DataInitializer implements CommandLineRunner {
                         .birthDate(LocalDate.of(2000, 12, 10))
                         .phone("4444444444")
                         .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_CLIENT)
                         .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
                         .build();
                 Participant participant = Participant.builder()
                         .user(clientUser)
                         .nickname(clientUser.getName())
-                        .role(clientUser.getRole())
+                        .role(RoleType.ROLE_CLIENT)
                         .build();
 
 
@@ -378,7 +373,6 @@ public class DataInitializer implements CommandLineRunner {
                         .birthDate(LocalDate.of(1992, 6, 15))
                         .phone("0000000000")
                         .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_GUEST)
                         .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
                         .build();
                 Participant genericParticipant = Participant.builder()
@@ -406,7 +400,6 @@ public class DataInitializer implements CommandLineRunner {
             ///  LOS OTROS QUE HABIA !!
 
             User u1 = User.builder()
-                    .role(RoleType.ROLE_CLIENT)
                     .email("user1@example.com")
                     .name("Leonardo")
                     .lastName("Juarez")
@@ -416,7 +409,6 @@ public class DataInitializer implements CommandLineRunner {
                     .phone("1234567890")
                     .build();
             User u2 = User.builder()
-                    .role(RoleType.ROLE_CLIENT)
                     .email("cliente@cliente.com")
                     .name("David")
                     .lastName("Fernandez")
@@ -426,7 +418,6 @@ public class DataInitializer implements CommandLineRunner {
                     .phone("1234")
                     .build();
             User u3 = User.builder()
-                    .role(RoleType.ROLE_CLIENT)
                     .email("user3@example.com")
                     .name("Diego")
                     .lastName("Alonso")

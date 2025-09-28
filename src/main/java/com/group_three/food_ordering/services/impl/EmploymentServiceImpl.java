@@ -1,5 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
@@ -7,9 +9,14 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
 import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.Employment;
+import com.group_three.food_ordering.models.FoodVenue;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
+import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.EmploymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,14 +29,28 @@ public class EmploymentServiceImpl implements EmploymentService {
     private final EmploymentRepository employmentRepository;
     private final EmploymentMapper employmentMapper;
     private final RoleEmploymentMapper roleEmploymentMapper;
+    private final TenantContext tenantContext;
+    private final UserRepository userRepository;
 
     @Override
-    public EmploymentResponseDto create(EmploymentRequestDto dto) {
-        return null;
+    public EmploymentResponseDto createEmployment(EmployeeRequestDto dto) {
+        FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
+        User employeeUser = userRepository.findByEmail(dto.getUserEmail())
+                .orElseThrow(() -> new EntityNotFoundException("User"));
+
+        Employment employment = Employment.builder()
+                .user(employeeUser)
+                .foodVenue(currentFoodVenue)
+                .role(dto.getRole())
+                .build();
+        employmentRepository.save(employment);
+
+        return employmentMapper.toResponseDto(employment);
     }
 
+
     @Override
-    public List<RoleEmploymentResponseDto> getRoleEmploymentsByUser(UUID userId) {
+    public List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId) {
 
         List<Employment> employments = employmentRepository.findByUser_IdAndActiveTrue(userId);
 
@@ -39,24 +60,36 @@ public class EmploymentServiceImpl implements EmploymentService {
     }
 
     @Override
-    public List<EmploymentResponseDto> getAll() {
-        return List.of();
+    public Page<EmploymentResponseDto> getAllAndActiveTrue(Pageable pageable) {
+        return employmentRepository.getAllByActive(pageable, Boolean.TRUE).map(employmentMapper::toResponseDto);
     }
 
     @Override
-    public List<EmploymentResponseDto> getByUser(UUID userId) {
-        return employmentRepository.findByUser_IdAndActiveTrue(userId).stream()
-                .map(employmentMapper::toResponseDto).toList();
+    public Page<EmploymentResponseDto> getAllAndActiveFalse(Pageable pageable) {
+        return employmentRepository.getAllByActive(pageable, Boolean.FALSE).map(employmentMapper::toResponseDto);
     }
 
     @Override
-    public EmploymentResponseDto getById(UUID id) {
-        return null;
+    public Page<EmploymentResponseDto> getByUserAndActiveTrue(String email, Pageable pageable) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User"));
+
+        return employmentRepository.findByUser_IdAndActiveTrue(user.getId(), pageable).map(employmentMapper::toResponseDto);
+    }
+
+    @Override
+    public EmploymentResponseDto getByIdAndActiveTrue(UUID id) {
+        Employment employment = getEntityByIdAndActiveTrue(id);
+        return employmentMapper.toResponseDto(employment);
     }
 
     @Override
     public void delete(UUID id) {
+        Employment employment = getEntityByIdAndActiveTrue(id);
 
+        employment.setActive(false);
+        employmentRepository.save(employment);
     }
 
     @Override
@@ -65,7 +98,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     }
 
     @Override
-    public Employment getEntityById(UUID id) {
+    public Employment getEntityByIdAndActiveTrue(UUID id) {
         return employmentRepository.findByIdAndActiveTrue(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employment"));
     }

@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.services.EmploymentService;
@@ -12,27 +13,28 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(ApiPaths.EMPLOYEE_URI)
+@RequestMapping(ApiPaths.EMPLOYMENT_URI)
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ROOT')")
 @RequiredArgsConstructor
 public class EmployeeController {
 
     private final EmploymentService employmentService;
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @PostMapping
     @Operation(
             summary = "Crear un nuevo empleado",
-            description = "Permite registrar un nuevo empleado con usuario completo. Se asigna automáticamente el rol ROLE_STAFF.",
+            description = "Permite registrar un nuevo empleado. Se asigna automáticamente el rol ROLE_STAFF.",
             requestBody = @RequestBody(
                     description = "Datos del empleado a crear",
                     required = true,
@@ -43,11 +45,10 @@ public class EmployeeController {
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     })
-    public ResponseEntity<EmploymentResponseDto> create(@Valid @org.springframework.web.bind.annotation.RequestBody EmploymentRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(employmentService.create(dto));
+    public ResponseEntity<EmploymentResponseDto> create(@Valid @org.springframework.web.bind.annotation.RequestBody EmployeeRequestDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(employmentService.createEmployment(dto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @PutMapping("/{id}")
     @Operation(
             summary = "Actualizar completamente un empleado",
@@ -64,18 +65,6 @@ public class EmployeeController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @GetMapping("/all")
-    @Operation(
-            summary = "Listar todos los empleados",
-            description = "Devuelve todos los empleados activos (user.removedAt == null)."
-    )
-    public ResponseEntity<List<EmploymentResponseDto>> getAll() {
-        return ResponseEntity.ok(employmentService.getAll());
-    }
-
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar un empleado por ID",
@@ -86,14 +75,23 @@ public class EmployeeController {
             @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
     })
     public ResponseEntity<EmploymentResponseDto> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(employmentService.getById(id));
+        return ResponseEntity.ok(employmentService.getByIdAndActiveTrue(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
+    @GetMapping("/user")
+    @Operation(
+            summary = "Listar empleados activos",
+            description = "Devuelve todos los empleados que no han sido eliminados (removedAt es null en su usuario)."
+    )
+    public ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(String email, Pageable pageable) {
+
+        return ResponseEntity.ok(employmentService.getByUserAndActiveTrue(email, pageable));
+    }
+
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Eliminar un empleado",
-            description = "Marca como eliminado al usuario asociado (setea removedAt)."
+            description = "Marca como eliminado al usuario asociado."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Empleado eliminado"),
@@ -104,29 +102,22 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/actives")
     @Operation(
             summary = "Listar empleados activos",
-            description = "Devuelve todos los empleados que no han sido eliminados (removedAt es null en su usuario)."
+            description = "Devuelve todos los empleados que no han sido eliminados."
     )
-    public ResponseEntity<List<EmploymentResponseDto>> getActiveEmployees() {
-        List<EmploymentResponseDto> actives = employmentService.getAll().stream()
-                .filter(e -> e.getUser() == null || e.getUser().getRemovedAt() == null)
-                .toList();
-        return ResponseEntity.ok(actives);
+    public ResponseEntity<Page<EmploymentResponseDto>> getActiveEmployees(Pageable pageable) {
+
+        return ResponseEntity.ok(employmentService.getAllAndActiveTrue(pageable));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar empleados eliminados",
-            description = "Devuelve todos los empleados cuyo usuario fue eliminado (removedAt no es null)."
+            description = "Devuelve todos los empleados cuyo usuario fue eliminado."
     )
-    public ResponseEntity<List<EmploymentResponseDto>> getDeletedEmployees() {
-        List<EmploymentResponseDto> deleted = employmentService.getAll().stream()
-                .filter(e -> e.getUser() != null && e.getUser().getRemovedAt() != null)
-                .toList();
-        return ResponseEntity.ok(deleted);
+    public ResponseEntity<Page<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable) {
+        return ResponseEntity.ok(employmentService.getAllAndActiveFalse(pageable));
     }
 }

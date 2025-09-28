@@ -3,29 +3,36 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
 import com.group_three.food_ordering.security.LoginResponse;
-import com.group_three.food_ordering.services.RoleSelectionService;
-import lombok.RequiredArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@RestController
 @RequestMapping(ApiPaths.ROLE_SELECTOR_URI)
-@RequiredArgsConstructor
-public class RoleSelectorController {
+public interface RoleSelectorController {
 
-    private final RoleSelectionService roleSelectionService;
-
-
+    @Operation(
+            summary = "Seleccionar rol",
+            description = "Permite elegir entre los roles disponibles al momento de loguearse.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Selección exitosa"),
+                    @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
+            }
+    )
     @PostMapping("/select")
-    public ResponseEntity<LoginResponse> select(@RequestBody RoleSelectionRequestDto request) {
-        return ResponseEntity.ok(roleSelectionService.selectRole(request));
-    }
+    ResponseEntity<LoginResponse> select(@RequestBody RoleSelectionRequestDto request);
 
+
+    @Operation(
+            summary = "Seleccionar rol cliente",
+            description = "Permite volver al rol por defecto para operar como cliente.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Selección exitosa"),
+            }
+    )
     @PostMapping("/client")
-    public ResponseEntity<LoginResponse> client() {
-        return ResponseEntity.ok(roleSelectionService.selectClient());
-    }
+    ResponseEntity<LoginResponse> client();
 }

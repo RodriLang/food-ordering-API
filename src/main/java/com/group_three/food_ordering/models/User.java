@@ -55,8 +55,8 @@ public class User {
     
     private LocalDateTime removedAt;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
+   // @Enumerated(EnumType.STRING)
+   // private RoleType role;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -66,5 +66,6 @@ public class User {
     @PrePersist
     public void onCreate() {
         if (this.id == null) this.id = UUID.randomUUID();
+        //if (this.role == null) this.role = RoleType.ROLE_CLIENT;
     }
 }

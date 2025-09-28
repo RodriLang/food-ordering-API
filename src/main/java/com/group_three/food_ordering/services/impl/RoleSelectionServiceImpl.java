@@ -33,8 +33,8 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     @Override
     public LoginResponse selectRole(RoleSelectionRequestDto request) {
         User authenticatedUser = getAuthenticatedUser();
-        Employment employment = employmentService.getEntityById(request.employmentId());
-        log.debug("[RoleSelection] Employment selected id={}", request.employmentId());
+        Employment employment = employmentService.getEntityByIdAndActiveTrue(request.employmentId());
+        log.debug("[RoleSelection] Role selected={}", employment.getRole());
         return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getId(), employment.getRole().name());
     }
 
@@ -47,11 +47,11 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     @Override
     public RoleSelectionResponseDto generateRoleSelection(User user) {
-        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUser(user.getId());
+        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getId());
         RoleSelectionResponseDto roleSelection = RoleSelectionResponseDto.builder()
                 .employments(roleEmployments)
                 .build();
-        log.info("Role selection generated for user {}", user.getEmail());
+        log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
         return roleSelection;
     }
 

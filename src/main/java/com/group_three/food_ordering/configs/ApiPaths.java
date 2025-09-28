@@ -19,7 +19,6 @@ public class ApiPaths {
     public static final String PAYMENT_URI = URI_BASE_V1 + "/payments";
     public static final String TABLE_URI = URI_BASE_V1 + "/tables";
     public static final String TABLE_SESSION_URI = URI_BASE_V1 + "/table-sessions";
-    public static final String EMPLOYEE_URI = URI_BASE_V1 + "/employees";
     public static final String PARTICIPANT_URI = URI_BASE_V1 + "/participants";
     public static final String AUTH_URI = URI_BASE_V1 + "/auth";
     public static final String MENU_URI = URI_BASE_V1 + "/menu";
