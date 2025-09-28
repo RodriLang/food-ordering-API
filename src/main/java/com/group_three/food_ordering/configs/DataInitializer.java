@@ -23,7 +23,7 @@ public class DataInitializer implements CommandLineRunner {
     private final TagRepository tagRepository;
     private final FoodVenueRepository foodVenueRepository;
     private final ProductRepository productRepository;
-    private final ClientRepository clientRepository;
+    private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final TableRepository tableRepository;
     private final TableSessionRepository tableSessionRepository;
@@ -33,7 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
 
-    private final EmployeeRepository employeeRepository;
+    private final EmploymentRepository employmentRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -306,10 +306,10 @@ public class DataInitializer implements CommandLineRunner {
                         .role(RoleType.ROLE_ADMIN)
                         .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
                         .build();
-                Employee adminEmployee = Employee.builder()
+                Employment adminEmployee = Employment.builder()
                         .foodVenue(v1)
-                        .position("Owner")
                         .user(adminUser)
+                        .role(RoleType.ROLE_ADMIN)
                         .build();
 
                 // Manager
@@ -324,10 +324,10 @@ public class DataInitializer implements CommandLineRunner {
                         .role(RoleType.ROLE_STAFF)
                         .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
                         .build();
-                Employee employeeManager = Employee.builder()
+                Employment employeeManager = Employment.builder()
                         .foodVenue(v1)
-                        .position("Manager")
                         .user(managerUser)
+                        .role(RoleType.ROLE_MANAGER)
                         .build();
 
                 // Employee
@@ -343,10 +343,10 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Employee St", "3", "Work City", "Work Province", "Work Country", "2222"))
                         .build();
 
-                Employee employee1 = Employee.builder()
+                Employment employee1 = Employment.builder()
                         .foodVenue(v1)
-                        .position("Waiter")
                         .user(employeeUser)
+                        .role(RoleType.ROLE_STAFF)
                         .build();
 
                 // Client
@@ -362,23 +362,11 @@ public class DataInitializer implements CommandLineRunner {
                         .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
                         .build();
                 Participant participant = Participant.builder()
-                        .nickname("cliente")
                         .user(clientUser)
+                        .nickname(clientUser.getName())
+                        .role(clientUser.getRole())
                         .build();
 
-
-                // Usuario de prueba general
-                User testUser = User.builder()
-                        .name("Test")
-                        .lastName("User")
-                        .email("test@test.com")
-                        .password(passwordEncoder.encode("test123"))
-                        .birthDate(LocalDate.of(1992, 6, 15))
-                        .phone("5555555555")
-                        .createdAt(LocalDateTime.now())
-                        .role(RoleType.ROLE_GUEST)
-                        .address(new Address("Test St", "5", "Test City", "Test Province", "Test Country", "4444"))
-                        .build();
 
                 // Generic user
                 User genericUser = User.builder()
@@ -399,9 +387,9 @@ public class DataInitializer implements CommandLineRunner {
                         .user(genericUser)
                         .build();
 
-                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, testUser, genericUser));
-                employeeRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
-                clientRepository.saveAll(List.of(participant, genericParticipant));
+                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, genericUser));
+                employmentRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
+                participantRepository.saveAll(List.of(participant, genericParticipant));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
                 System.out.println("🔑 Admin: admin@test.com / admin123");
@@ -461,7 +449,7 @@ public class DataInitializer implements CommandLineRunner {
                     .nickname(u2.getName())
                     .user(u2)
                     .build();
-            clientRepository.saveAll(List.of(c1, c2, c3));
+            participantRepository.saveAll(List.of(c1, c2, c3));
 
             // Tables
             Table t1 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8")).number(1).capacity(4).foodVenue(v1).build();

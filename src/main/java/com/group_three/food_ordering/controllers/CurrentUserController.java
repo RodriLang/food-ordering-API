@@ -2,7 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-@RequestMapping(ApiPaths.CURRENT_USER)
-public interface ProfileController {
+@RequestMapping(ApiPaths.CURRENT_URI)
+public interface CurrentUserController {
 
 
     @GetMapping("/user")
@@ -34,7 +34,7 @@ public interface ProfileController {
             @Parameter(hidden = true) Pageable pageable);
 
     @PostMapping("/table-sessions")
-    ResponseEntity<AuthResponse> createTableSession(@RequestBody @Valid TableSessionCreateDto tableSessionCreateDto);
+    ResponseEntity<InitSessionResponseDto> createTableSession(@RequestBody @Valid TableSessionCreateDto tableSessionCreateDto);
 
     @GetMapping("/table-sessions")
     ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(

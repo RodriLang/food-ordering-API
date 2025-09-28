@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RequestMapping(ApiPaths.USER_BASE)
-@Tag(name = "Users", description = "Operaciones relacionadas con usuarios administradores del sistema (Staff, Admin, Super Admin)")
+@RequestMapping(ApiPaths.ADMIN_URI)
+@Tag(name = "Users", description = "Operaciones relacionadas con usuarios administradores del sistema")
 public interface AdminController {
 
     @PostMapping
@@ -94,7 +94,7 @@ public interface AdminController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
-            summary = "Eliminar lógicamente un usuario",
+            summary = "Eliminar lógicamente un usuario administrador",
             description = "Marca el usuario como eliminado estableciendo su campo removedAt."
     )
     ResponseEntity<Void> deleteById(@PathVariable UUID id);

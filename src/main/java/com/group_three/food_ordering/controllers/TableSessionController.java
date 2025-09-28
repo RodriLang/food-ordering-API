@@ -2,7 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,14 +29,14 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(ApiPaths.TABLE_SESSION_BASE)
+@RequestMapping(ApiPaths.TABLE_SESSION_URI)
 @RequiredArgsConstructor
 public class TableSessionController {
 
     private final TableSessionService tableSessionService;
     private final OrderService orderService;
 
-    @PermitAll
+    @PreAuthorize("hasRole('CLIENT') or isAnonymous()")
     @Operation(
             summary = "Iniciar una nueva sesión de mesa",
             description = "Crea una sesión asociada a una mesa con los datos proporcionados.",
@@ -48,10 +47,10 @@ public class TableSessionController {
             }
     )
     @PostMapping("/init")
-    public ResponseEntity<AuthResponse> createTableSession(
+    public ResponseEntity<InitSessionResponseDto> createTableSession(
             @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.create(tableSessionCreateDto));
+                body(tableSessionService.enter(tableSessionCreateDto));
     }
 
 

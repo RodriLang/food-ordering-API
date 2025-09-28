@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@RequestMapping(ApiPaths.ORDER_BASE)
+@RequestMapping(ApiPaths.ORDER_URI)
 public interface OrderController {
 
     @Operation(

@@ -50,7 +50,7 @@ public class FoodVenue {
     @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Employee> employees = new ArrayList<>();
+    private List<Employment> employees = new ArrayList<>();
 
     @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)

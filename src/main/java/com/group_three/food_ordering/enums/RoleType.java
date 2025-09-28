@@ -5,7 +5,7 @@ public enum RoleType {
     ROLE_GUEST,
     ROLE_CLIENT,
     ROLE_STAFF,
+    ROLE_MANAGER,
     ROLE_ADMIN,
-    ROLE_SUPER_ADMIN,
     ROLE_ROOT
 }

@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.controllers.impl;
 
-import com.group_three.food_ordering.controllers.ProfileController;
+import com.group_three.food_ordering.controllers.CurrentUserController;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
@@ -20,10 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@PreAuthorize("hasRole('CLIENT')")
+@PreAuthorize("hasAnyRole('CLIENT')")
 @RestController
 @RequiredArgsConstructor
-public class ProfileControllerImpl implements ProfileController {
+public class CurrentUserControllerImpl implements CurrentUserController {
 
     private final OrderService orderService;
     private final UserService userService;
@@ -41,10 +41,10 @@ public class ProfileControllerImpl implements ProfileController {
     }
 
     @Override
-    public ResponseEntity<AuthResponse> createTableSession(
+    public ResponseEntity<InitSessionResponseDto> createTableSession(
             TableSessionCreateDto tableSessionCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.create(tableSessionCreateDto));
+                body(tableSessionService.enter(tableSessionCreateDto));
     }
 
     @Override

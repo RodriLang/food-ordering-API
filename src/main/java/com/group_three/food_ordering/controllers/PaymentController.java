@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(ApiPaths.PAYMENT_BASE)
+@RequestMapping(ApiPaths.PAYMENT_URI)
 @RequiredArgsConstructor
 @Tag(name = "payment-controller", description = "Operaciones para gestionar pagos")
 public class PaymentController {

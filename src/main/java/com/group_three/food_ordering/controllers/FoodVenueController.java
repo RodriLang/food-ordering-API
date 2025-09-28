@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RequestMapping(ApiPaths.VENUE_BASE)
+@RequestMapping(ApiPaths.VENUE_URI)
 public interface FoodVenueController {
 
     @Operation(

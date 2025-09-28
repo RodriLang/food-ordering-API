@@ -1,25 +1,21 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.LoginRequest;
-import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.security.LoginResponse;
 
-import java.util.UUID;
+import java.util.Optional;
 
 public interface AuthService {
 
 
-    AuthResponse login(LoginRequest loginRequest);
+    LoginResponse login(LoginRequest loginRequest);
 
-    AuthResponse initTableSession(User user, UUID foodVenueId, UUID tableSessionId);
+    Optional<User> getCurrentUser();
 
-    String getCurrentEmail();
-
-    User getCurrentUser();
-
-    Participant getCurrentClient();
+    Optional<Participant> getCurrentParticipant();
 
     TableSession getCurrentTableSession();
 

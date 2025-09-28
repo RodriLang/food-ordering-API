@@ -41,6 +41,8 @@ public interface OrderService {
 
     Page<OrderResponseDto> getOrdersByClientAndTableSessionAndStatus(UUID clientId, UUID tableSessionId, OrderStatus status, Pageable pageable);
 
+    Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable);
+
     void delete(UUID id);
 
     void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail);

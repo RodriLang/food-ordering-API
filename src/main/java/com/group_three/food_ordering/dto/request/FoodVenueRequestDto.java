@@ -45,7 +45,7 @@ public class FoodVenueRequestDto {
     @Size(min = 5, max = 200, message = "Image URL must be between 5 and 200 characters", groups = {OnCreate.class, OnUpdate.class})
     private String imageUrl;
 
-    private List<EmployeeCreateDto> employees;
+    private List<EmploymentRequestDto> employees;
 
     private List<ProductCreateDto> products;
 

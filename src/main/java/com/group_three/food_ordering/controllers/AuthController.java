@@ -3,7 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 
 import com.group_three.food_ordering.dto.request.LoginRequest;
-import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.security.LoginResponse;
 import com.group_three.food_ordering.services.impl.AuthServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +25,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authServiceImpl.login(request));
     }
 }

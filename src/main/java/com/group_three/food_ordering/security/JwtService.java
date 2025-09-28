@@ -1,7 +1,5 @@
 package com.group_three.food_ordering.security;
 
-import com.group_three.food_ordering.exceptions.EntityNotFoundException;
-import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -33,19 +31,19 @@ public class JwtService {
 
     private final UserRepository userRepository;
 
-    public String generateToken(String email,
+    public String generateToken(String subject,
                                 UUID foodVenueId,
                                 String role,
                                 UUID tableSessionId,
-                                UUID clientId) {
+                                UUID participantId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("foodVenueId", foodVenueId);
         claims.put("tableSessionId", tableSessionId);
-        claims.put("clientId", clientId);
+        claims.put("participantId", participantId);
         claims.put("role", role);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(subject)
                 .claims(claims)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))

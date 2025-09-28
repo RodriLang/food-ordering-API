@@ -55,7 +55,6 @@ public class Order {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     private Participant participant;
 

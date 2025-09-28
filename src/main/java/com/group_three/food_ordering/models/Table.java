@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.TableStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,8 +9,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

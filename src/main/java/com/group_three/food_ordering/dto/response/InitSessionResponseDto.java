@@ -12,12 +12,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TableSessionResponseDto {
+public class InitSessionResponseDto {
+
+    private Integer tableNumber;
 
     private LocalDateTime startTime;
+
     private LocalDateTime endTime;
-    private Integer tableNumber;
+
     private ParticipantResponseDto hostClient;
+
     private List<ParticipantResponseDto> participants;
+
+    private String token;
 
 }

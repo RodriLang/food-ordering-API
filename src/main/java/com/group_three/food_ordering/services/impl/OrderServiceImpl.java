@@ -46,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
         log.debug("::: Creando nueva Order : {} :::", orderRequestDto);
         FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
 
-        Participant participant = authService.getCurrentClient();
+        Participant participant = getAuthenticatedParticipant();
 
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(orderServiceHelper.generateOrderNumber());
@@ -55,7 +55,7 @@ public class OrderServiceImpl implements OrderService {
         log.info("::: Generando Order para con el Tenant del Food Venue ID: {} :::", currentFoodVenue.getId());
 
         /// method added for setting Table Session ID in the order
-        TableSession tableSession = authService.getCurrentTableSession();
+        TableSession tableSession = getCurrentTableSession();
         order.setTableSession(tableSession);
 
 
@@ -100,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
-        Participant currentParticipant = authService.getCurrentClient();
+        Participant currentParticipant = getAuthenticatedParticipant();
 
 
         TableSession session = tableSessionRepository.findById(tableSessionId)
@@ -126,17 +126,18 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClient(OrderStatus status, Pageable pageable) {
-        var authenticatedClientId = authService.getCurrentClient().getId();
-
-        return getOrdersByClient(authenticatedClientId, status, pageable);
+        User authenticatedClient = getAuthenticatedUser();
+        return getOrdersByUser(authenticatedClient.getId(), status, pageable);
     }
 
-    public Page<OrderResponseDto> getOrdersByClient(UUID clientId, OrderStatus status, Pageable pageable) {
 
-        Participant currentParticipant = authService.getCurrentClient();
+    /// Revisar esto porque verifica el rol del usuario autenticado
+    public Page<OrderResponseDto> getOrdersByUser(UUID userId, OrderStatus status, Pageable pageable) {
+
+        Participant currentParticipant = getAuthenticatedParticipant();
 
         if (currentParticipant.getUser().getRole().equals(RoleType.ROLE_CLIENT)
-                && !currentParticipant.getId().equals(clientId)) {
+                && !currentParticipant.getId().equals(userId)) {
 
             throw new LogicalAccessDeniedException("You do not have access to this table session");
         }
@@ -144,9 +145,9 @@ public class OrderServiceImpl implements OrderService {
         // Se filtra por estado
         Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrdersByParticipant_IdAndStatus(clientId, status, pageable);
+            orders = orderRepository.findOrdersByParticipant_IdAndStatus(userId, status, pageable);
         } else {
-            orders = orderRepository.findOrdersByParticipant_Id(clientId, pageable);
+            orders = orderRepository.findOrdersByParticipant_Id(userId, pageable);
         }
 
         return orders.map(orderMapper::toDTO);
@@ -155,17 +156,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndStatus(OrderStatus status, Pageable pageable) {
 
-        var currentClientId = authService.getCurrentClient().getId();
-
-        return getOrdersByClient(currentClientId, status, pageable);
+        UUID currentClientId = getAuthenticatedUser().getId();
+        return getOrdersByUser(currentClientId, status, pageable);
     }
 
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndCurrentTableSessionAndStatus(
             OrderStatus status, Pageable pageable) {
 
-        var currentClientId = authService.getCurrentClient().getId();
-        var currentTableSessionId = authService.getCurrentTableSession().getId();
+        UUID currentClientId = getAuthenticatedParticipant().getId();
+        UUID currentTableSessionId = getCurrentTableSession().getId();
 
         return getOrdersByClientAndTableSessionAndStatus(currentClientId, currentTableSessionId, status, pageable);
     }
@@ -174,11 +174,19 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDto> getOrdersByClientAndTableSessionAndStatus(
             UUID clientId, UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
-        var currentClientId = authService.getCurrentClient().getId();
-        var currentTableSessionId = authService.getCurrentTableSession().getId();
+        UUID currentClientId = getAuthenticatedUser().getId();
+        UUID currentTableSessionId = getCurrentTableSession().getId();
 
         return orderRepository.findOrdersByParticipant_IdAndTableSession_IdAndStatus(
                 currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDTO);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable) {
+
+        UUID currentClientId = getAuthenticatedParticipant().getId();
+
+        return orderRepository.findOrdersByParticipant_Id(currentClientId, pageable).map(orderMapper::toDTO);
     }
 
 
@@ -283,5 +291,19 @@ public class OrderServiceImpl implements OrderService {
     public Order getEntityByIdAndTenantContext(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order", id.toString()));
+    }
+
+    private User getAuthenticatedUser() {
+        return authService.getCurrentUser()
+                .orElseThrow(() -> new EntityNotFoundException("User"));
+    }
+
+    private Participant getAuthenticatedParticipant() {
+        return authService.getCurrentParticipant()
+                .orElseThrow(() -> new EntityNotFoundException("Participant"));
+    }
+
+    private TableSession getCurrentTableSession() {
+        return authService.getCurrentTableSession();
     }
 }

@@ -58,6 +58,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Employment> employments = new ArrayList<>();
+
     @PrePersist
     public void onCreate() {
         if (this.id == null) this.id = UUID.randomUUID();

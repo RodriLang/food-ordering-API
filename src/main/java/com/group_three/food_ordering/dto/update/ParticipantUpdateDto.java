@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientUpdateDto {
+public class ParticipantUpdateDto {
 
     @Valid
     private UserUpdateDto user;

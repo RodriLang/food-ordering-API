@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(ApiPaths.TABLE_BASE)
+@RequestMapping(ApiPaths.TABLE_URI)
 @RequiredArgsConstructor
 public class TableController {
 

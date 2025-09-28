@@ -5,7 +5,6 @@ import com.group_three.food_ordering.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,8 +40,8 @@ public class SecurityConfig {
                         .requestMatchers(ApiPaths.AUTH_URI+"/login",
                                 ApiPaths.AUTH_URI+"/register",
                                 ApiPaths.MENU_URI).permitAll()
-                        .requestMatchers(ApiPaths.PUBLIC_BASE+"/**").permitAll()
-                        .requestMatchers(ApiPaths.TABLE_SESSION_BASE+"/init").permitAll()
+                        .requestMatchers(ApiPaths.PUBLIC_URI +"/**").permitAll()
+                        .requestMatchers(ApiPaths.TABLE_SESSION_URI +"/init").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

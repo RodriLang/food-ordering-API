@@ -11,7 +11,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientCreateDto {
+public class ParticipantCreateDto {
 
     private UUID userId;
 

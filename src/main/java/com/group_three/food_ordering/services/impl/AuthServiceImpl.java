@@ -2,15 +2,19 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
+import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.security.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.group_three.food_ordering.services.RoleSelectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,98 +28,77 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final EmployeeRepository employeeRepository;
-    private final ClientRepository clientRepository;
+    private final ParticipantRepository participantRepository;
     private final TableSessionRepository tableSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final HttpServletRequest request;
+    private final RoleSelectionService roleSelectionService;
 
-    public AuthResponse login(LoginRequest loginRequest) {
-        Optional<Employee> employeeOpt = employeeRepository.findByUser_Email(loginRequest.getEmail());
 
-        if (employeeOpt.isPresent()) {
-            Employee emp = employeeOpt.get();
+    @Override
+    public LoginResponse login(LoginRequest loginRequest) {
 
-            if (passwordEncoder.matches(loginRequest.getPassword(), emp.getUser().getPassword())) {
-                String token = jwtService.generateToken(
-                        loginRequest.getEmail(),
-                        emp.getFoodVenue().getId(),
-                        emp.getUser().getRole().name(),
-                        null,
-                        null);
-                return new AuthResponse(token);
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("User"));
+
+        if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            String token = jwtService.generateToken(
+                    user.getEmail(),
+                    null,
+                    user.getRole().name(),
+                    null,
+                    null
+            );
+            if (!user.getEmployments().isEmpty()) {
+                RoleSelectionResponseDto responseDto = roleSelectionService.generateRoleSelection(user);
+                responseDto.setToken(token);
+                return responseDto;
             }
+            return new AuthResponse(token);
         }
-
-        Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-
-            if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                String token = jwtService.generateToken(
-                        loginRequest.getEmail(),
-                        null,
-                        user.getRole().name(),
-                        null,
-                        null);
-                return new AuthResponse(token);
-            }
-        }
-
         throw new BadCredentialsException("Usuario o contraseña incorrectos");
     }
 
     @Override
-    public AuthResponse initTableSession(User user, UUID foodVenueId, UUID tableSessionId) {
+    public Optional<User> getCurrentUser() {
+        log.debug("[AuthService] Getting current user from principal");
+        CustomUserPrincipal principal = getPrincipal();
 
-        return AuthResponse.builder()
-                    .token(jwtService.generateToken(user.getEmail(),
-                            foodVenueId,
-                            user.getRole().name(),
-                            tableSessionId,
-                            user.getId()))
-                    .build();
+        if (principal == null) {
+            log.debug("[AuthService] Unregistered user. Continue as GUEST_ROLE");
+            return Optional.empty();
+        }
+        log.debug("[AuthService] Authenticated User email={}", principal.getEmail());
+        return userRepository.findByEmail(principal.getEmail());
     }
 
-    public String getCurrentEmail() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
-
+    @Override
+    public Optional<Participant> getCurrentParticipant() {
+        log.debug("[AuthService] Getting current participant from principal");
+        CustomUserPrincipal principal = getPrincipal();
+        log.debug("[AuthService] participant subject={}", principal.getEmail());
+        return Optional.ofNullable(principal.getParticipantId())
+                .flatMap(participantRepository::findById);
     }
 
-    public User getCurrentUser() {
-        return userRepository.findByEmail(getCurrentEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
-    }
-
-    public Participant getCurrentClient() {
-        log.debug("[AuthService] Obteniendo Cliente autenticado.");
-        return clientRepository.findByUser_Email(getCurrentEmail())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
-    }
-
+    @Override
     public TableSession getCurrentTableSession() {
-        log.debug("[AuthService] Obteniendo Sesión de mesa actual.");
-        String token = extractTokenFromRequest();
-        String sessionIdString = jwtService.getClaim(token, claims -> claims.get("tableSessionId", String.class));
-
-        if (sessionIdString == null) {
+        CustomUserPrincipal principal = getPrincipal();
+        UUID sessionId = principal.getTableSessionId();
+        if (sessionId == null) {
             throw new IllegalStateException("El token no contiene tableSessionId");
         }
-
-        UUID sessionId = UUID.fromString(sessionIdString);
         return tableSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("TableSession no encontrada"));
     }
 
-    private String extractTokenFromRequest() {
-        final String authHeader = request.getHeader("Authorization");
-        log.info("::: Obteniendo token :::");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.error("::: Token invalido {} :::", authHeader);
-            throw new IllegalStateException("Token JWT no presente o mal formado");
+    CustomUserPrincipal getPrincipal() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserPrincipal customUserPrincipal) {
+            return customUserPrincipal;
+        } else {
+            return null;
         }
-        return authHeader.substring(7);
     }
 }

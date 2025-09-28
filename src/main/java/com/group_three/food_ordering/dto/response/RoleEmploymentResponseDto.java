@@ -9,8 +9,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientResponseDto {
+
+public class RoleEmploymentResponseDto {
+
     private UUID id;
-    private UserResponseDto user;
-    private String nickname;
+
+    private String role;
+
+    private String foodVenueName;
 }
+

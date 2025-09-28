@@ -46,9 +46,9 @@ public class TableSession {
 
     @ManyToMany
     @JoinTable(
-            name = "table_session_clients",
+            name = "table_session_participants",
             joinColumns = @JoinColumn(name = "table_session_id"),
-            inverseJoinColumns = @JoinColumn(name = "client_id")
+            inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
     @Builder.Default
     private List<Participant> participants = new ArrayList<>();

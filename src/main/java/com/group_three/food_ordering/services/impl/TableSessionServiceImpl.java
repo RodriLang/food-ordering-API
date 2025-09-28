@@ -2,20 +2,25 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
+import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.enums.TableStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.TableRepository;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
+import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
-import com.group_three.food_ordering.services.ClientService;
+import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,47 +32,105 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private final TableSessionRepository tableSessionRepository;
     private final TableSessionMapper tableSessionMapper;
-    private final ClientService clientService;
-    private final TenantContext tenantContext;;
-
+    private final ParticipantService participantService;
+    private final TenantContext tenantContext;
+    private final JwtService jwtService;
     private final TableRepository tableRepository;
     private final AuthService authService;
-    private final AuthServiceImpl authServiceImpl;
+    private final ParticipantMapper participantMapper;
 
+    private static final String ENTITY_NAME = "TableSession";
+
+    @Transactional
     @Override
-    public AuthResponse create(TableSessionCreateDto tableSessionCreateDto) {
+    public InitSessionResponseDto enter(TableSessionCreateDto tableSessionCreateDto) {
 
-        log.debug("[TableSession] Initializing table session tableId={}...", tableSessionCreateDto.getTableId()); // antes de persistir
-        TableSession tableSession = tableSessionMapper.toEntity(tableSessionCreateDto);
+        log.debug("[TableSession] Participant enter to table session tableId={}...", tableSessionCreateDto.getTableId());
 
         Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
                 .orElseThrow(() -> new EntityNotFoundException("Table", tableSessionCreateDto.getTableId().toString()));
 
         FoodVenue foodVenue = table.getFoodVenue();
-
         tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
+
+        User authUser = authService.getCurrentUser().orElse(null);
+
+        TableSession tableSession;
+
+        TableStatus status = table.getStatus();
+        switch (status) {
+            case AVAILABLE -> tableSession = initSession(table, authUser);
+            case OCCUPIED -> tableSession = joinSession(table.getId(), authUser);
+            case OUT_OF_SERVICE ->
+                    throw new IllegalStateException("Table is out of service, cannot start or join a session.");
+            case COMPLETE -> throw new IllegalStateException("Table is complete, cannot start or join a session.");
+            default -> throw new IllegalStateException("Unhandled table status: " + status);
+        }
 
         tableSession.setFoodVenue(foodVenue);
         tableSession.setTable(table);
+        tableSessionRepository.save(tableSession);
 
-        Participant hostParticipant;
-
-        try {
-            hostParticipant = authServiceImpl.getCurrentClient();
-
-            tableSession.setSessionHost(hostParticipant);
-            tableSession.getParticipants().add(hostParticipant);
-
-
-        } catch (EntityNotFoundException e) {
-            hostParticipant = clientService.getEntityById(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"));
-        }
-        AuthResponse authResponse = authService.initTableSession(hostParticipant.getUser(), foodVenue.getId(), tableSession.getId());
-
-        tableSessionMapper.toDTO(tableSessionRepository.save(tableSession));
+        generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
+        InitSessionResponseDto authResponse = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
 
         log.info("[TableSession] Initialized entity successfully tableId={}...tableSessionId={}", table.getId(), tableSession.getId());
         return authResponse;
+    }
+
+    private TableSession initSession(Table table, User authUser) {
+        log.debug("[TableSession] Initializing table session tableId={}...", table.getId());
+
+        TableSession tableSession = TableSession.builder()
+                .table(table)
+                .foodVenue(table.getFoodVenue())
+                .startTime(LocalDateTime.now())
+                .build();
+        Participant participant = participantService.create(authUser, tableSession);
+        log.debug("[TableSession] Participant init table session. TableSessionID={}. Role={}...", tableSession.getId(), participant.getRole());
+
+        tableSession.setSessionHost(participant);
+        tableSession.getParticipants().add(participant);
+
+        return tableSession;
+
+    }
+
+    private TableSession joinSession(UUID tableId, User authUser) {
+
+        TableSession tableSession = tableSessionRepository.findTableSessionByTable_IdAndTableStatus(tableId, TableStatus.OCCUPIED)
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, tableId.toString()));
+
+        Participant participant = participantService.create(authUser, tableSession);
+        log.debug("[TableSession] Participant joined to session. TableSessionID={}. Role={}...", tableSession.getId(), participant.getRole());
+
+        tableSession.getParticipants().add(participant);
+
+        return tableSession;
+    }
+
+    private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
+
+        String token = jwtService.generateToken(
+                (participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname(),
+                tableSession.getFoodVenue().getId(),
+                participant.getRole().name(),
+                tableSession.getId(),
+                participant.getId()
+        );
+
+        ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
+
+        return InitSessionResponseDto.builder()
+                .tableNumber(tableSession.getTable().getNumber())
+                .startTime(tableSession.getStartTime())
+                .endTime(tableSession.getEndTime())
+                .participants(tableSession.getParticipants().stream()
+                        .map(participantMapper::toResponseDto)
+                        .toList())
+                .hostClient(participantDto)
+                .token(token)
+                .build();
     }
 
     @Override
@@ -79,8 +142,14 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public TableSessionResponseDto getById(UUID id) {
-        TableSession tableSession = this.findById(id);
+        TableSession tableSession = getEntityById(id);
         return tableSessionMapper.toDTO(tableSession);
+    }
+
+    @Override
+    public TableSession getEntityById(UUID sessionId) {
+        return tableSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, sessionId.toString()));
     }
 
     @Override
@@ -167,13 +236,13 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
         TableSession tableSession = tableSessionRepository.findTopByFoodVenueIdAndTableIdOrderByStartTimeDesc(
                         tenantContext.getCurrentFoodVenueId(), tableId)
-                .orElseThrow(() -> new EntityNotFoundException("TableSession Not Found"));
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
         return tableSessionMapper.toDTO(tableSession);
     }
 
     @Override
     public TableSessionResponseDto update(TableSessionUpdateDto tableSessionUpdateDto, UUID id) {
-        TableSession tableSession = this.findById(id);
+        TableSession tableSession = getEntityById(id);
 
         if (tableSessionUpdateDto.getEndTime() != null) {
             tableSession.setEndTime(tableSessionUpdateDto.getEndTime());
@@ -183,7 +252,7 @@ public class TableSessionServiceImpl implements TableSessionService {
             List<Participant> participants = new ArrayList<>();
 
             for (UUID participantId : tableSessionUpdateDto.getParticipantIds()) {
-                Participant participant = clientService.getEntityById(participantId);
+                Participant participant = participantService.getEntityById(participantId);
                 participants.add(participant);
             }
             tableSession.setParticipants(participants);
@@ -196,9 +265,9 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public TableSessionResponseDto addClient(UUID sessionId, UUID clientId) {
-        TableSession tableSession = this.findById(sessionId);
+        TableSession tableSession = getEntityById(sessionId);
 
-        Participant participant = clientService.getEntityById(clientId);
+        Participant participant = participantService.getEntityById(clientId);
 
         tableSession.getParticipants().add(participant);
 
@@ -207,24 +276,9 @@ public class TableSessionServiceImpl implements TableSessionService {
         return tableSessionMapper.toDTO(updatedTableSession);
     }
 
-
-    @Override
-    public TableSessionResponseDto joinSession(UUID tableId) {
-        Participant participant = authServiceImpl.getCurrentClient();
-        TableSession session = authServiceImpl.getCurrentTableSession();
-
-        session.getParticipants().add(participant);
-        tableSessionRepository.save(session);
-        return null;
-    }
-
     @Override
     public TableSessionResponseDto closeSession(UUID tableId) {
         return null;
     }
 
-    private TableSession findById(UUID id) {
-        return tableSessionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("TableSession", id.toString()));
-    }
 }

@@ -7,14 +7,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ParticipantMapper.class})
 public interface TableSessionMapper {
 
     @Mappings({
-            @Mapping(source = "table.id", target = "tableId"),
             @Mapping(source = "table.number", target = "tableNumber"),
-            @Mapping(source = "sessionHost.id", target = "hostClientId"),
-            @Mapping(target = "participantsIds", expression = "java(tableSession.getParticipants().stream().map(p -> p.getId()).toList())")
+            @Mapping(source = "sessionHost", target = "hostClient"),
     })
     TableSessionResponseDto toDTO(TableSession tableSession);
 
