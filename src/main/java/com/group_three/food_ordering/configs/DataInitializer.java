@@ -309,6 +309,16 @@ public class DataInitializer implements CommandLineRunner {
                         .user(adminUser)
                         .role(RoleType.ROLE_ADMIN)
                         .build();
+                Employment adminEmployee2 = Employment.builder()
+                        .foodVenue(v2)
+                        .user(adminUser)
+                        .role(RoleType.ROLE_ADMIN)
+                        .build();
+                Employment adminEmployee3 = Employment.builder()
+                        .foodVenue(v3)
+                        .user(adminUser)
+                        .role(RoleType.ROLE_MANAGER)
+                        .build();
 
                 // Manager
                 User managerUser = User.builder()
@@ -382,7 +392,7 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
 
                 userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, genericUser));
-                employmentRepository.saveAll(List.of(employee1, employeeManager, adminEmployee));
+                employmentRepository.saveAll(List.of(employee1, employeeManager, adminEmployee, adminEmployee2, adminEmployee3));
                 participantRepository.saveAll(List.of(participant, genericParticipant));
 
                 System.out.println("=== USUARIOS CREADOS PARA TESTING ===");

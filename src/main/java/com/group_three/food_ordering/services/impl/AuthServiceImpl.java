@@ -9,7 +9,7 @@ import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.security.LoginResponse;
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import lombok.RequiredArgsConstructor;

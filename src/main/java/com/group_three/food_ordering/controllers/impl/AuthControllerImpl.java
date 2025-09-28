@@ -4,7 +4,7 @@ import com.group_three.food_ordering.controllers.AuthController;
 import com.group_three.food_ordering.dto.create.UserCreateDto;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
-import com.group_three.food_ordering.security.LoginResponse;
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;

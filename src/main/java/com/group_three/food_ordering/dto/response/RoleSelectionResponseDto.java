@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dto.response;
 
-import com.group_three.food_ordering.security.LoginResponse;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
