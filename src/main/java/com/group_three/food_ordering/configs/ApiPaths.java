@@ -11,7 +11,7 @@ public class ApiPaths {
     public static final String ORDER_URI = URI_BASE_V1 + "/orders";
     public static final String USER_URI = URI_BASE_V1 + "/users";
     public static final String ADMIN_URI = URI_BASE_V1 + ROOT_ACCESS_URI + "/admins";
-    public static final String EMPLOYMENT_URI = URI_BASE_V1 + ROOT_ACCESS_URI + "/emplyment";
+    public static final String EMPLOYMENT_URI = URI_BASE_V1 + ROOT_ACCESS_URI + "/employment";
     public static final String VENUE_URI = URI_BASE_V1 + "/food-venues";
     public static final String TAG_URI = URI_BASE_V1 + "/tags";
     public static final String CATEGORY_URI = URI_BASE_V1 + "/categories";
