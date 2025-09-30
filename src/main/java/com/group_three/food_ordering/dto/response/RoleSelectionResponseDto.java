@@ -11,7 +11,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class RoleSelectionResponseDto implements LoginResponse {
 
-    private String token;
+    private AuthResponse authResponse;
 
     private List<RoleEmploymentResponseDto> employments;
 

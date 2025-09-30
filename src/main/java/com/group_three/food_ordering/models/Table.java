@@ -31,7 +31,7 @@ public class Table {
     private Integer capacity;
 
     @Enumerated(EnumType.STRING)
-    private TableStatus status = TableStatus.AVAILABLE;
+    private TableStatus status;
 
     @OneToMany(mappedBy = "table", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TableSession> tableSessions = new ArrayList<>();
@@ -43,6 +43,6 @@ public class Table {
     @PrePersist
     public void onCreate() {
         if (this.id == null) this.id = UUID.randomUUID();
-        this.status = TableStatus.AVAILABLE;
+        if (this.status == null) this.status = TableStatus.AVAILABLE;
     }
 }

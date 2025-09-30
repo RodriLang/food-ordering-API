@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getAuthenticatedUser() {
-        User authUser = authService.getCurrentUser().orElseThrow(() ->
+        User authUser = authService.getAuthUser().orElseThrow(() ->
                 new EntityNotFoundException("Authenticated User"));
         return userMapper.toResponseDto(authUser);
     }

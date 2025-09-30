@@ -24,6 +24,6 @@ public class InitSessionResponseDto {
 
     private List<ParticipantResponseDto> participants;
 
-    private String token;
+    private String accessToken;
 
 }

@@ -8,11 +8,8 @@ import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.repositories.ParticipantRepository;
-import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.services.ParticipantService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +25,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     private static final String ENTITY_NAME = "Participant";
 
 
-
     @Override
     public Participant create(User user, TableSession tableSession) {
 
@@ -41,6 +37,16 @@ public class ParticipantServiceImpl implements ParticipantService {
 
         participantRepository.save(participant);
 
+        return participant;
+    }
+
+    @Override
+    public Participant update(UUID participantIdUser, User user){
+        Participant participant = getEntityById(participantIdUser);
+        if (user != null) {
+            participant.setUser(user);
+        }
+        participantRepository.save(participant);
         return participant;
     }
 
@@ -63,16 +69,4 @@ public class ParticipantServiceImpl implements ParticipantService {
         return participantRepository.findByIdAndUser_RemovedAtIsNull(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
-
-
-    CustomUserPrincipal getPrincipal() {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof CustomUserPrincipal customUserPrincipal) {
-            return customUserPrincipal;
-        } else {
-            return null;
-        }
-    }
-
 }

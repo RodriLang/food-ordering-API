@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface TableRepository extends JpaRepository<Table, UUID> {
 
     List<Table> findByFoodVenueId(UUID foodVenueId);
-    Optional<Table> findByFoodVenueIdAndId(UUID foodVenueId, UUID id);
+    Optional<Table> findById(UUID id);
     Optional<Table> findByFoodVenueIdAndNumber(UUID foodVenueId, Integer number);
 
     @Query("SELECT t FROM tables t WHERE " +

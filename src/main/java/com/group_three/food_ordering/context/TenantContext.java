@@ -26,7 +26,7 @@ public class TenantContext {
     public void setCurrentFoodVenueId(String tenantId) {
         try {
             this.currentFoodVenueId = UUID.fromString(tenantId);
-            log.debug("[TenantContext] Set context currentFoodVenueId={}", tenantId);
+            log.debug("[TenantContext] Set context currentFoodVenueId={}", currentFoodVenueId);
         } catch (Exception e) {
             this.currentFoodVenueId = null;
             log.warn("[TenantContext] Invalid tenantId={} (not a valid UUID)", tenantId);
@@ -34,6 +34,7 @@ public class TenantContext {
     }
 
     public FoodVenue getCurrentFoodVenue() {
+        log.debug("[TenantContext] Getting current context foodVenueId={}", currentFoodVenueId);
         if (currentFoodVenue == null && currentFoodVenueId != null) {
             log.debug("[TenantContext] Fetching FoodVenue id={}", currentFoodVenueId);
             currentFoodVenue = foodVenueRepository.findById(currentFoodVenueId)

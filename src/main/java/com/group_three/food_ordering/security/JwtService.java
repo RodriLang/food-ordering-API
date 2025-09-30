@@ -1,22 +1,29 @@
 package com.group_three.food_ordering.security;
 
+import com.group_three.food_ordering.dto.SessionInfo;
+import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+
+import static java.time.LocalTime.now;
 
 @Slf4j
 @Component
@@ -26,95 +33,123 @@ public class JwtService {
     @Value("${jwt.secret:myDefaultSecretKeyForJWTTokenGenerationThatShouldBeLongEnoughForSecurity}")
     private String jwtSecret;
 
-    @Value("${jwt.expirationMs:86400000}")
-    private long jwtExpirationMs;
+    @Value("${jwt.access-expiration}")
+    private long jwtAccessExpirationMs;
 
     private final UserRepository userRepository;
 
-    public String generateToken(String subject,
-                                UUID foodVenueId,
-                                String role,
-                                UUID tableSessionId,
-                                UUID participantId) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("foodVenueId", foodVenueId);
-        claims.put("tableSessionId", tableSessionId);
-        claims.put("participantId", participantId);
-        claims.put("role", role);
+    public String generateAccessToken(User user, SessionInfo sessionInfo) {
+        Date expiration = Date.from(Instant.now().plusMillis(jwtAccessExpirationMs));
 
-        return Jwts.builder()
-                .subject(subject)
+        Map<String, Object> claims = new HashMap<>();
+        if (sessionInfo.foodVenueId() != null) claims.put("foodVenueId", sessionInfo.foodVenueId().toString());
+        if (sessionInfo.tableSessionId() != null) claims.put("tableSessionId", sessionInfo.tableSessionId().toString());
+        if (sessionInfo.participantId() != null) claims.put("participantId", sessionInfo.participantId().toString());
+        if (sessionInfo.role() != null) claims.put("role", sessionInfo.role());
+
+        String token = Jwts.builder()
+                .subject(sessionInfo.subject())
                 .claims(claims)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .issuedAt(Date.from(Instant.now()))
+                .expiration(expiration)
                 .signWith(getSignatureKey())
                 .compact();
+
+        log.debug("[JwtService] Generated access token for user={} expiresAt={}", sessionInfo.subject(), expiration);
+        return token;
     }
 
-
-    // Validate access token
-    public Boolean isTokenValid(String token) {
+    /**
+     * Devuelve claims sin lanzar excepción por expiración.
+     * Solo lanza en caso de firma inválida u otro error crítico.
+     */
+    public Claims parseTokenClaimsSafe(String token) throws JwtException {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(getSignatureKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims(); // Devuelve claims aunque el token esté expirado
+        }
+    }
+
+    public Boolean isTokenValid(String token) {
+        try {
+            parseTokenClaimsSafe(token); // validación de firma
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.warn("[JwtService] Invalid token: {}", e.getMessage());
             return false;
         }
     }
 
-    // Alternative validation method (same functionality, different name)
-    public boolean validateToken(String token) {
-        return isTokenValid(token);
-    }
-
-    // Check if token is expired
     public Boolean isTokenExpired(String token) {
-        Date expiration = getClaim(token, Claims::getExpiration);
-        return expiration.before(new Date());
+        try {
+            Claims claims = parseTokenClaimsSafe(token);
+            Date expiration = claims.getExpiration();
+            boolean expired = expiration.before(Date.from(Instant.now()));
+            if (expired) {
+                log.debug("[JwtService] Token is expired at {} current time={}", expiration, now());
+            }
+            return expired;
+        } catch (JwtException e) {
+            log.warn("[JwtService] Cannot check expiration, token invalid: {}", e.getMessage());
+            return true;
+        }
     }
 
-    // Obtain username from token
     public String getUsernameFromToken(String token) {
         return getClaim(token, Claims::getSubject);
     }
 
-    // Obtain one specific claim
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
-        Claims claims = extractAllClaims(token);
+        Claims claims = parseTokenClaimsSafe(token);
         return claimsTFunction.apply(claims);
     }
 
-    // Obtain all claims
-    public Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSignatureKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
     public String getFoodVenueId(String token) {
-        log.debug("[JwtService] Extracting foodVenueId from JWT token={}", token);
-        return getClaim(token, claims -> claims.get("foodVenueId", String.class));
+        String id = getClaim(token, claims -> claims.get("foodVenueId", String.class));
+        log.debug("[JwtService] Extracted foodVenueId={}", id);
+        return id;
     }
 
-      // Obtain signature key
+    public SessionInfo getSessionInfoFromToken(String token) {
+        String subject = getUsernameFromToken(token);
+        String role = getClaim(token, claims -> claims.get("role", String.class));
+        String participantIdStr = getClaim(token, claims -> claims.get("participantId", String.class));
+        String tableSessionIdStr = getClaim(token, claims -> claims.get("tableSessionId", String.class));
+        String foodVenueIdStr = getClaim(token, claims -> claims.get("foodVenueId", String.class));
+
+        UUID participantId = participantIdStr != null ? UUID.fromString(participantIdStr) : null;
+        UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
+        UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
+
+        return new SessionInfo(subject, foodVenueId, role, participantId, tableSessionId);
+    }
+
     private SecretKey getSignatureKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(jwtSecret);
+        } catch (IllegalArgumentException e) {
+            log.warn("[JwtService] jwtSecret is not base64 encoded - using raw UTF-8 bytes. Prefer base64-encoded 256-bit key.");
+            keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret key too short: must be at least 256 bits (32 bytes)");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // Get token expiration time
-    public Date getExpirationDateFromToken(String token) {
-        return getClaim(token, Claims::getExpiration);
+    public Instant getExpirationDateFromToken(String token) {
+        Date d = getClaim(token, Claims::getExpiration);
+        return d == null ? null : d.toInstant();
     }
 
-    // Get token issued date
     public Date getIssuedAtDateFromToken(String token) {
         return getClaim(token, Claims::getIssuedAt);
     }
-}
 
+}

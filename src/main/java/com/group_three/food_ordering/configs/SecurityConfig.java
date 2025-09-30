@@ -29,7 +29,6 @@ public class SecurityConfig {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/logout").permitAll()
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -37,15 +36,14 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers(ApiPaths.AUTH_URI+"/login",
-                                ApiPaths.AUTH_URI+"/register",
-                                ApiPaths.MENU_URI).permitAll()
+                        .requestMatchers(ApiPaths.AUTH_URI+"/**").permitAll()
+                        .requestMatchers(ApiPaths.MENU_URI).permitAll()
                         .requestMatchers(ApiPaths.PUBLIC_URI +"/**").permitAll()
-                        .requestMatchers(ApiPaths.TABLE_SESSION_URI +"/scan-qr").permitAll()
+                        .requestMatchers(ApiPaths.TABLE_SESSION_URI +"/public/scan-qr").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(tenantContextFilter, JwtAuthenticationFilter.class)
+                .addFilterAfter(tenantContextFilter, JwtAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }

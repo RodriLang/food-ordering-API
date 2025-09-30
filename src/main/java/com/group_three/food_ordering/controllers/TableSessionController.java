@@ -46,7 +46,7 @@ public class TableSessionController {
                     @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
             }
     )
-    @PostMapping("/scan-qr")
+    @PostMapping("/public/scan-qr")
     public ResponseEntity<InitSessionResponseDto> createTableSession(
             @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
         return ResponseEntity.status(HttpStatus.CREATED).

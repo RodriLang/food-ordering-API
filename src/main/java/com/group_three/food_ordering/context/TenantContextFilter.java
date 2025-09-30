@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.context;
 
-import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.security.CustomUserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,44 +9,69 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TenantContextFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
     private final TenantContext tenantContext;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // excluimos endpoints de autenticación que no requieren validación de access token
+        return path.startsWith(ApiPaths.AUTH_URI + "/login")
+                || path.startsWith(ApiPaths.AUTH_URI + "/register")
+                || path.startsWith(ApiPaths.AUTH_URI + "/logout")
+                || path.startsWith(ApiPaths.AUTH_URI + "/refresh")
+                || path.startsWith(ApiPaths.TABLE_SESSION_URI + "/public/");
+    }
+
+    @Override
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+        log.debug("[TenantContextFilter] Filtering tenant context from access token");
 
-        String authHeader = request.getHeader("Authorization");
-        log.debug("[TenantContextFilter] Filter Internal. Header Authorization={}", authHeader);
+        try {
+            log.debug("[TenantContextFilter] Getting authentication from SecurityContextHolder");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                log.debug("[TenantContextFilter] Getting principal from authentication");
+                Object principal = authentication.getPrincipal();
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            try {
-                log.debug("[TenantContextFilter] Extracting foodVenueId from JWT token={}", token);
-                String foodVenueId = jwtService.getFoodVenueId(token);
-                log.debug("[TenantContextFilter] Getting food venue from token fodVenueId={}", foodVenueId);
-                if (foodVenueId != null) {
-                    tenantContext.setCurrentFoodVenueId(foodVenueId);
-                    log.debug("[TenantContextFilter] Set currentFoodVenueId={}", foodVenueId);
+                if (principal instanceof CustomUserPrincipal customPrincipal) {
+                    log.debug("[TenantContextFilter] Getting foodVenueId from customPrincipal");
+                    UUID foodVenueId = customPrincipal.getFoodVenueId();
+
+                    if (foodVenueId != null) {
+                        tenantContext.setCurrentFoodVenueId(foodVenueId.toString());
+                        log.debug("[TenantContextFilter] Set currentFoodVenueId={}", foodVenueId);
+                    } else {
+                        log.debug("[TenantContextFilter] foodVenueId in principal is null");
+                    }
                 } else {
-                    log.warn("[TenantContextFilter] foodVenueId extracted from token is null");
+                    log.trace("[TenantContextFilter] Principal is not CustomUserPrincipal: {}", principal);
+                    log.debug("[TenantContextFilter] Principal is not CustomUserPrincipal: {}", principal);
                 }
-            } catch (Exception e) {
-                log.warn("[TenantContextFilter] Failed to extract tenant from JWT token reason={}", e.getMessage());
+            } else {
+                log.trace("[TenantContextFilter] No authenticated user in SecurityContext");
+                log.debug("[TenantContextFilter] No authenticated user in SecurityContext");
             }
+
+            filterChain.doFilter(request, response);
+
+        } catch (Exception e) {
+            log.warn("[TenantContextFilter] Failed to extract tenant from JWT token reason={}", e.getMessage());
         }
-        filterChain.doFilter(request, response);
     }
 }

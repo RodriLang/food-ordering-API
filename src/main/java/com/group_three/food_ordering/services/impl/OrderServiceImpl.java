@@ -46,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
-        log.debug("::: Creando nueva Order : {} :::", orderRequestDto);
+        log.debug("[OrderService] Create Order Request");
         FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
 
         Participant participant = getAuthenticatedParticipant();
@@ -54,8 +54,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(orderServiceHelper.generateOrderNumber());
         order.setParticipant(participant);
-
-        log.info("::: Generando Order para con el Tenant del Food Venue ID: {} :::", currentFoodVenue.getId());
 
         /// method added for setting Table Session ID in the order
         TableSession tableSession = getCurrentTableSession();
@@ -137,18 +135,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    /// Revisar esto porque verifica el rol del usuario autenticado
     public Page<OrderResponseDto> getOrdersByUser(UUID userId, OrderStatus status, Pageable pageable) {
-
-        Participant currentParticipant = getAuthenticatedParticipant();
-        CustomUserPrincipal principal = getPrincipal();
-        RoleType role = principal.getRole();
-
-        if (role.equals(RoleType.ROLE_CLIENT)
-                && !currentParticipant.getId().equals(userId)) {
-
-            throw new LogicalAccessDeniedException("You do not have access to this table session");
-        }
 
         // Se filtra por estado
         Page<Order> orders;
@@ -163,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndStatus(OrderStatus status, Pageable pageable) {
-
+        log.debug("[OrderService] Get Orders By Authenticated User");
         UUID currentClientId = getAuthenticatedUser().getId();
         return getOrdersByUser(currentClientId, status, pageable);
     }
@@ -302,7 +289,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private User getAuthenticatedUser() {
-        return authService.getCurrentUser()
+        return authService.getAuthUser()
                 .orElseThrow(() -> new EntityNotFoundException("User"));
     }
 

@@ -12,11 +12,19 @@ import java.util.UUID;
 public interface TableService {
 
     TableResponseDto create(TableCreateDto tableCreateDto);
+
     List<TableResponseDto> getAll();
+
     TableResponseDto getById(UUID id);
+
     Table getEntityById(UUID id);
+
     TableResponseDto getByNumber(Integer number);
+
     TableResponseDto update(TableUpdateDto tableUpdateDto, UUID id);
+
+    TableResponseDto updateStatus(TableStatus status, UUID id);
+
     void delete(UUID id);
 
     List<TableResponseDto> getByFilters(TableStatus status, Integer capacity);

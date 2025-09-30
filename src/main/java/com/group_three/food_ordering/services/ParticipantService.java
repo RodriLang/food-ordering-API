@@ -12,10 +12,11 @@ public interface ParticipantService {
 
     Participant create(User user, TableSession tableSession);
 
+    Participant update(UUID participantIdUser, User user);
+
     List<ParticipantResponseDto> getAll();
 
     ParticipantResponseDto getById(UUID id);
 
     Participant getEntityById(UUID id);
-
 }

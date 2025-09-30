@@ -12,11 +12,11 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
-import com.group_three.food_ordering.repositories.TableRepository;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
+import com.group_three.food_ordering.services.TableService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final ParticipantService participantService;
     private final TenantContext tenantContext;
     private final JwtService jwtService;
-    private final TableRepository tableRepository;
+    private final TableService tableService;
     private final AuthService authService;
     private final ParticipantMapper participantMapper;
 
@@ -45,59 +45,103 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Transactional
     @Override
     public InitSessionResponseDto enter(TableSessionCreateDto tableSessionCreateDto) {
-        log.debug("[TableSession] Participant enter to table session tableId={}...", tableSessionCreateDto.getTableId());
-        User authUser = authService.getCurrentUser().orElse(null);
-        TableSession tableSession = null;
+        log.debug("[TableSession] Processing table session entry request for tableId={}", tableSessionCreateDto.getTableId());
+        Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());
 
+        log.debug("[TableSession] Creating new table session for table number={}", table.getNumber());
+        configureTenantContext(table.getFoodVenue());
+
+        //Manejo de usuario autenticado
+        User authUser = authService.getAuthUser().orElse(null);
         if (authUser != null) {
-            tableSession = verifyActiveTableSessionForAuthUser(authUser);
-
-            if (tableSession != null) {
-                Participant curretnparticipant = authService.getCurrentParticipant()
-                        .orElseThrow(() -> new EntityNotFoundException("Participant"));
-                generateInitSessionResponseDto(tableSession, curretnparticipant);
-                InitSessionResponseDto authResponse = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
-
-                log.info("[TableSession] Redirect user to active session tableSessionId={}", tableSession.getId());
-                return authResponse;
+            log.debug("[TableSession] Authenticated user detected: {}", authUser.getEmail());
+            InitSessionResponseDto activeSessionResponse = handleExistingActiveSession(authUser);
+            if (activeSessionResponse != null) {
+                return activeSessionResponse;
             }
         }
-        Table table = tableRepository.findById(tableSessionCreateDto.getTableId())
-                .orElseThrow(() -> new EntityNotFoundException("Table", tableSessionCreateDto.getTableId().toString()));
 
-        FoodVenue foodVenue = table.getFoodVenue();
-        tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
+        //Procesar nueva sesión
+        return handleNewTableSession(table, authUser);
+    }
 
-
-        TableStatus status = table.getStatus();
-        switch (status) {
-            case AVAILABLE -> tableSession = initSession(table, authUser);
-            case OCCUPIED -> tableSession = joinSession(table.getId(), authUser);
-            case OUT_OF_SERVICE ->
-                    throw new IllegalStateException("Table is out of service, cannot start or join a session.");
-            case COMPLETE -> throw new IllegalStateException("Table is complete, cannot start or join a session.");
-            default -> throw new IllegalStateException("Unhandled table status: " + status);
+    private InitSessionResponseDto handleExistingActiveSession(User authUser) {
+        TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
+        if (activeSession == null) {
+            log.debug("[TableSession] No active session found for user={}", authUser.getEmail());
+            return null;
         }
 
-        tableSession.setFoodVenue(foodVenue);
+        log.debug("[TableSession] Found active session for user={}, sessionId={}",
+                authUser.getEmail(), activeSession.getId());
+
+        Participant currentParticipant = authService.getCurrentParticipant()
+                .orElseThrow(() -> new EntityNotFoundException("Participant"));
+
+        participantService.update(currentParticipant.getId(), authUser);
+
+        InitSessionResponseDto response = generateInitSessionResponseDto(activeSession, activeSession.getSessionHost());
+        log.info("[TableSession] Redirecting user={} to active session={}",
+                authUser.getEmail(), activeSession.getId());
+
+        return response;
+    }
+
+    private InitSessionResponseDto handleNewTableSession(Table table, User authUser) {
+
+        TableSession tableSession = createTableSession(table, authUser);
+        InitSessionResponseDto response = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
+        determineTableStatusPostSessionCreation(table, tableSession);
+        log.info("[TableSession] Successfully initialized session. TableId={}, SessionId={}, User={}",
+                table.getId(), tableSession.getId(),
+                authUser != null ? authUser.getEmail() : "anonymous");
+
+        return response;
+    }
+
+    private void determineTableStatusPostSessionCreation(Table table, TableSession tableSession) {
+
+        if (table.getCapacity().equals(tableSession.getParticipants().size())) {
+            tableService.updateStatus(TableStatus.COMPLETE, table.getId());
+        } else {
+            tableService.updateStatus(TableStatus.OCCUPIED, table.getId());
+        }
+    }
+
+    private void configureTenantContext(FoodVenue foodVenue) {
+        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getId());
+        tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
+    }
+
+    private TableSession createTableSession(Table table, User authUser) {
+        TableStatus status = table.getStatus();
+        log.debug("[TableSession] Creating session for table={} with status={}", table.getId(), status);
+
+        TableSession tableSession = switch (status) {
+            case AVAILABLE -> initSession(table, authUser);
+            case OCCUPIED -> joinSession(table.getId(), authUser);
+            case OUT_OF_SERVICE -> throw new IllegalStateException(
+                    "Table is out of service, cannot start or join a session.");
+            case COMPLETE -> throw new IllegalStateException(
+                    "Table is complete, cannot start or join a session.");
+            default -> throw new IllegalStateException("Unhandled table status: " + status);
+        };
+
+        tableSession.setFoodVenue(table.getFoodVenue());
         tableSession.setTable(table);
-        tableSessionRepository.save(tableSession);
-
-        generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
-        InitSessionResponseDto authResponse = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
-
-        log.info("[TableSession] Initialized entity successfully tableId={}...tableSessionId={}", table.getId(), tableSession.getId());
-        return authResponse;
+        TableSession createdTableSession = tableSessionRepository.save(tableSession);
+        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getId());
+        return createdTableSession;
     }
 
     private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
         log.debug("[AuthService] Verifying active table session.");
-        return tableSessionRepository.findActiveSessionByUserId(authUser.getEmail()).orElse(null);
+        return tableSessionRepository.findActiveSessionByUserEmail(authUser.getEmail()).orElse(null);
     }
 
 
     private TableSession initSession(Table table, User authUser) {
-        log.debug("[TableSession] Initializing table session tableId={}...", table.getId());
+        log.debug("[TableSession] Initializing table session tableId={}", table.getId());
 
         TableSession tableSession = TableSession.builder()
                 .table(table)
@@ -105,7 +149,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .startTime(LocalDateTime.now())
                 .build();
         Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant init table session. TableSessionID={}. Role={}...", tableSession.getId(), participant.getRole());
+        log.debug("[TableSession] Participant init table session. Role={}", participant.getRole());
 
         tableSession.setSessionHost(participant);
         tableSession.getParticipants().add(participant);
@@ -115,7 +159,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     private TableSession joinSession(UUID tableId, User authUser) {
-
+        log.debug("[TableSession] Joining participant to active table session.");
         TableSession tableSession = tableSessionRepository.findTableSessionByTable_IdAndTableStatus(tableId, TableStatus.OCCUPIED)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, tableId.toString()));
 
@@ -129,13 +173,13 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
 
-        String token = jwtService.generateToken(
-                (participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname(),
-                tableSession.getFoodVenue().getId(),
-                participant.getRole().name(),
-                tableSession.getId(),
-                participant.getId()
-        );
+        String token = jwtService.generateAccessToken(participant.getUser(), SessionInfo.builder()
+                .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
+                .foodVenueId(tableSession.getFoodVenue().getId())
+                .participantId(participant.getId())
+                .tableSessionId(tableSession.getId())
+                .role(participant.getRole().name())
+                .build());
 
         ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
 
@@ -147,7 +191,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                         .map(participantMapper::toResponseDto)
                         .toList())
                 .hostClient(participantDto)
-                .token(token)
+                .accessToken(token)
                 .build();
     }
 
@@ -298,5 +342,4 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto closeSession(UUID tableId) {
         return null;
     }
-
 }

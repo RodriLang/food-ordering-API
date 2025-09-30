@@ -1,6 +1,8 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
@@ -12,12 +14,14 @@ import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.EmploymentService;
+import com.group_three.food_ordering.services.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +33,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     private final EmploymentService employmentService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public LoginResponse selectRole(RoleSelectionRequestDto request) {
@@ -56,16 +61,17 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     }
 
     private LoginResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
-        String token = jwtService.generateToken(
-                user.getEmail(),
-                foodVenueId,
-                role,
-                null,
-                null
-        );
-        RoleSelectionResponseDto roleSelection = generateRoleSelection(user);
-        roleSelection.setToken(token);
+        String accessToken = jwtService.generateAccessToken(user, SessionInfo.builder()
+                .subject(user.getEmail())
+                .foodVenueId(foodVenueId)
+                .role(role)
+                .build());
 
+        RoleSelectionResponseDto roleSelection = generateRoleSelection(user);
+        String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
+        Instant expiredDate = jwtService.getExpirationDateFromToken(refreshToken);
+        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiredDate);
+        roleSelection.setAuthResponse(authResponse);
         return roleSelection;
     }
 

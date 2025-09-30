@@ -19,6 +19,7 @@ public class CustomUserPrincipal implements UserDetails {
     private final RoleType role;
     private final UUID participantId;
     private final UUID tableSessionId;
+    private final UUID foodVenueId;
 
     @Override
     public String getUsername() {

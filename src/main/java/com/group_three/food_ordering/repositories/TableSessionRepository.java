@@ -40,5 +40,5 @@ public interface TableSessionRepository extends JpaRepository<TableSession, UUID
             "JOIN ts.participants p " +
             "WHERE p.user.email = :userEmail " +
             "AND ts.endTime IS NULL")
-    Optional<TableSession> findActiveSessionByUserId(@Param("userEmail") String userEmail);
+    Optional<TableSession> findActiveSessionByUserEmail(@Param("userEmail") String userEmail);
 }

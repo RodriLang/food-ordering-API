@@ -53,7 +53,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public Table getEntityById(UUID tableId) {
-        return tableRepository.findByFoodVenueIdAndId(tenantContext.getCurrentFoodVenueId(), tableId)
+        return tableRepository.findById(tableId)
                 .orElseThrow(() -> new EntityNotFoundException("Table", tableId.toString()));
     }
 
@@ -84,6 +84,17 @@ public class TableServiceImpl implements TableService {
 
         Table updatedTable = tableRepository.save(table);
 
+        return tableMapper.toDTO(updatedTable);
+    }
+
+    @Override
+    public TableResponseDto updateStatus(TableStatus status, UUID id) {
+        Table table = this.getEntityById(id);
+
+        if ((status != null)) {
+            table.setStatus(status);
+        }
+        Table updatedTable = tableRepository.save(table);
         return tableMapper.toDTO(updatedTable);
     }
 

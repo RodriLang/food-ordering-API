@@ -4,6 +4,8 @@ import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.enums.*;
 import com.group_three.food_ordering.repositories.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
@@ -31,13 +33,14 @@ public class DataInitializer implements CommandLineRunner {
     private final OrderDetailRepository orderDetailRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
-
-
     private final EmploymentRepository employmentRepository;
+
+
+    @Value("${password-for-all-users}")
+    private String password;
 
     @Override
     public void run(String... args) throws Exception {
-        initializeUsers();
         // Categories
 
         if (categoryRepository.count() == 0) {
@@ -99,7 +102,7 @@ public class DataInitializer implements CommandLineRunner {
             Tag vegan = Tag.builder().label("Vegan").build();
             Tag glutenFree = Tag.builder().label("Gluten-Free").build();
             Tag fresh = Tag.builder().label("Fresh").build();
-            tagRepository.saveAll(List.of(spicy, vegan, glutenFree));
+            tagRepository.saveAll(List.of(spicy, vegan, glutenFree, fresh));
         }
 
         // FoodVenues
@@ -108,7 +111,7 @@ public class DataInitializer implements CommandLineRunner {
                     .id(UUID.fromString("46b63071-f6fb-48bf-a2e0-4f7144e5a09b"))
                     .name("Burger House")
                     .email("contact@burgerhouse.com")
-                    .phone("1234567890")
+                    .phone("1234567891")
                     .imageUrl("https://example.com/burger.jpg")
                     .address(new Address("Main St", "123", "CityA", "ProvinceA", "CountryA", "1000"))
                     .build();
@@ -252,8 +255,6 @@ public class DataInitializer implements CommandLineRunner {
                     .tags(List.of())
                     .build();
 
-            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10));
-
             Product p11 = Product.builder()
                     .foodVenue(v2)
                     .name("Spaghetti Carbonara")
@@ -274,140 +275,63 @@ public class DataInitializer implements CommandLineRunner {
                     .category(cats.get(0)) // Drinks for demo
                     .tags(List.of(tags.get(0), tags.get(2)))
                     .build();
-            productRepository.saveAll(List.of(p1, p2, p3));
-
-            /// USERS PARA PROBAR
-
-            if (userRepository.count() == 0) {
-                System.out.println("🚀 Creando usuarios de desarrollo...");
-
-                // Root
-                User rootUser = User.builder()
-                        .name("Root")
-                        .lastName("System")
-                        .email("root@test.com")
-                        .password(passwordEncoder.encode("root123"))
-                        .birthDate(LocalDate.of(1990, 1, 1))
-                        .phone("1111111111")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Root St", "1", "Root City", "Root Province", "Root Country", "0000"))
-                        .build();
-
-                // Admin/Super Admin
-                User adminUser = User.builder()
-                        .name("Admin")
-                        .lastName("System")
-                        .email("admin@test.com")
-                        .password(passwordEncoder.encode("admin123"))
-                        .birthDate(LocalDate.of(1990, 1, 1))
-                        .phone("1111111111")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
-                        .build();
-                Employment adminEmployee = Employment.builder()
-                        .foodVenue(v1)
-                        .user(adminUser)
-                        .role(RoleType.ROLE_ADMIN)
-                        .build();
-                Employment adminEmployee2 = Employment.builder()
-                        .foodVenue(v2)
-                        .user(adminUser)
-                        .role(RoleType.ROLE_ADMIN)
-                        .build();
-                Employment adminEmployee3 = Employment.builder()
-                        .foodVenue(v3)
-                        .user(adminUser)
-                        .role(RoleType.ROLE_MANAGER)
-                        .build();
-
-                // Manager
-                User managerUser = User.builder()
-                        .name("Manolo")
-                        .lastName("Lamas")
-                        .email("manager@test.com")
-                        .password(passwordEncoder.encode("manager123"))
-                        .birthDate(LocalDate.of(1985, 5, 15))
-                        .phone("2222222222")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
-                        .build();
-                Employment employeeManager = Employment.builder()
-                        .foodVenue(v1)
-                        .user(managerUser)
-                        .role(RoleType.ROLE_MANAGER)
-                        .build();
-
-                // Employee
-                User employeeUser = User.builder()
-                        .email("employee@test.com")
-                        .password(passwordEncoder.encode("employee123"))
-                        .name("Diego")
-                        .lastName("Torres")
-                        .birthDate(LocalDate.of(1995, 8, 20))
-                        .phone("3333333333")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Employee St", "3", "Work City", "Work Province", "Work Country", "2222"))
-                        .build();
-
-                Employment employee1 = Employment.builder()
-                        .foodVenue(v1)
-                        .user(employeeUser)
-                        .role(RoleType.ROLE_STAFF)
-                        .build();
-
-                // Client
-                User clientUser = User.builder()
-                        .name("Client")
-                        .lastName("Customer")
-                        .email("client@test.com")
-                        .password(passwordEncoder.encode("client123"))
-                        .birthDate(LocalDate.of(2000, 12, 10))
-                        .phone("4444444444")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
-                        .build();
-                Participant participant = Participant.builder()
-                        .user(clientUser)
-                        .nickname(clientUser.getName())
-                        .role(RoleType.ROLE_CLIENT)
-                        .build();
+            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p3));
 
 
-                // Generic user
-                User genericUser = User.builder()
-                        .id(UUID.fromString("00000000-0000-4437-96fc-da7e8f0e5a4a"))
-                        .name("Guest")
-                        .lastName("User")
-                        .email("guest@guest.com")
-                        .password(passwordEncoder.encode("guest"))
-                        .birthDate(LocalDate.of(1992, 6, 15))
-                        .phone("0000000000")
-                        .createdAt(LocalDateTime.now())
-                        .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
-                        .build();
-                Participant genericParticipant = Participant.builder()
-                        .id(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
-                        .nickname("invitado")
-                        .user(genericUser)
-                        .build();
+            // Root
+            User rootUser = User.builder()
+                    .name("Root")
+                    .lastName("System")
+                    .email("root@test.com")
+                    .password(passwordEncoder.encode(password))
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .phone("1111111111")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Root St", "1", "Root City", "Root Province", "Root Country", "0000"))
+                    .build();
 
-                userRepository.saveAll(List.of(rootUser, adminUser, clientUser,employeeUser,managerUser, genericUser));
-                employmentRepository.saveAll(List.of(employee1, employeeManager, adminEmployee, adminEmployee2, adminEmployee3));
-                participantRepository.saveAll(List.of(participant, genericParticipant));
+            // Admin/Super Admin
+            User adminUser = User.builder()
+                    .name("Admin")
+                    .lastName("System")
+                    .email("admin@test.com")
+                    .password(passwordEncoder.encode(password))
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .phone("1111111111")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
+                    .build();
 
-                System.out.println("=== USUARIOS CREADOS PARA TESTING ===");
-                System.out.println("🔑 Admin: admin@test.com / admin123");
-                System.out.println("👔 Manager: manager@test.com / manager123");
-                System.out.println("👨‍💼 Employee: employee@test.com / employee123");
-                System.out.println("👤 Client: client@test.com / client123");
-                System.out.println("🧪 Test: test@test.com / test123");
-                System.out.println("=====================================");
-            } else {
-                System.out.println("👥 Usuarios ya existen en la base de datos");
-            }
-
-
-            ///  LOS OTROS QUE HABIA !!
+            Employment adminEmployee = Employment.builder()
+                    .foodVenue(v1)
+                    .user(adminUser)
+                    .role(RoleType.ROLE_ADMIN)
+                    .build();
+            Employment adminEmployee2 = Employment.builder()
+                    .foodVenue(v2)
+                    .user(adminUser)
+                    .role(RoleType.ROLE_ADMIN)
+                    .build();
+            Employment adminEmployee3 = Employment.builder()
+                    .foodVenue(v3)
+                    .user(adminUser)
+                    .role(RoleType.ROLE_MANAGER)
+                    .build();
+            Employment rootV1 = Employment.builder()
+                    .foodVenue(v1)
+                    .user(rootUser)
+                    .role(RoleType.ROLE_ROOT)
+                    .build();
+            Employment rootV2 = Employment.builder()
+                    .foodVenue(v3)
+                    .user(rootUser)
+                    .role(RoleType.ROLE_ROOT)
+                    .build();
+            Employment rootV3 = Employment.builder()
+                    .foodVenue(v2)
+                    .user(rootUser)
+                    .role(RoleType.ROLE_ROOT)
+                    .build();
 
             User u1 = User.builder()
                     .email("user1@example.com")
@@ -415,7 +339,7 @@ public class DataInitializer implements CommandLineRunner {
                     .lastName("Juarez")
                     .birthDate(LocalDate.of(2000, 1, 1))
                     .createdAt(LocalDateTime.now())
-                    .password(passwordEncoder.encode("1234"))
+                    .password(passwordEncoder.encode(password))
                     .phone("1234567890")
                     .build();
             User u2 = User.builder()
@@ -424,7 +348,7 @@ public class DataInitializer implements CommandLineRunner {
                     .lastName("Fernandez")
                     .birthDate(LocalDate.of(2000, 1, 1))
                     .createdAt(LocalDateTime.now())
-                    .password(passwordEncoder.encode("1234"))
+                    .password(passwordEncoder.encode(password))
                     .phone("1234")
                     .build();
             User u3 = User.builder()
@@ -433,12 +357,98 @@ public class DataInitializer implements CommandLineRunner {
                     .lastName("Alonso")
                     .birthDate(LocalDate.of(2000, 1, 1))
                     .createdAt(LocalDateTime.now())
-                    .password(passwordEncoder.encode("1234"))
+                    .password(passwordEncoder.encode(password))
                     .phone("1234567890")
                     .build();
-            userRepository.saveAll(List.of(u1, u2, u3));
 
-            // Clients
+
+            User managerUser = User.builder()
+                    .name("Manolo")
+                    .lastName("Lamas")
+                    .email("manager@test.com")
+                    .password(passwordEncoder.encode(password))
+                    .birthDate(LocalDate.of(1985, 5, 15))
+                    .phone("2222222222")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
+                    .build();
+            Employment employeeManager = Employment.builder()
+                    .foodVenue(v1)
+                    .user(managerUser)
+                    .role(RoleType.ROLE_MANAGER)
+                    .build();
+
+            // Employee
+            User employeeUser = User.builder()
+                    .email("employee@test.com")
+                    .password(passwordEncoder.encode(password))
+                    .name("Diego")
+                    .lastName("Torres")
+                    .birthDate(LocalDate.of(1995, 8, 20))
+                    .phone("3333333333")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Employee St", "3", "Work City", "Work Province", "Work Country", "2222"))
+                    .build();
+
+            Employment employee1 = Employment.builder()
+                    .foodVenue(v1)
+                    .user(employeeUser)
+                    .role(RoleType.ROLE_STAFF)
+                    .build();
+
+            // Client
+            User clientUser = User.builder()
+                    .name("Client")
+                    .lastName("Customer")
+                    .email("client@test.com")
+                    .password(passwordEncoder.encode(password))
+                    .birthDate(LocalDate.of(2000, 12, 10))
+                    .phone("4444444444")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
+                    .build();
+            Participant participant = Participant.builder()
+                    .user(clientUser)
+                    .nickname(clientUser.getName())
+                    .role(RoleType.ROLE_CLIENT)
+                    .build();
+
+
+            // Generic user
+            User genericUser = User.builder()
+                    .id(UUID.fromString("00000000-0000-4437-96fc-da7e8f0e5a4a"))
+                    .name("Guest")
+                    .lastName("User")
+                    .email("guest@guest.com")
+                    .password(passwordEncoder.encode(password))
+                    .birthDate(LocalDate.of(1992, 6, 15))
+                    .phone("0000000000")
+                    .createdAt(LocalDateTime.now())
+                    .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
+                    .build();
+
+
+            Participant genericParticipant = Participant.builder()
+                    .id(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
+                    .nickname("invitado")
+                    .role(RoleType.ROLE_GUEST)
+                    .build();
+
+            List<User> users = List.of(rootUser, adminUser, managerUser, employeeUser, clientUser, genericUser, u1, u2, u3);
+            List<Employment> employees = List.of(employee1, employeeManager, adminEmployee, adminEmployee2, adminEmployee3, rootV1, rootV2, rootV3);
+            List<Participant> participants = List.of(participant, genericParticipant);
+
+            userRepository.saveAll(users);
+            employmentRepository.saveAll(employees);
+            participantRepository.saveAll(participants);
+            log.info("[DataInitializer] ====================== USUARIOS =======================");
+            users.forEach(u -> log.info("[User]  Email={} Password={}", u.getEmail(), password));
+            log.info("[DataInitializer] ====================== EMPLEADOS ======================");
+            employees.forEach(e -> log.info("[Employee]  Email={} con el rol={}", e.getUser().getEmail(), e.getRole()));
+            log.info("[DataInitializer] =======================================================");
+
+
+            // Participants
             Participant c1 = Participant.builder()
                     .nickname(u1.getName())
                     .user(u1)
@@ -452,19 +462,43 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             participantRepository.saveAll(List.of(c1, c2, c3));
 
+
             // Tables
-            Table t1 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8")).number(1).capacity(4).foodVenue(v1).build();
-            Table t2 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e14098")).number(2).capacity(2).foodVenue(v2).build();
-            Table t3 = Table.builder().id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556")).number(3).capacity(6).foodVenue(v3).build();
-            tableRepository.saveAll(List.of(t1, t2, t3));
+            Table t1 = Table.builder()
+                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8"))
+                    .number(1)
+                    .capacity(4)
+                    .status(TableStatus.AVAILABLE)
+                    .foodVenue(v1).build();
+            Table t2 = Table.builder()
+                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e14098"))
+                    .number(2)
+                    .capacity(2)
+                    .status(TableStatus.COMPLETE)
+                    .foodVenue(v2)
+                    .build();
+            Table t3 = Table.builder()
+                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556"))
+                    .number(3)
+                    .capacity(6)
+                    .status(TableStatus.OCCUPIED)
+                    .foodVenue(v3).build();
+            Table t4 = Table.builder()
+                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84533"))
+                    .number(3)
+                    .capacity(6)
+                    .status(TableStatus.OUT_OF_SERVICE)
+                    .foodVenue(v3).build();
+            List<Table> tables = List.of(t1, t2, t3, t4);
+            tableRepository.saveAll(tables);
+
+            tables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getId(), t.getStatus()));
 
 
-            System.out.println("\n MESAAA");
-            System.out.println(t1.getId());
             // TableSessions
             TableSession ts1 = TableSession.builder()
-                    .table(t1)
-                    .foodVenue(v1)
+                    .table(t3)
+                    .foodVenue(v3)
                     .sessionHost(c1)
                     .startTime(LocalDateTime.now())
                     .build();
@@ -483,14 +517,13 @@ public class DataInitializer implements CommandLineRunner {
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
 
 
-
             // Orders and OrderDetails + Payments
             Order o1 = Order.builder()
                     .id(UUID.fromString("00000000-0000-0000-0000-000123000000"))
                     .participant(c1)
                     .orderNumber(1)
                     .foodVenue(v1)
-                    .tableSession(ts1)
+                    .tableSession(ts2)
                     .specialRequirements("Estamos festejando un cumpleaños, pueden traer una velita?")
                     .status(OrderStatus.PENDING)
                     .totalPrice(BigDecimal.ZERO)
@@ -548,14 +581,8 @@ public class DataInitializer implements CommandLineRunner {
             paymentRepository.save(pay1);
 
 
-
-
-            System.out.println("✅ Initialized sample data.");
+            log.debug("[DataInitializer] Initialized sample data.");
         }
-    }
-
-    private void initializeUsers() {
-
     }
 }
 
