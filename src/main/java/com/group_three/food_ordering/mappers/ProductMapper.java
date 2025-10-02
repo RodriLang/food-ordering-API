@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.mappers;
 
 import com.group_three.food_ordering.dto.create.ProductCreateDto;
+import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.models.Product;
 import org.mapstruct.Mapper;
@@ -8,7 +9,8 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    ProductResponseDto toDTO(Product product);
+    ProductResponseDto toDto(Product product);
+    ItemMenuResponseDto toItemMenuDto(Product product);
 
     Product toEntity(ProductCreateDto productCreateDto);
 }

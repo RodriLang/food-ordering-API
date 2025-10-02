@@ -11,9 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CategoryResponseDto {
+public class FlatMenuResponseDto {
 
-    private Integer id;
-    private String name;
-    private List<CategoryResponseDto> childrenCategories;
+    private String foodVenueName;
+    private String foodVenueImageUrl;
+    private List<FlatCategoryMenuResponseDto> menu;
+
 }

@@ -73,8 +73,11 @@ public class DataInitializer implements CommandLineRunner {
             // Subcategorías de Main Courses
             Category pizzas = Category.builder().name("Pizzas").parentCategory(mainCourses).build();
             Category burgers = Category.builder().name("Burgers").parentCategory(mainCourses).build();
+            Category pasta = Category.builder().name("Pasta").parentCategory(mainCourses).build();
+            Category meet = Category.builder().name("Meet").parentCategory(mainCourses).build();
+            Category tacos = Category.builder().name("Tacos").parentCategory(mainCourses).build();
 
-            categoryRepository.saveAll(List.of(pizzas, burgers));
+            categoryRepository.saveAll(List.of(pizzas, burgers, pasta, meet, tacos));
 
             // Subcategorías de Appetizers
             Category frenchFries = Category.builder().name("French Fries").parentCategory(appetizers).build();
@@ -131,11 +134,14 @@ public class DataInitializer implements CommandLineRunner {
                     .imageUrl("https://example.com/taco.jpg")
                     .address(new Address("Third St", "789", "CityC", "ProvinceC", "CountryC", "3000"))
                     .build();
-            foodVenueRepository.saveAll(List.of(v1, v2, v3));
+            List<FoodVenue> foodVenues = List.of(v1, v2, v3);
+            foodVenueRepository.saveAll(foodVenues);
+            log.info("[DataInitializer] ===================== FOOD VENUES =======================");
+            foodVenues.forEach((foodVenue -> log.info("[DataInitializer] food venue={} UUID={}", foodVenue.getName(), foodVenue.getId())));
 
             // Products
             List<Category> cats = categoryRepository.findAll();
-            List<Tag> tags = tagRepository.findAll();
+                List<Tag> tags = tagRepository.findAll();
 
 
             Category burgers = cats.stream().filter(c -> c.getName().equals("Burgers")).findFirst().orElse(null);
@@ -144,6 +150,8 @@ public class DataInitializer implements CommandLineRunner {
             Category cocktails = cats.stream().filter(c -> c.getName().equals("Cocktails")).findFirst().orElse(null);
             Category sweet = cats.stream().filter(c -> c.getName().equals("Sweets")).findFirst().orElse(null);
             Category savory = cats.stream().filter(c -> c.getName().equals("Savory")).findFirst().orElse(null);
+            Category pasta = cats.stream().filter(c -> c.getName().equals("Pasta")).findFirst().orElse(null);
+            Category tacos = cats.stream().filter(c -> c.getName().equals("Tacos")).findFirst().orElse(null);
 
             Product p1 = Product.builder()
                     .foodVenue(v1)
@@ -262,7 +270,7 @@ public class DataInitializer implements CommandLineRunner {
                     .price(new BigDecimal("1800"))
                     .imageUrl("https://example.com/pasta1.jpg")
                     .stock(15)
-                    .category(cats.get(1))
+                    .category(pasta)
                     .tags(List.of(tags.get(1))) // Vegan for demo
                     .build();
             Product p12 = Product.builder()
@@ -272,10 +280,79 @@ public class DataInitializer implements CommandLineRunner {
                     .price(new BigDecimal("800"))
                     .imageUrl("https://example.com/taco1.jpg")
                     .stock(30)
-                    .category(cats.get(0)) // Drinks for demo
+                    .category(tacos)
                     .tags(List.of(tags.get(0), tags.get(2)))
                     .build();
-            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p3));
+// Más pastas para v2
+            Product p13 = Product.builder()
+                    .foodVenue(v2)
+                    .name("Fettuccine Alfredo")
+                    .description("Fettuccine pasta in a rich and creamy Alfredo sauce")
+                    .price(new BigDecimal("1900"))
+                    .imageUrl("https://example.com/pasta2.jpg")
+                    .stock(20)
+                    .category(pasta)
+                    .tags(List.of(tags.get(1))) // Ejemplo: Vegan
+                    .build();
+
+            Product p14 = Product.builder()
+                    .foodVenue(v2)
+                    .name("Lasagna Bolognese")
+                    .description("Classic Italian lasagna with beef and cheese")
+                    .price(new BigDecimal("2200"))
+                    .imageUrl("https://example.com/pasta3.jpg")
+                    .stock(12)
+                    .category(pasta)
+                    .tags(List.of(tags.get(2))) // Ejemplo: Spicy
+                    .build();
+
+            Product p15 = Product.builder()
+                    .foodVenue(v2)
+                    .name("Penne Arrabbiata")
+                    .description("Penne pasta in a spicy tomato sauce")
+                    .price(new BigDecimal("1700"))
+                    .imageUrl("https://example.com/pasta4.jpg")
+                    .stock(18)
+                    .category(pasta)
+                    .tags(List.of(tags.get(0), tags.get(2))) // Gluten-free + Spicy
+                    .build();
+
+
+// Más tacos para v3
+            Product p16 = Product.builder()
+                    .foodVenue(v3)
+                    .name("Chicken Taco")
+                    .description("Grilled chicken taco with fresh veggies")
+                    .price(new BigDecimal("750"))
+                    .imageUrl("https://example.com/taco2.jpg")
+                    .stock(25)
+                    .category(tacos)
+                    .tags(List.of(tags.get(1))) // Vegan demo
+                    .build();
+
+            Product p17 = Product.builder()
+                    .foodVenue(v3)
+                    .name("Fish Taco")
+                    .description("Crispy fried fish taco with tartar sauce")
+                    .price(new BigDecimal("950"))
+                    .imageUrl("https://example.com/taco3.jpg")
+                    .stock(20)
+                    .category(tacos)
+                    .tags(List.of(tags.get(0))) // Gluten-free
+                    .build();
+
+            Product p18 = Product.builder()
+                    .foodVenue(v3)
+                    .name("Veggie Taco")
+                    .description("Taco stuffed with grilled vegetables and avocado")
+                    .price(new BigDecimal("700"))
+                    .imageUrl("https://example.com/taco4.jpg")
+                    .stock(22)
+                    .category(tacos)
+                    .tags(List.of(tags.get(1), tags.get(2))) // Vegan + Spicy
+                    .build();
+
+            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15 , p16, p17, p18));
 
 
             // Root
@@ -441,12 +518,10 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.saveAll(users);
             employmentRepository.saveAll(employees);
             participantRepository.saveAll(participants);
-            log.info("[DataInitializer] ====================== USUARIOS =======================");
+            log.info("[DataInitializer] ======================== USERS ?=========================");
             users.forEach(u -> log.info("[User]  Email={} Password={}", u.getEmail(), password));
-            log.info("[DataInitializer] ====================== EMPLEADOS ======================");
+            log.info("[DataInitializer] ======================= EMPLOYEES =======================");
             employees.forEach(e -> log.info("[Employee]  Email={} con el rol={}", e.getUser().getEmail(), e.getRole()));
-            log.info("[DataInitializer] =======================================================");
-
 
             // Participants
             Participant c1 = Participant.builder()
@@ -492,6 +567,7 @@ public class DataInitializer implements CommandLineRunner {
             List<Table> tables = List.of(t1, t2, t3, t4);
             tableRepository.saveAll(tables);
 
+            log.info("[DataInitializer] =========================TABLES==========================");
             tables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getId(), t.getStatus()));
 
 

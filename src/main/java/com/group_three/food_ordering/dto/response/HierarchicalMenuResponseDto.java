@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dto.response;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MenuResponseDto {
-    private String categoryName;
-    private List<ProductResponseDto> products;
+public class HierarchicalMenuResponseDto {
+
+    private String foodVenueName;
+    private String foodVenueImageUrl;
+    private List<HierarchicalCategoryMenuResponseDto> menu;
 
 }

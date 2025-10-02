@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
         } else {
             product.setTags(new ArrayList<>());
         }
-        return productMapper.toDTO(productRepository.save(product));
+        return productMapper.toDto(productRepository.save(product));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
             List<Tag> tags = tagRepository.findAllById(productUpdateDto.getTagIds());
             product.setTags(new ArrayList<>(tags));
         }
-        return productMapper.toDTO(productRepository.save(product));
+        return productMapper.toDto(productRepository.save(product));
     }
 
     @Override
@@ -109,14 +109,14 @@ public class ProductServiceImpl implements ProductService {
             product.setCategory(null); // o mantener la actual, según tu lógica de negocio
         }
 
-        return productMapper.toDTO(productRepository.save(product));
+        return productMapper.toDto(productRepository.save(product));
     }
 
     @Override
     public ProductResponseDto getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(NoSuchElementException::new);
-        return productMapper.toDTO(product);
+        return productMapper.toDto(product);
     }
 
     @Override
@@ -128,14 +128,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponseDto> getAll() {
        return productRepository.findAllByFoodVenue_Id(tenantContext.getCurrentFoodVenue().getId()).stream()
-                .map(productMapper::toDTO)
+                .map(productMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ProductResponseDto> getAllAvailable() {
         return productRepository.findAllByFoodVenue_IdAndAvailable(tenantContext.getCurrentFoodVenue().getId(), true).stream()
-                .map(productMapper::toDTO)
+                .map(productMapper::toDto)
                 .toList();
     }
 

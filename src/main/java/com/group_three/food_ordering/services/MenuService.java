@@ -1,9 +1,17 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.response.MenuResponseDto;
+import com.group_three.food_ordering.dto.response.FlatMenuResponseDto;
+import com.group_three.food_ordering.dto.response.HierarchicalMenuResponseDto;
 
-import java.util.List;
+import java.util.UUID;
 
 public interface MenuService {
-    List<MenuResponseDto> getMenu();
+
+    HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu();
+
+    HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId);
+
+    FlatMenuResponseDto getCurrentContextFlatMenu();
+
+    FlatMenuResponseDto getFlatMenuByFoodVenueId(UUID foodVenueId);
 }
