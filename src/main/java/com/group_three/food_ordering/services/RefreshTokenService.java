@@ -1,10 +1,9 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.repositories.RefreshTokenRepository;
-import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.security.RefreshToken;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,15 +17,12 @@ import java.util.UUID;
 @Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RefreshTokenService {
 
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Value("${jwt.refresh-expiration}") // 7 días
+    @Value("${jwt.refresh-expiration}")
     private long refreshTokenExpiration;
 
 
@@ -67,6 +63,11 @@ public class RefreshTokenService {
         log.debug("[Refresh token Service] Revoked refresh token");
     }
 
+    public Instant getExpirationDateFromToken(String token) {
+        return refreshTokenRepository.findByTokenAndRevokedFalse(token)
+                .map(RefreshToken::getExpiresAt)
+                .orElse(null);
+    }
     public void revokeAllUserTokens(String userEmail) {
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
     }

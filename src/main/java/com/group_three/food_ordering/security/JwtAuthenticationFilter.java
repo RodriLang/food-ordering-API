@@ -30,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        // excluimos endpoints de autenticación que no requieren validación de access token
         return path.startsWith(ApiPaths.AUTH_URI + "/login")
                 || path.startsWith(ApiPaths.AUTH_URI + "/register")
                 || path.startsWith(ApiPaths.AUTH_URI + "/logout")
@@ -45,23 +44,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        log.info("[JwtAuthenticationFilter] Authorization header present: {}", authHeader != null);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warn("[JwtAuthenticationFilter] No Bearer token found, continuing without authentication");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
+        log.debug("[JwtAuthenticationFilter] Token extracted (first 20 chars): {}...",
+                token.length() > 20 ? token.substring(0, 20) : token);
 
         try {
             log.debug("[JwtAuthenticationFilter] Verifying token expiration");
             if (Boolean.TRUE.equals(jwtService.isTokenExpired(token))) {
+                log.error("[JwtAuthenticationFilter] Token is EXPIRED");
                 sendTokenExpiredError(response);
-                return; // no seguimos
+                return;
             }
 
             log.debug("[JwtAuthenticationFilter] Validating access token");
             if (!Boolean.TRUE.equals(jwtService.isTokenValid(token))) {
+                log.error("[JwtAuthenticationFilter] Token is INVALID");
                 sendUnauthorizedError(response, "INVALID_TOKEN", "JWT token is invalid");
                 return;
             }
@@ -73,6 +78,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String tableSessionIdStr = jwtService.getClaim(token, claims -> claims.get("tableSessionId", String.class));
             String foodVenueIdStr = jwtService.getClaim(token, claims -> claims.get("foodVenueId", String.class));
 
+            log.info("[JwtAuthenticationFilter] User: {}, Role: {}, FoodVenueId: {}",
+                    email, role, foodVenueIdStr != null ? foodVenueIdStr : "NULL");
+
             UUID participantId = participantIdStr != null ? UUID.fromString(participantIdStr) : null;
             UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
             UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
@@ -82,7 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             CustomUserPrincipal principal = new CustomUserPrincipal(
                     email,
-                    null, // no necesitamos password en JWT
+                    null,
                     authorities,
                     RoleType.valueOf(role),
                     participantId,
@@ -94,13 +102,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(principal, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            log.info("[JwtAuthenticationFilter] Authentication set successfully for user: {}", email);
 
         } catch (Exception e) {
             log.error("[JwtAuthenticationFilter] Token processing failed: {}", e.getMessage(), e);
             sendUnauthorizedError(response, "INVALID_OR_EXPIRED_TOKEN", "Invalid or expired token");
             return;
         }
-        log.debug("[JwtAuthenticationFilter] Successfully authenticated user");
+
+        log.info("[JwtAuthenticationFilter] Continuing filter chain");
         filterChain.doFilter(request, response);
     }
 
@@ -125,5 +135,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.getWriter().write(new ObjectMapper().writeValueAsString(error));
         response.getWriter().flush();
     }
-
 }

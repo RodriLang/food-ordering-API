@@ -61,7 +61,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     }
 
     private LoginResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
-        String accessToken = jwtService.generateAccessToken(user, SessionInfo.builder()
+        String accessToken = jwtService.generateAccessToken(SessionInfo.builder()
                 .subject(user.getEmail())
                 .foodVenueId(foodVenueId)
                 .role(role)
@@ -69,7 +69,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
         RoleSelectionResponseDto roleSelection = generateRoleSelection(user);
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
-        Instant expiredDate = jwtService.getExpirationDateFromToken(refreshToken);
+        Instant expiredDate = refreshTokenService.getExpirationDateFromToken(refreshToken);
         AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiredDate);
         roleSelection.setAuthResponse(authResponse);
         return roleSelection;

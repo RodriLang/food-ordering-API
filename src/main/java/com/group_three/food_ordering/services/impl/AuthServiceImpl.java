@@ -50,8 +50,8 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse login(LoginRequest loginRequest) {
         User loggedUser = authenticateUser(loginRequest);
         SessionInfo sessionInfo = resolveSessionInfo(loggedUser);
-        String accessToken = createAccessToken(loggedUser, sessionInfo);
-        String refreshToken = createRefreshToken(loggedUser);
+        String accessToken = jwtService.generateAccessToken(sessionInfo);
+        String refreshToken = refreshTokenService.generateRefreshToken(loggedUser.getEmail());
         return createLoginResponse(loggedUser, accessToken, refreshToken);
     }
 
@@ -73,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
 
-        String newAccessToken = createAccessToken(user, sessionInfo);
+        String newAccessToken = jwtService.generateAccessToken(sessionInfo);
 
         String newRefreshToken = refreshTokenService.generateRefreshToken(userEmail);
 
@@ -111,6 +111,20 @@ public class AuthServiceImpl implements AuthService {
         return getCurrentPrincipal()
                 .map(CustomUserPrincipal::getTableSessionId)
                 .flatMap(tableSessionRepository::findById);
+    }
+
+    @Override
+    public boolean isParticipantInRole(RoleType role) {
+        return getCurrentParticipant()
+                .map(participant -> participant.getRole() == role)
+                .orElse(false);
+    }
+
+    @Override
+    public RoleType getCurrentParticipantRole() {
+        return getCurrentParticipant()
+                .map(Participant::getRole)
+                .orElse(null);
     }
 
 
@@ -206,7 +220,7 @@ public class AuthServiceImpl implements AuthService {
 
     private UUID findParticipantIdForUser(TableSession tableSession, User loggedUser) {
         return tableSession.getParticipants().stream()
-                .filter(participant -> loggedUser.getId().equals(participant.getUser().getId()))
+                .filter(participant -> loggedUser.getEmail().equals(participant.getUser().getEmail()))
                 .map(Participant::getId)
                 .findFirst()
                 .orElse(null);
@@ -250,14 +264,6 @@ public class AuthServiceImpl implements AuthService {
                 .map(TableSession::getFoodVenue)
                 .map(FoodVenue::getId)
                 .orElse(null);
-    }
-
-    private String createAccessToken(User user, SessionInfo sessionInfo) {
-        return jwtService.generateAccessToken(user, sessionInfo);
-    }
-
-    private String createRefreshToken(User loggedUser) {
-        return refreshTokenService.generateRefreshToken(loggedUser.getEmail());
     }
 
     private LoginResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken) {

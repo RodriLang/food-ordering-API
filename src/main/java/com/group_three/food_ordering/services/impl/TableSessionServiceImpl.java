@@ -7,6 +7,7 @@ import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
+import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.enums.TableStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
@@ -45,56 +46,100 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Transactional
     @Override
     public InitSessionResponseDto enter(TableSessionCreateDto tableSessionCreateDto) {
-        log.debug("[TableSession] Processing table session entry request for tableId={}", tableSessionCreateDto.getTableId());
-        Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());
+        log.debug("[TableSession] Processing table session entry for tableId={}", tableSessionCreateDto.getTableId());
 
-        log.debug("[TableSession] Creating new table session for table number={}", table.getNumber());
+        Table table = tableService.getEntityById(tableSessionCreateDto.getTableId());
         configureTenantContext(table.getFoodVenue());
 
-        //Manejo de usuario autenticado
-        User authUser = authService.getAuthUser().orElse(null);
-        if (authUser != null) {
-            log.debug("[TableSession] Authenticated user detected: {}", authUser.getEmail());
-            InitSessionResponseDto activeSessionResponse = handleExistingActiveSession(authUser);
-            if (activeSessionResponse != null) {
-                return activeSessionResponse;
+        Optional<User> optionalUser = authService.getAuthUser();
+
+        if (optionalUser.isPresent()) {
+            User authUser = optionalUser.get();
+            log.debug("[TableSession] Authenticated user with email={}", authUser.getEmail());
+
+            // El usuario inicia sesión luego de haber accedido como invitado
+            // Se asume que tiene un token con el rol de invitado
+            Optional<RoleType> role = authService.getCurrentParticipant()
+                    .map(Participant::getRole);
+            log.debug("[TableSession] Participant role={}", role);
+            if (role.isPresent() && role.get() == RoleType.ROLE_GUEST) {
+                log.debug("[TableSession] Auth user {} came with guest token, migrating participant", authUser.getEmail());
+                return handleGuestToClientMigration(authUser);
             }
+
+            // El usuario autenticado tiene una sesión activa, se asigna esa sesión.
+            // No puede iniciar otra hasta cerrar la actual
+            TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
+            if (activeSession != null) {
+                log.debug("[TableSession] Found active session {} for {}", activeSession.getId(), authUser.getEmail());
+                return generateInitSessionResponseDto(activeSession, authService.getCurrentParticipant()
+                        .orElseThrow(() -> new EntityNotFoundException("Participant")));
+            }
+
+            // El usuario autenticado no tiene sesión previa
+            log.debug("[TableSession] No active session found. Creating new one for {}", authUser.getEmail());
+            return handleNewTableSession(table, authUser);
         }
 
-        //Procesar nueva sesión
-        return handleNewTableSession(table, authUser);
+        // Invitado sin autenticar
+        log.debug("[TableSession] Anonymous guest detected. Creating new guest session");
+        return handleNewTableSession(table, null);
     }
 
-    private InitSessionResponseDto handleExistingActiveSession(User authUser) {
-        TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
-        if (activeSession == null) {
-            log.debug("[TableSession] No active session found for user={}", authUser.getEmail());
-            return null;
-        }
+    private InitSessionResponseDto handleGuestToClientMigration(User authUser) {
+        log.debug("[TableSession] Getting table session of guest participant");
+        TableSession guestSession = authService.getCurrentParticipant()
+                .map(Participant::getTableSession)
+                .orElseThrow(() -> new EntityNotFoundException("Active guest session not found"));
 
-        log.debug("[TableSession] Found active session for user={}, sessionId={}",
-                authUser.getEmail(), activeSession.getId());
+        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getId());
 
         Participant currentParticipant = authService.getCurrentParticipant()
                 .orElseThrow(() -> new EntityNotFoundException("Participant"));
 
         participantService.update(currentParticipant.getId(), authUser);
 
-        InitSessionResponseDto response = generateInitSessionResponseDto(activeSession, activeSession.getSessionHost());
-        log.info("[TableSession] Redirecting user={} to active session={}",
-                authUser.getEmail(), activeSession.getId());
-
-        return response;
+        return generateInitSessionResponseDto(guestSession, currentParticipant);
     }
 
     private InitSessionResponseDto handleNewTableSession(Table table, User authUser) {
+        log.debug("[TableSession] Handling new table session for tableId={}", table.getId());
 
-        TableSession tableSession = createTableSession(table, authUser);
-        InitSessionResponseDto response = generateInitSessionResponseDto(tableSession, tableSession.getSessionHost());
+        TableStatus status = table.getStatus();
+        log.debug("[TableSession] Creating session for table={} with status={}", table.getId(), status);
+
+
+        TableSession tableSession = switch (status) {
+            case AVAILABLE -> initSession(table);
+            case OCCUPIED ->
+                    tableSessionRepository.findTableSessionByTable_IdAndTableStatus(table.getId(), TableStatus.OCCUPIED)
+                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, table.getId().toString()));
+            case OUT_OF_SERVICE -> throw new IllegalStateException(
+                    "Table is out of service, cannot start or join a session.");
+            case COMPLETE -> throw new IllegalStateException(
+                    "Table is complete, cannot start or join a session.");
+            default -> throw new IllegalStateException("Unhandled table status: " + status);
+        };
+
+        TableSession createdTableSession = tableSessionRepository.save(tableSession);
+        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getId());
+
+        Participant participant = participantService.create(authUser, tableSession);
+        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getId(), participant.getRole());
+
+
+        tableSession.getParticipants().add(participant);
+        if (tableSession.getSessionHost() != null) {
+            tableSession.setSessionHost(participant);
+        }
+
+        TableSession savedTableSession = tableSessionRepository.save(tableSession);
+
+        InitSessionResponseDto response = generateInitSessionResponseDto(savedTableSession, participant);
         determineTableStatusPostSessionCreation(table, tableSession);
-        log.info("[TableSession] Successfully initialized session. TableId={}, SessionId={}, User={}",
-                table.getId(), tableSession.getId(),
-                authUser != null ? authUser.getEmail() : "anonymous");
+
+        log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
+                tableSession.getId(), authUser != null ? authUser.getEmail() : "anonymous");
 
         return response;
     }
@@ -113,67 +158,25 @@ public class TableSessionServiceImpl implements TableSessionService {
         tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
     }
 
-    private TableSession createTableSession(Table table, User authUser) {
-        TableStatus status = table.getStatus();
-        log.debug("[TableSession] Creating session for table={} with status={}", table.getId(), status);
-
-        TableSession tableSession = switch (status) {
-            case AVAILABLE -> initSession(table, authUser);
-            case OCCUPIED -> joinSession(table.getId(), authUser);
-            case OUT_OF_SERVICE -> throw new IllegalStateException(
-                    "Table is out of service, cannot start or join a session.");
-            case COMPLETE -> throw new IllegalStateException(
-                    "Table is complete, cannot start or join a session.");
-            default -> throw new IllegalStateException("Unhandled table status: " + status);
-        };
-
-        tableSession.setFoodVenue(table.getFoodVenue());
-        tableSession.setTable(table);
-        TableSession createdTableSession = tableSessionRepository.save(tableSession);
-        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getId());
-        return createdTableSession;
-    }
-
     private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
         log.debug("[AuthService] Verifying active table session.");
         return tableSessionRepository.findActiveSessionByUserEmail(authUser.getEmail()).orElse(null);
     }
 
 
-    private TableSession initSession(Table table, User authUser) {
+    private TableSession initSession(Table table) {
         log.debug("[TableSession] Initializing table session tableId={}", table.getId());
 
-        TableSession tableSession = TableSession.builder()
+        return TableSession.builder()
                 .table(table)
                 .foodVenue(table.getFoodVenue())
                 .startTime(LocalDateTime.now())
                 .build();
-        Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant init table session. Role={}", participant.getRole());
-
-        tableSession.setSessionHost(participant);
-        tableSession.getParticipants().add(participant);
-
-        return tableSession;
-
-    }
-
-    private TableSession joinSession(UUID tableId, User authUser) {
-        log.debug("[TableSession] Joining participant to active table session.");
-        TableSession tableSession = tableSessionRepository.findTableSessionByTable_IdAndTableStatus(tableId, TableStatus.OCCUPIED)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, tableId.toString()));
-
-        Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant joined to session. TableSessionID={}. Role={}...", tableSession.getId(), participant.getRole());
-
-        tableSession.getParticipants().add(participant);
-
-        return tableSession;
     }
 
     private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
 
-        String token = jwtService.generateAccessToken(participant.getUser(), SessionInfo.builder()
+        String token = jwtService.generateAccessToken(SessionInfo.builder()
                 .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
                 .foodVenueId(tableSession.getFoodVenue().getId())
                 .participantId(participant.getId())

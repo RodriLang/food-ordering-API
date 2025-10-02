@@ -150,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndStatus(OrderStatus status, Pageable pageable) {
-        log.debug("[OrderService] Get Orders By Authenticated User");
+        log.debug("[OrderService] Get orders by authenticated user");
         UUID currentClientId = getAuthenticatedUser().getId();
         return getOrdersByUser(currentClientId, status, pageable);
     }
@@ -178,9 +178,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable) {
-
+        log.debug("[OrderService] Get orders by current participant");
         UUID currentClientId = getAuthenticatedParticipant().getId();
-
+        log.debug("[OrderService] Current client ID={}", currentClientId);
         return orderRepository.findOrdersByParticipant_Id(currentClientId, pageable).map(orderMapper::toDTO);
     }
 

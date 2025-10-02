@@ -38,7 +38,7 @@ public class JwtService {
 
     private final UserRepository userRepository;
 
-    public String generateAccessToken(User user, SessionInfo sessionInfo) {
+    public String generateAccessToken(SessionInfo sessionInfo) {
         Date expiration = Date.from(Instant.now().plusMillis(jwtAccessExpirationMs));
 
         Map<String, Object> claims = new HashMap<>();
@@ -107,12 +107,6 @@ public class JwtService {
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
         Claims claims = parseTokenClaimsSafe(token);
         return claimsTFunction.apply(claims);
-    }
-
-    public String getFoodVenueId(String token) {
-        String id = getClaim(token, claims -> claims.get("foodVenueId", String.class));
-        log.debug("[JwtService] Extracted foodVenueId={}", id);
-        return id;
     }
 
     public SessionInfo getSessionInfoFromToken(String token) {
