@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FoodVenuePublicResponseDto {
 
+    private String id;
     private String name;
     private String phone;
     private String imageUrl;

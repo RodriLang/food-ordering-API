@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
@@ -36,10 +37,10 @@ public interface PublicInfoController {
     @Operation(summary = "Listar todos los productos del Menu ordenados por categoria")
     @ApiResponse(responseCode = "200", description = "Listado de productos por categoria")
     @GetMapping("/food-venues/{foodVenueId}/menu")
-     ResponseEntity<FlatMenuResponseDto> getFlatMenu(@PathVariable UUID foodVenueId);
+    ResponseEntity<FlatMenuResponseDto> getFlatMenu(@PathVariable UUID foodVenueId);
 
     @Operation(summary = "Listar todos los productos del Menu ordenados por categoria")
     @ApiResponse(responseCode = "200", description = "Listado de productos por categoria")
     @GetMapping("/food-venues/{foodVenueId}/menu/categories")
-    ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(@PathVariable UUID foodVenueId);
+    ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(@PathVariable UUID foodVenueId, @RequestParam(required = false) String category);
 }

@@ -5,10 +5,7 @@ import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", uses = {AddressMapper.class})
 public interface FoodVenueMapper {
@@ -17,9 +14,15 @@ public interface FoodVenueMapper {
 
     FoodVenueAdminResponseDto toAdminDto(FoodVenue foodVenue);
 
+    @Mapping(target = "id", source = "id", qualifiedByName = "uuidToString")
     FoodVenuePublicResponseDto toPublicDto(FoodVenue foodVenue);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(FoodVenueRequestDto dto, @MappingTarget FoodVenue entity);
+
+    @Named("uuidToString")
+    default String uuidToString(java.util.UUID id) {
+        return id != null ? id.toString() : null;
+    }
 }
 

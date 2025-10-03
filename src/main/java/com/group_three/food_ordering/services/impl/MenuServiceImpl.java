@@ -2,7 +2,6 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.response.*;
-import com.group_three.food_ordering.mappers.CategoryMapper;
 import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -29,18 +29,18 @@ public class MenuServiceImpl implements MenuService {
     private final FoodVenueRepository foodVenueRepository;
 
     @Override
-    public HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu() {
+    public HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu(String category) {
         FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
-        if(foodVenue == null) {
+        if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }
-        return getHierarchicalMenuByFoodVenueId(foodVenue.getId());
+        return getHierarchicalMenuByFoodVenueId(foodVenue.getId(), category);
     }
 
     @Override
     public FlatMenuResponseDto getCurrentContextFlatMenu() {
         FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
-        if(foodVenue == null) {
+        if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }
         return getFlatMenuByFoodVenueId(foodVenue.getId());
@@ -51,14 +51,14 @@ public class MenuServiceImpl implements MenuService {
         FoodVenue foodVenue = foodVenueRepository.findById(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
 
-         return generateFlatMenu(foodVenue);
+        return generateFlatMenu(foodVenue);
     }
 
     @Override
-    public HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId) {
+    public HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
         FoodVenue foodVenue = foodVenueRepository.findById(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
-        return generateHierarchicalMenu(foodVenue);
+        return generateHierarchicalMenu(foodVenue, category);
     }
 
     private FlatMenuResponseDto generateFlatMenu(FoodVenue foodVenue) {
@@ -94,15 +94,26 @@ public class MenuServiceImpl implements MenuService {
     }
 
 
-    private HierarchicalMenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue) {
+    private HierarchicalMenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue, String category) {
         // Categorías raíz (sin padre)
         List<Category> rootCategories = categoryRepository.findAll().stream()
                 .filter(c -> c.getParentCategory() == null)
                 .toList();
 
-        List<HierarchicalCategoryMenuResponseDto> categoriesDto = rootCategories.stream()
-                .map(root -> buildCategoryTree(root, foodVenue.getId()))
-                .toList();
+        List<HierarchicalCategoryMenuResponseDto> categoriesDto;
+
+        if (category == null) {
+            categoriesDto = rootCategories.stream()
+                    .map(root -> buildCategoryTree(root, foodVenue.getId()))
+                    .toList();
+        } else {
+            categoriesDto = rootCategories.stream()
+                    .map(root -> buildCategoryTree(root, foodVenue.getId()))
+                    .map(root -> findLeafCategory(root, category))
+                    .flatMap(Optional::stream) // solo devuelve la hoja encontrada
+                    .toList();
+        }
+
 
         return HierarchicalMenuResponseDto.builder()
                 .foodVenueName(foodVenue.getName())
@@ -136,4 +147,27 @@ public class MenuServiceImpl implements MenuService {
                 .subcategory(children)
                 .build();
     }
+
+    private Optional<HierarchicalCategoryMenuResponseDto> findLeafCategory(
+            HierarchicalCategoryMenuResponseDto node, String category) {
+
+        // si es hoja y coincide, devolverla
+        if ((node.getSubcategory() == null || node.getSubcategory().isEmpty())
+                && node.getCategory().equalsIgnoreCase(category)) {
+            return Optional.of(node);
+        }
+
+        // si tiene hijos, buscar en ellos
+        if (node.getSubcategory() != null) {
+            for (HierarchicalCategoryMenuResponseDto child : node.getSubcategory()) {
+                Optional<HierarchicalCategoryMenuResponseDto> result = findLeafCategory(child, category);
+                if (result.isPresent()) {
+                    return result;
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
 }

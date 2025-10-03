@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +32,8 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
+
+    private static final String CATEGORY_NAME = "Category";
 
 
     @Override
@@ -45,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (productCreateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productCreateDto.getCategoryId())
-                    .orElseThrow(() -> new EntityNotFoundException("Category", productCreateDto.getCategoryId().toString()));
+                    .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NAME, productCreateDto.getCategoryId().toString()));
             product.setCategory(category);
         }
 
@@ -73,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
 
         if (productUpdateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productUpdateDto.getCategoryId())
-                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+                    .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NAME));
             product.setCategory(category);
         }
 
@@ -103,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
         }
         if (productCreateDto.getCategoryId() != null) {
             Category category = categoryRepository.findById(productCreateDto.getCategoryId())
-                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+                    .orElseThrow(() -> new EntityNotFoundException(CATEGORY_NAME));
             product.setCategory(category);
         } else {
             product.setCategory(null); // o mantener la actual, según tu lógica de negocio
@@ -116,6 +119,16 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(NoSuchElementException::new);
+        return productMapper.toDto(product);
+    }
+
+    @Override
+    public ProductResponseDto getByNameAndContext(String name) {
+        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getId();
+        Product product = productRepository.findByNameAndFoodVenue_Id(name, foodVenueId).stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Product"));
+
         return productMapper.toDto(product);
     }
 

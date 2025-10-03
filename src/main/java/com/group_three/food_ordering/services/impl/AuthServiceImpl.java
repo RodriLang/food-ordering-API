@@ -4,7 +4,7 @@ import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
-import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
+import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -80,7 +81,6 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
-                .accessTokenExpiresAt(jwtService.getExpirationDateFromToken(newAccessToken))
                 .build();
     }
 
@@ -267,17 +267,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken) {
-        Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiration);
+        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
 
-        if (!loggedUser.getEmployments().isEmpty()) {
-            log.debug("[AuthService] Authenticated user has role options available.");
-            RoleSelectionResponseDto roleSelection = roleSelectionService.generateRoleSelection(loggedUser);
-            roleSelection.setAuthResponse(authResponse);
-            return roleSelection;
-        }
-        log.debug("[AuthService] Authenticated user with ROLE_CLIENT.");
-        return authResponse;
+        return LoginResponse.builder()
+                .authResponse(authResponse)
+                .employments(roleSelectionService.generateRoleSelection(loggedUser))
+                .build();
     }
 
     public Optional<CustomUserPrincipal> getCurrentPrincipal() {

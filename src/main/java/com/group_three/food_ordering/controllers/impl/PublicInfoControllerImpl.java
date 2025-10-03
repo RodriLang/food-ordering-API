@@ -35,7 +35,7 @@ public class PublicInfoControllerImpl implements PublicInfoController {
     }
 
     @Override
-    public ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(UUID foodVenueId) {
-        return ResponseEntity.ok(menuService.getHierarchicalMenuByFoodVenueId(foodVenueId));
+    public ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(UUID foodVenueId, String category) {
+        return ResponseEntity.ok(menuService.getHierarchicalMenuByFoodVenueId(foodVenueId, category));
     }
 }

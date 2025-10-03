@@ -7,9 +7,9 @@ import java.util.UUID;
 
 public interface MenuService {
 
-    HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu();
+    HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu(String category);
 
-    HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId);
+    HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category);
 
     FlatMenuResponseDto getCurrentContextFlatMenu();
 

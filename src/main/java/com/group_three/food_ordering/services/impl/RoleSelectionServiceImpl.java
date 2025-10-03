@@ -4,7 +4,6 @@ import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
-import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.Employment;
@@ -51,13 +50,11 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     }
 
     @Override
-    public RoleSelectionResponseDto generateRoleSelection(User user) {
+    public List<RoleEmploymentResponseDto> generateRoleSelection(User user) {
         List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getId());
-        RoleSelectionResponseDto roleSelection = RoleSelectionResponseDto.builder()
-                .employments(roleEmployments)
-                .build();
+
         log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
-        return roleSelection;
+        return roleEmployments;
     }
 
     private LoginResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
@@ -67,12 +64,12 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
                 .role(role)
                 .build());
 
-        RoleSelectionResponseDto roleSelection = generateRoleSelection(user);
+        List<RoleEmploymentResponseDto> roleSelection = generateRoleSelection(user);
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
-        Instant expiredDate = refreshTokenService.getExpirationDateFromToken(refreshToken);
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiredDate);
-        roleSelection.setAuthResponse(authResponse);
-        return roleSelection;
+        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
+        return LoginResponse.builder()
+                .authResponse(authResponse)
+                .employments(roleSelection).build();
     }
 
     private User getAuthenticatedUser() {

@@ -53,10 +53,16 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROOT')")
+    @GetMapping("/fid-by-id/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/find-by-name/{productName}")
+    public ResponseEntity<ProductResponseDto> getProductByNameAndContext(@PathVariable String productName) {
+        return ResponseEntity.ok(productService.getByNameAndContext(productName));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")

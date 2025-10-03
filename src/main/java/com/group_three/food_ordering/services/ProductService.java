@@ -13,6 +13,7 @@ public interface ProductService {
     ProductResponseDto update(Long id, ProductUpdateDto productUpdateDto);
     ProductResponseDto replace(Long id, ProductCreateDto productCreateDto);
     ProductResponseDto getById(Long id);
+    ProductResponseDto getByNameAndContext(String name);
     void delete(Long id);
     List<ProductResponseDto> getAll();
 

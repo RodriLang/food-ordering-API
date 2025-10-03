@@ -4,17 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
-
 @Data
 @Builder
 @AllArgsConstructor
-public class AuthResponse implements LoginResponse {
+public class AuthResponse {
 
     private String accessToken;
 
     private String refreshToken;
-
-    private Instant accessTokenExpiresAt;
 
 }

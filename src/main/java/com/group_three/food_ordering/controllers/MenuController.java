@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,7 +32,7 @@ public class MenuController {
     @Operation(summary = "Listar todos los productos del Menu ordenados por categoria")
     @ApiResponse(responseCode = "200", description = "Listado de productos por categoria")
     @GetMapping("/categories")
-    public ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu() {
-        return ResponseEntity.ok(menuService.getCurrentContextHierarchicalMenu());
+    public ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(@RequestParam (required = false) String category) {
+        return ResponseEntity.ok(menuService.getCurrentContextHierarchicalMenu(category));
     }
 }

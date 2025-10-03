@@ -1,9 +1,11 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
-import com.group_three.food_ordering.dto.response.RoleSelectionResponseDto;
+import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.dto.response.LoginResponse;
+
+import java.util.List;
 
 public interface RoleSelectionService {
 
@@ -11,5 +13,5 @@ public interface RoleSelectionService {
 
     LoginResponse selectClient();
 
-    RoleSelectionResponseDto generateRoleSelection(User user);
+    List<RoleEmploymentResponseDto> generateRoleSelection(User user);
 }

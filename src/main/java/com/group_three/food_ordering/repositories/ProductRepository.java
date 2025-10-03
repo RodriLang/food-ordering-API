@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Optional<Product> findByNameAndFoodVenue_Id(String name, UUID foodVenueId);
+    List<Product> findByNameAndFoodVenue_Id(String name, UUID foodVenueId);
     List<Product> findAllByFoodVenue_Id(UUID foodVenueId);
     List<Product> findAllByFoodVenue_IdAndAvailable(UUID foodVenueId, Boolean available);
     List<Product> findAllByFoodVenue_IdAndAvailableAndCategory(UUID foodVenueId, Boolean available, Category category);
