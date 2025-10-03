@@ -10,17 +10,7 @@ import java.util.Optional;
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 
-
-    /**
-     * Busca todos los OrderDetail que no están marcados como eliminados.
-     * @return lista de detalles activos.
-     */
     List<OrderDetail> findAllByDeletedFalse();
 
-    /**
-     * Busca un OrderDetail por su id solo si no está eliminado.
-     * @param id id del detalle.
-     * @return el detalle si existe y no está eliminado.
-     */
     Optional<OrderDetail> findByIdAndDeletedFalse(Long id);
 }

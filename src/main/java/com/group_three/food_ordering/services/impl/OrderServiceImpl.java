@@ -119,9 +119,9 @@ public class OrderServiceImpl implements OrderService {
         //filtra por estado
         Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrderByTableSession_IdAndStatus(tableSessionId, status, pageable);
+            orders = orderRepository.findOrderByTableSession_IdAndStatusAndDeletedFalse(tableSessionId, status, pageable);
         } else {
-            orders = orderRepository.findOrderByTableSession_Id(tableSessionId, pageable);
+            orders = orderRepository.findOrderByTableSession_IdAndDeletedFalse(tableSessionId, pageable);
         }
 
         return orders.map(orderMapper::toDTO);
@@ -140,9 +140,9 @@ public class OrderServiceImpl implements OrderService {
         // Se filtra por estado
         Page<Order> orders;
         if (status != null) {
-            orders = orderRepository.findOrdersByParticipant_IdAndStatus(userId, status, pageable);
+            orders = orderRepository.findOrdersByParticipant_IdAndStatusAndDeletedFalse(userId, status, pageable);
         } else {
-            orders = orderRepository.findOrdersByParticipant_Id(userId, pageable);
+            orders = orderRepository.findOrdersByParticipant_IdAndDeletedFalse(userId, pageable);
         }
 
         return orders.map(orderMapper::toDTO);
@@ -172,7 +172,7 @@ public class OrderServiceImpl implements OrderService {
         UUID currentClientId = getAuthenticatedUser().getId();
         UUID currentTableSessionId = getCurrentTableSession().getId();
 
-        return orderRepository.findOrdersByParticipant_IdAndTableSession_IdAndStatus(
+        return orderRepository.findOrdersByParticipant_IdAndTableSession_IdAndStatusAndDeletedFalse(
                 currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDTO);
     }
 
@@ -181,7 +181,7 @@ public class OrderServiceImpl implements OrderService {
         log.debug("[OrderService] Get orders by current participant");
         UUID currentClientId = getAuthenticatedParticipant().getId();
         log.debug("[OrderService] Current client ID={}", currentClientId);
-        return orderRepository.findOrdersByParticipant_Id(currentClientId, pageable).map(orderMapper::toDTO);
+        return orderRepository.findOrdersByParticipant_IdAndDeletedFalse(currentClientId, pageable).map(orderMapper::toDTO);
     }
 
 
@@ -198,14 +198,14 @@ public class OrderServiceImpl implements OrderService {
 
         if (from != null && to != null) {
             if (status != null) {
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatus(venueId, from, to, status, pageable);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndStatusAndDeletedFalse(venueId, from, to, status, pageable);
             } else {
-                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetween(venueId, from, to, pageable);
+                orders = orderRepository.findByFoodVenue_IdAndCreationDateBetweenAndDeletedFalse(venueId, from, to, pageable);
             }
         } else if (status != null) {
-            orders = orderRepository.findByFoodVenue_IdAndStatus(venueId, status, pageable);
+            orders = orderRepository.findByFoodVenue_IdAndStatusAndDeletedFalse(venueId, status, pageable);
         } else {
-            orders = orderRepository.findByFoodVenue_Id(venueId, pageable);
+            orders = orderRepository.findByFoodVenue_IdAndDeletedFalse(venueId, pageable);
         }
 
         return orders.map(orderMapper::toDTO);
@@ -252,7 +252,7 @@ public class OrderServiceImpl implements OrderService {
         LocalDateTime end = start.plusDays(1);
 
         Order foundOrder = orderRepository
-                .findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
+                .findByFoodVenue_IdAndOrderNumberAndCreationDateBetweenAndDeletedFalse(
                         tenantContext.getCurrentFoodVenue().getId(), orderNumber, start, end)
                 .orElseThrow(() -> new EntityNotFoundException("Order"));
 

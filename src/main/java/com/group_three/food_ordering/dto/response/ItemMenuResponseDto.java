@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dto.response;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 @Data
 @AllArgsConstructor
@@ -19,7 +17,7 @@ public class ItemMenuResponseDto {
     private Long id;
     private String name;
     private String description;
-    private String image;
+    private String imageUrl;
     private BigDecimal price;
     private String category;
     private List<TagResponseDto> tags;

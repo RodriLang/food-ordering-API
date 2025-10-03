@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "categories")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -66,8 +66,12 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
+    @Column
+    private Boolean deleted;
+
     @PrePersist
     public void onCreate() {
+        if (deleted == null) deleted = false;
         this.creationDate = LocalDateTime.now();
         this.updateDate = LocalDateTime.now();
         if (this.id == null) this.id = UUID.randomUUID();
@@ -79,4 +83,3 @@ public class Order {
         this.updateDate = LocalDateTime.now();
     }
 }
-

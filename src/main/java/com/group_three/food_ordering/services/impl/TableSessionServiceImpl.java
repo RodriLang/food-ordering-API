@@ -113,7 +113,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         TableSession tableSession = switch (status) {
             case AVAILABLE -> initSession(table);
             case OCCUPIED ->
-                    tableSessionRepository.findTableSessionByTable_IdAndTableStatus(table.getId(), TableStatus.OCCUPIED)
+                    tableSessionRepository.findTableSessionByTable_IdAndTableStatusAndDeletedFalse(table.getId(), TableStatus.OCCUPIED)
                             .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, table.getId().toString()));
             case OUT_OF_SERVICE -> throw new IllegalStateException(
                     "Table is out of service, cannot start or join a session.");
@@ -161,7 +161,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
         log.debug("[AuthService] Verifying active table session.");
-        return tableSessionRepository.findActiveSessionByUserEmail(authUser.getEmail()).orElse(null);
+        return tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(authUser.getEmail()).orElse(null);
     }
 
 
@@ -205,7 +205,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public List<TableSessionResponseDto> getAll() {
-        return tableSessionRepository.findByFoodVenueId(tenantContext.getCurrentFoodVenue().getId()).stream()
+        return tableSessionRepository.findByFoodVenueIdAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId()).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -224,7 +224,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber) {
-        return tableSessionRepository.findByFoodVenueIdAndTableNumber(foodVenueId, tableNumber).stream()
+        return tableSessionRepository.findByFoodVenueIdAndTableNumberAndDeletedFalse(foodVenueId, tableNumber).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -234,7 +234,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         UUID foodVenueId = tenantContext.getCurrentFoodVenue().getId();
 
-        return tableSessionRepository.findByFoodVenueIdAndTableNumber(foodVenueId, tableNumber).stream()
+        return tableSessionRepository.findByFoodVenueIdAndTableNumberAndDeletedFalse(foodVenueId, tableNumber).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
@@ -249,7 +249,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         }
 
         return tableSessionRepository
-                .findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
+                .findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndDeletedFalse(
                         tenantContext.getCurrentFoodVenue().getId(), tableNumber, start, effectiveEnd)
                 .stream()
                 .map(tableSessionMapper::toDTO)
@@ -259,14 +259,14 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public List<TableSessionResponseDto> getActiveSessions() {
         return tableSessionRepository
-                .findByFoodVenueIdAndEndTimeIsNull(tenantContext.getCurrentFoodVenue().getId()).stream()
+                .findByFoodVenueIdAndEndTimeIsNullAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId()).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
     }
 
     @Override
     public List<TableSessionResponseDto> getByHostClient(UUID clientId) {
-        return tableSessionRepository.findByFoodVenueIdAndSessionHostId(
+        return tableSessionRepository.findByFoodVenueIdAndSessionHostIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), clientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -277,7 +277,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         UUID authClientId = tenantContext.getCurrentFoodVenue().getId();
 
-        return tableSessionRepository.findByFoodVenueIdAndSessionHostId(
+        return tableSessionRepository.findByFoodVenueIdAndSessionHostIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), authClientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -285,7 +285,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public List<TableSessionResponseDto> getPastByParticipant(UUID clientId) {
-        return tableSessionRepository.findPastSessionsByParticipantId(
+        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), clientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -296,7 +296,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         UUID authClientId = tenantContext.getCurrentFoodVenue().getId();
 
-        return tableSessionRepository.findPastSessionsByParticipantId(
+        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), authClientId).stream()
                 .map(tableSessionMapper::toDTO)
                 .toList();
@@ -304,7 +304,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
-        TableSession tableSession = tableSessionRepository.findTopByFoodVenueIdAndTableIdOrderByStartTimeDesc(
+        TableSession tableSession = tableSessionRepository.findTopByFoodVenueIdAndDeletedFalseAndTableIdOrderByStartTimeDesc(
                         tenantContext.getCurrentFoodVenueId(), tableId)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
         return tableSessionMapper.toDTO(tableSession);

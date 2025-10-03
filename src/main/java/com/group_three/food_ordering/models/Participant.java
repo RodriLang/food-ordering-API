@@ -4,11 +4,13 @@ import com.group_three.food_ordering.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.util.UUID;
 
 @Entity(name = "participants")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,8 +37,12 @@ public class Participant {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
+    @Column
+    private Boolean deleted;
+
     @PrePersist
     public void onCreate() {
+        if (deleted == null) deleted = false;
         if (this.id == null) this.id = UUID.randomUUID();
     }
 }

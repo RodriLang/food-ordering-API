@@ -9,16 +9,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Repository
 public interface FoodVenueRepository extends JpaRepository<FoodVenue, UUID> {
 
-    Optional<FoodVenue> findByEmailIgnoreCase(String email);
+    Optional<FoodVenue> findByEmailIgnoreCaseAndDeletedFalse(String email);
 
     Optional<FoodVenue> findByIdAndDeletedFalse(UUID id);
 
     Page<FoodVenue> findAllByDeletedFalse(Pageable pageable);
 
     Page<FoodVenue> findAllByDeletedTrue(Pageable pageable);
-
 }

@@ -65,14 +65,14 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public ParticipantResponseDto getById(UUID id) {
-        Participant participant = participantRepository.findByIdAndUser_RemovedAtIsNull(id)
+        Participant participant = participantRepository.findByIdAndUser_RemovedAtIsNullAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
         return participantMapper.toResponseDto(participant);
     }
 
     @Override
     public Participant getEntityById(UUID id) {
-        return participantRepository.findByIdAndUser_RemovedAtIsNull(id)
+        return participantRepository.findByIdAndUser_RemovedAtIsNullAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 }

@@ -11,14 +11,14 @@ import java.util.UUID;
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, UUID> {
 
-    Optional<Participant> findByUser_Email(String email);
+    Optional<Participant> findByUser_EmailAndDeletedFalse(String email);
 
-    boolean existsByUser_Email(String email);
+    boolean existsByUser_EmailAndDeletedFalse(String email);
 
-    boolean existsByNickname(String nickname);
+    boolean existsByNicknameAndDeletedFalse(String nickname);
 
-    List<Participant> findAllByUser_RemovedAtIsNull();
+    List<Participant> findAllByUser_RemovedAtIsNullAndDeletedFalse();
 
-    Optional<Participant> findByIdAndUser_RemovedAtIsNull(UUID id);
+    Optional<Participant> findByIdAndUser_RemovedAtIsNullAndDeletedFalse(UUID id);
 }
 

@@ -2,18 +2,20 @@ package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity(name = "products")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +28,7 @@ public class Product {
     @Column
     private String name;
 
-    @Column(length = 255)
+    @Column
     private String description;
 
     @Column
@@ -50,20 +52,17 @@ public class Product {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags= new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
     @PrePersist
-    public void onCreate()
-    {
+    public void onCreate() {
         this.available = true;
-        if (this.price == null){ this.price = BigDecimal.ZERO;
-        }
-        if (this.stock == null){ this.stock = 0;}
-        if(this.deleted == null){ this.deleted = false;}
+        if (this.price == null) this.price = BigDecimal.ZERO;
+        if (this.stock == null) this.stock = 0;
+        if (this.deleted == null) this.deleted = false;
     }
-
 }

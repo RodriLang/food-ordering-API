@@ -3,6 +3,7 @@ package com.group_three.food_ordering.models;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
@@ -11,11 +12,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "food_venues")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class FoodVenue {
+
     @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "id", length = 36)

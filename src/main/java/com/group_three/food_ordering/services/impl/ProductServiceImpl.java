@@ -38,34 +38,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequestDto) {
-
         Product product = productMapper.toEntity(productRequestDto);
-
         FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
         product.setFoodVenue(currentFoodVenue);
-        product.setAvailable(product.getStock() != null && product.getStock() > 0);
-        product.setCategory(findCategory(productRequestDto));
-        product.setTags(findTags(productRequestDto));
-
-        Product savedProduct = productRepository.save(product);
-
-        return productMapper.toDto(savedProduct);
+        return applyProductRulesAndSave(product, productRequestDto);
     }
 
     @Override
     public ProductResponseDto update(Long id, ProductRequestDto productRequestDto) {
-
         Product product = getEntityById(id);
-
-        productMapper.updateEntity(productRequestDto, product);
-
-        product.setAvailable(product.getStock() != null && product.getStock() > 0);
-        product.setCategory(findCategory(productRequestDto));
-        product.setTags(findTags(productRequestDto));
-
-        Product savedProduct = productRepository.save(product);
-
-        return productMapper.toDto(savedProduct);
+        productMapper.updateEntity(product, productRequestDto);
+        return applyProductRulesAndSave(product, productRequestDto);
     }
 
     @Override
@@ -110,6 +93,14 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    private ProductResponseDto applyProductRulesAndSave(Product product, ProductRequestDto productRequestDto) {
+        product.setAvailable(product.getStock() != null && product.getStock() > 0);
+        product.setCategory(findCategory(productRequestDto.getCategoryId()));
+        product.setTags(findTags(productRequestDto.getTagsId()));
+        Product savedProduct = productRepository.save(product);
+        return productMapper.toDto(savedProduct);
+    }
+
     public void validateStock(Product product, Integer quantity) throws InsufficientStockException {
         if (product.getStock() < quantity) {
             throw new InsufficientStockException("Insufficient stock for product: " + product.getName());
@@ -129,9 +120,7 @@ public class ProductServiceImpl implements ProductService {
         product.setAvailable(product.getStock() - quantity > 0);
     }
 
-    private List<Tag> findTags(ProductRequestDto productRequestDto) {
-
-        List<Long> tagsId = productRequestDto.getTagsId();
+    private List<Tag> findTags(List<Long> tagsId) {
         if (tagsId != null && !tagsId.isEmpty()) {
             return tagsId.stream()
                     .map(tagId -> tagRepository.findByIdAndDeletedFalse(tagId)
@@ -142,10 +131,9 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private Category findCategory(ProductRequestDto productRequestDto) {
-
-        if (productRequestDto.getCategoryId() != null) {
-            return categoryRepository.findByIdAndDeletedFalse(productRequestDto.getCategoryId())
+    private Category findCategory(Long categoryId) {
+        if (categoryId != null) {
+            return categoryRepository.findByIdAndDeletedFalse(categoryId)
                     .orElseThrow(() -> new EntityNotFoundException(CATEGORY_ENTITY_NAME));
         } else {
             return null;

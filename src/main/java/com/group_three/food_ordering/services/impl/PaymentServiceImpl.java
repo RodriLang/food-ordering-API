@@ -11,6 +11,7 @@ import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.Payment;
 import com.group_three.food_ordering.repositories.OrderRepository;
 import com.group_three.food_ordering.repositories.PaymentRepository;
+import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,14 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
     private final PaymentMapper paymentMapper;
 
-
+    // Revisar muy muy MUY bien lo que hace este metodo porque es muy importante
+    @Transactional
     @Override
     public PaymentResponseDto create(PaymentRequestDto dto) {
-        List<Order> orders = orderRepository.findAllById(dto.getOrderIds());
+        List<Order> orders = findOrders(dto.getOrderIds());
 
         if (orders.size() != dto.getOrderIds().size()) {
             throw new IllegalArgumentException("Algunas órdenes no fueron encontradas.");
@@ -55,7 +58,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDto getById(UUID id) {
-        return paymentMapper.toDTO(paymentRepository.findById(id)
+        return paymentMapper.toDTO(paymentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString())));
     }
 
@@ -74,7 +77,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         if (dto.getOrderIds() != null && !dto.getOrderIds().isEmpty()) {
-            List<Order> newOrders = orderRepository.findAllById(dto.getOrderIds());
+            List<Order> newOrders = findOrders(dto.getOrderIds());
 
             List<UUID> invalidOrders = new java.util.ArrayList<>();
 
@@ -119,7 +122,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void delete(UUID id) {
-        if (!paymentRepository.existsById(id)) {
+        if (!paymentRepository.existsByIdAndDeletedFalse(id)) {
             throw new EntityNotFoundException("Payment", id.toString());
         }
         paymentRepository.deleteById(id);
@@ -134,8 +137,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private Payment getPaymentEntityByID(UUID id) {
-        return paymentRepository.findById(id)
+        return paymentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString()));
     }
 
+    private List<Order> findOrders(List<UUID> orderIds) {
+        return orderIds.stream()
+                .map(orderService::getEntityByIdAndTenantContext)
+                .toList();
+    }
 }

@@ -4,7 +4,6 @@ import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
-import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
@@ -27,8 +26,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -145,7 +142,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 1. Usuario registrado con sesión activa en DB
         Optional<TableSession> previousActiveSession =
-                tableSessionRepository.findActiveSessionByUserEmail(loggedUser.getEmail());
+                tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(loggedUser.getEmail());
         if (previousActiveSession.isPresent()) {
             log.debug("[AuthService] Found active session={} for user={}",
                     previousActiveSession.get().getId(), loggedUser.getEmail());

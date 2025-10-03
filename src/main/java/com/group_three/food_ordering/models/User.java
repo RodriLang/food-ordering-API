@@ -1,10 +1,10 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.enums.RoleType;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
@@ -14,9 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type")
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,20 +51,21 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
-    
-    private LocalDateTime removedAt;
 
-   // @Enumerated(EnumType.STRING)
-   // private RoleType role;
+    @Column
+    private LocalDateTime removedAt;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Employment> employments = new ArrayList<>();
 
+    @Column
+    private Boolean deleted;
+
     @PrePersist
     public void onCreate() {
+        if (deleted == null) deleted = false;
         if (this.id == null) this.id = UUID.randomUUID();
-        //if (this.role == null) this.role = RoleType.ROLE_CLIENT;
     }
 }

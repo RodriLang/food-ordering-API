@@ -6,17 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity(name = "table_sessions")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TableSession {
+
     @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "id", length = 36)
@@ -53,8 +56,12 @@ public class TableSession {
     @Builder.Default
     private List<Participant> participants = new ArrayList<>();
 
+    @Column
+    private Boolean deleted;
+
     @PrePersist
     public void onCreate() {
+        if (deleted == null) deleted = false;
         if (this.id == null) this.id = UUID.randomUUID();
         startTime = LocalDateTime.now();
     }

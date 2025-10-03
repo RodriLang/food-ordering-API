@@ -28,10 +28,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     private static final String CLASS_NAME = "Order Detail";
 
-    /**
-     * Crea un nuevo detalle para una orden.
-     * Actualiza stock del producto correspondiente.
-     */
     @Transactional
     @Override
     public OrderDetailResponseDto create(OrderDetailRequestDto orderDetailRequestDto) {
@@ -45,14 +41,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
                 .orElseThrow(()-> new EntityNotFoundException("Product not found"));
 
         updateProductStock(product, -1);
-
         OrderDetail orderDetail = orderDetailMapper.toEntity(orderDetailRequestDto);
         orderDetail.setProduct(product);
 
         return orderDetailRepository.save(orderDetail);
     }
-
-
 
     @Override
     public List<OrderDetailResponseDto> getAll() {
@@ -64,15 +57,10 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public OrderDetailResponseDto getOrderDetailById(Long orderDetailId) {
-        OrderDetail orderDetail = orderDetailRepository.findByIdAndDeletedFalse(orderDetailId)
-                .orElseThrow(()-> new EntityNotFoundException(CLASS_NAME, orderDetailId.toString()));
+        OrderDetail orderDetail = getOrderDetailEntityById(orderDetailId);
         return orderDetailMapper.toDTO(orderDetail);
     }
 
-    /**
-     * Borrado lógico (soft delete) de un detalle de orden.
-     * Incrementa el stock del producto correspondiente y remueve el detalle de la orden.
-     */
     @Override
     @Transactional
     public void softDelete(Long orderDetailId) {
@@ -85,12 +73,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         orderDetail.setDeleted(true);
 
         orderDetailRepository.save(orderDetail);
-
     }
 
-    /**
-     * Actualiza la cantidad de un detalle de orden, controlando el stock disponible.
-     */
     @Override
     @Transactional
     public void updateQuantity(Long id, Integer newQuantity) {
@@ -110,25 +94,16 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         orderDetailRepository.save(detail);
     }
 
-    /**
-     * Actualiza las instrucciones especiales para un detalle de orden.
-     */
     @Override
     @Transactional
     public OrderDetailResponseDto updateSpecialInstructions(Long id, String instructions) {
-        OrderDetail detail = orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(()-> new EntityNotFoundException(CLASS_NAME, id.toString()));
+        OrderDetail detail = getOrderDetailEntityById(id);
 
         detail.setSpecialInstructions(instructions);
         OrderDetail saved = orderDetailRepository.save(detail);
         return orderDetailMapper.toDTO(saved);
     }
 
-    /**
-     * Método privado para actualizar stock de productos.
-     * @param product producto a modificar
-     * @param difference diferencia positiva o negativa en stock
-     */
     private void updateProductStock(Product product, Integer difference) {
         int newQuantity = product.getStock() + difference;
         if (newQuantity < 0) {
@@ -138,9 +113,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         productRepository.save(product);
     }
 
-    /**
-     * Método privado para obtener la entidad OrderDetail verificando existencia y no eliminado.
-     */
     private OrderDetail getOrderDetailEntityById(Long id) {
         return orderDetailRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(()-> new EntityNotFoundException(CLASS_NAME, id.toString()));

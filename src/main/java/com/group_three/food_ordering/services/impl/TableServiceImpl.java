@@ -40,7 +40,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public List<TableResponseDto> getAll() {
-        return tableRepository.findByFoodVenueId(tenantContext.getCurrentFoodVenue().getId()).stream()
+        return tableRepository.findByFoodVenueIdAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId()).stream()
                 .map(tableMapper::toDTO)
                 .toList();
     }
@@ -53,20 +53,20 @@ public class TableServiceImpl implements TableService {
 
     @Override
     public Table getEntityById(UUID tableId) {
-        return tableRepository.findById(tableId)
+        return tableRepository.findByIdAndDeletedFalse(tableId)
                 .orElseThrow(() -> new EntityNotFoundException("Table", tableId.toString()));
     }
 
     @Override
     public TableResponseDto getByNumber(Integer number) {
-        Table table = tableRepository.findByFoodVenueIdAndNumber(tenantContext.getCurrentFoodVenue().getId(), number)
+        Table table = tableRepository.findByFoodVenueIdAndNumberAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId(), number)
                 .orElseThrow(() -> new EntityNotFoundException("Table not Found with number " + number));
         return tableMapper.toDTO(table);
     }
 
     @Override
     public List<TableResponseDto> getByFilters(TableStatus status, Integer capacity) {
-        return tableRepository.findByFoodVenueIdAndFilters(tenantContext.getCurrentFoodVenue().getId(), status, capacity).stream()
+        return tableRepository.findByFoodVenueIdAndFiltersAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId(), status, capacity).stream()
                 .map(tableMapper::toDTO)
                 .toList();
     }

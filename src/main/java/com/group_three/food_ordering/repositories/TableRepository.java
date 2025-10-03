@@ -14,15 +14,18 @@ import java.util.UUID;
 @Repository
 public interface TableRepository extends JpaRepository<Table, UUID> {
 
-    List<Table> findByFoodVenueId(UUID foodVenueId);
-    Optional<Table> findById(UUID id);
-    Optional<Table> findByFoodVenueIdAndNumber(UUID foodVenueId, Integer number);
+    List<Table> findByFoodVenueIdAndDeletedFalse(UUID foodVenueId);
+
+    Optional<Table> findByIdAndDeletedFalse(UUID id);
+
+    Optional<Table> findByFoodVenueIdAndNumberAndDeletedFalse(UUID foodVenueId, Integer number);
 
     @Query("SELECT t FROM tables t WHERE " +
             "t.foodVenue.id = :foodVenueId AND " +
             "(:status IS NULL OR t.status = :status) AND " +
-            "(:capacity IS NULL OR t.capacity = :capacity)")
-    List<Table> findByFoodVenueIdAndFilters(
+            "(:capacity IS NULL OR t.capacity = :capacity) " +
+            "AND t.deleted = false")
+    List<Table> findByFoodVenueIdAndFiltersAndDeletedFalse(
             @Param("foodVenueId") UUID foodVenueId,
             @Param("status") TableStatus status,
             @Param("capacity") Integer capacity

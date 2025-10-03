@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
@@ -14,11 +15,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity(name = "tables")
+@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Table {
+
     @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "id", length = 36)
@@ -40,8 +43,12 @@ public class Table {
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 
+    @Column
+    private Boolean deleted;
+
     @PrePersist
     public void onCreate() {
+        if (deleted == null) deleted = false;
         if (this.id == null) this.id = UUID.randomUUID();
         if (this.status == null) this.status = TableStatus.AVAILABLE;
     }

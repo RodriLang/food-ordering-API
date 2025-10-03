@@ -15,30 +15,31 @@ import java.util.UUID;
 @Repository
 public interface TableSessionRepository extends JpaRepository<TableSession, UUID> {
 
-    List<TableSession> findByFoodVenueId(UUID foodVenueId);
+    List<TableSession> findByFoodVenueIdAndDeletedFalse(UUID foodVenueId);
 
-    List<TableSession> findByFoodVenueIdAndTableNumber(UUID foodVenueId, Integer tableNumber);
+    List<TableSession> findByFoodVenueIdAndTableNumberAndDeletedFalse(UUID foodVenueId, Integer tableNumber);
 
-    List<TableSession> findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
+    List<TableSession> findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndDeletedFalse(
             UUID foodVenueId, Integer tableNumber, LocalDateTime start, LocalDateTime end);
 
-    List<TableSession> findByFoodVenueIdAndEndTimeIsNull(UUID foodVenueId);
+    List<TableSession> findByFoodVenueIdAndEndTimeIsNullAndDeletedFalse(UUID foodVenueId);
 
-    List<TableSession> findByFoodVenueIdAndSessionHostId(UUID foodVenueId, UUID sessionHost);
+    List<TableSession> findByFoodVenueIdAndSessionHostIdAndDeletedFalse(UUID foodVenueId, UUID sessionHost);
 
     @Query("SELECT ts FROM table_sessions ts " +
             "JOIN ts.participants p " +
             "WHERE p.id = :clientId " +
             "AND ts.endTime IS NOT NULL")
-    List<TableSession> findPastSessionsByParticipantId(UUID foodVenueId, UUID clientId);
+    List<TableSession> findPastSessionsByParticipantIdAndDeletedFalse(UUID foodVenueId, UUID clientId);
 
-    Optional<TableSession> findTopByFoodVenueIdAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
+    Optional<TableSession> findTopByFoodVenueIdAndDeletedFalseAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 
-    Optional<TableSession> findTableSessionByTable_IdAndTableStatus(UUID tableId, TableStatus status);
+    Optional<TableSession> findTableSessionByTable_IdAndTableStatusAndDeletedFalse(UUID tableId, TableStatus status);
 
     @Query("SELECT ts FROM table_sessions ts " +
             "JOIN ts.participants p " +
             "WHERE p.user.email = :userEmail " +
-            "AND ts.endTime IS NULL")
-    Optional<TableSession> findActiveSessionByUserEmail(@Param("userEmail") String userEmail);
+            "AND ts.endTime IS NULL " +
+            "AND ts.deleted = false")
+    Optional<TableSession> findActiveSessionByUserEmailAndDeletedFalse(@Param("userEmail") String userEmail);
 }

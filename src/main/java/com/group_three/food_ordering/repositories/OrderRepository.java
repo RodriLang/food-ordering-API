@@ -17,39 +17,40 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
 
-    Optional<Order> findByFoodVenue_IdAndOrderNumberAndCreationDateBetween(
+    Optional<Order> findByFoodVenue_IdAndOrderNumberAndCreationDateBetweenAndDeletedFalse(
             UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
 
     Optional<Order> findByIdAndFoodVenue_Id(UUID id, UUID foodVenueId);
 
-    Page<Order> findByFoodVenue_IdAndCreationDateBetweenAndStatus(
+    Page<Order> findByFoodVenue_IdAndCreationDateBetweenAndStatusAndDeletedFalse(
             UUID foodVenueId, LocalDateTime start, LocalDateTime end, OrderStatus status, Pageable pageable);
 
-    Page<Order> findByFoodVenue_IdAndCreationDateBetween(
+    Page<Order> findByFoodVenue_IdAndCreationDateBetweenAndDeletedFalse(
             UUID foodVenueId, LocalDateTime start, LocalDateTime end, Pageable pageable
     );
 
-    Page<Order> findByFoodVenue_Id(UUID venueId, Pageable pageable);
+    Page<Order> findByFoodVenue_IdAndDeletedFalse(UUID venueId, Pageable pageable);
 
-    Page<Order> findByFoodVenue_IdAndStatus(UUID venueId, OrderStatus status, Pageable pageable);
+    Page<Order> findByFoodVenue_IdAndStatusAndDeletedFalse(UUID venueId, OrderStatus status, Pageable pageable);
 
-    Page<Order> findOrderByTableSession_Id(UUID tableSessionId, Pageable pageable);
+    Page<Order> findOrderByTableSession_IdAndDeletedFalse(UUID tableSessionId, Pageable pageable);
 
-    Page<Order> findOrderByTableSession_IdAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable);
+    Page<Order> findOrderByTableSession_IdAndStatusAndDeletedFalse(UUID tableSessionId, OrderStatus status, Pageable pageable);
 
-    Page<Order> findOrdersByPayment_Status(PaymentStatus status, Pageable pageable);
+    Page<Order> findOrdersByPayment_StatusAndDeletedFalse(PaymentStatus status, Pageable pageable);
 
-    Page<Order> findOrdersByParticipant_Id(UUID participantId, Pageable pageable);
+    Page<Order> findOrdersByParticipant_IdAndDeletedFalse(UUID participantId, Pageable pageable);
 
-    Page<Order> findOrdersByParticipant_IdAndStatus(UUID participantId, OrderStatus status, Pageable pageable);
+    Page<Order> findOrdersByParticipant_IdAndStatusAndDeletedFalse(UUID participantId, OrderStatus status, Pageable pageable);
 
-    Page<Order> findOrdersByParticipant_IdAndTableSession_IdAndStatus(UUID participantId, UUID tableSessionId , OrderStatus status, Pageable pageable);
+    Page<Order> findOrdersByParticipant_IdAndTableSession_IdAndStatusAndDeletedFalse(UUID participantId, UUID tableSessionId, OrderStatus status, Pageable pageable);
 
     @Query("SELECT COUNT(o) " +
             "FROM Order o " +
             "WHERE o.foodVenue.id = :venueId " +
             "AND o.creationDate >= :start " +
-            "AND o.creationDate < :end")
+            "AND o.creationDate < :end " +
+            "AND o.deleted = false")
     Long countOrdersToday(
             @Param("venueId") UUID venueId,
             @Param("start") LocalDateTime start,
