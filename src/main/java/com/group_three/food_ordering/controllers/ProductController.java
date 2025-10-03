@@ -1,9 +1,8 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.create.ProductCreateDto;
+import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
-import com.group_three.food_ordering.dto.update.ProductUpdateDto;
 import com.group_three.food_ordering.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,8 +27,8 @@ public class ProductController {
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
     @PostMapping
     public ResponseEntity<ProductResponseDto> createProduct(
-            @RequestBody @Valid ProductCreateDto productCreateDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.create(productCreateDto));
+            @RequestBody @Valid ProductRequestDto productRequestDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.create(productRequestDto));
     }
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Listar todos los productos")
@@ -66,21 +65,12 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Reemplazar un producto")
-    @ApiResponse(responseCode = "200", description = "Producto reemplazado correctamente")
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> replaceProduct(
-            @PathVariable Long id, @Valid @RequestBody ProductCreateDto productCreateDto) {
-        return ResponseEntity.ok(productService.replace(id, productCreateDto));
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar parcialmente un producto")
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
     @PatchMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable Long id, @Valid @RequestBody ProductUpdateDto productUpdateDto) {
-        return ResponseEntity.ok(productService.update(id, productUpdateDto));
+            @PathVariable Long id, @Valid @RequestBody ProductRequestDto productRequestDto) {
+        return ResponseEntity.ok(productService.update(id, productRequestDto));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")

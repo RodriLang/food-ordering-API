@@ -41,6 +41,9 @@ public class Product {
     @Column
     private Integer stock;
 
+    @Column
+    private Boolean deleted;
+
     @ManyToMany
     @JoinTable(
             name = "products_tags",
@@ -60,6 +63,7 @@ public class Product {
         if (this.price == null){ this.price = BigDecimal.ZERO;
         }
         if (this.stock == null){ this.stock = 0;}
+        if(this.deleted == null){ this.deleted = false;}
     }
 
 }

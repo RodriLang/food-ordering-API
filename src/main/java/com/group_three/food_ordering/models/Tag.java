@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Entity(name= "tags")
 @Data
 @Builder
@@ -21,5 +19,15 @@ public class Tag {
 
     @Column
     private String label;
+
+    @Column
+    private Boolean deleted;
+
+    @PrePersist
+    public void onCreate() {
+        if (deleted == null) {
+            deleted = false;
+        }
+    }
 
 }

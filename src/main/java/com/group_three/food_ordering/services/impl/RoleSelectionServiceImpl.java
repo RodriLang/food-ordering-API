@@ -46,6 +46,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     public LoginResponse selectClient() {
         User authenticatedUser = getAuthenticatedUser();
         log.debug("[RoleSelection] Employment selected ROLE_CLIENT");
+
         return generateLoginResponse(authenticatedUser, null, RoleType.ROLE_CLIENT.name());
     }
 

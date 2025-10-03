@@ -3,6 +3,7 @@ package com.group_three.food_ordering.services.impl;
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
@@ -184,6 +185,10 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .role(participant.getRole().name())
                 .build());
 
+        AuthResponse authResponse = AuthResponse.builder()
+                .accessToken(token)
+                .build();
+
         ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
 
         return InitSessionResponseDto.builder()
@@ -194,7 +199,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                         .map(participantMapper::toResponseDto)
                         .toList())
                 .hostClient(participantDto)
-                .accessToken(token)
+                .authResponse(authResponse)
                 .build();
     }
 

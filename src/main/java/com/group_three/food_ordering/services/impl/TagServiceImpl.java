@@ -2,6 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dto.create.TagCreateDto;
 import com.group_three.food_ordering.dto.response.TagResponseDto;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.TagMapper;
 import com.group_three.food_ordering.models.Tag;
 import com.group_three.food_ordering.repositories.TagRepository;
@@ -10,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +35,13 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagResponseDto getById(Long id) {
-       Tag tag = tagRepository.findById(id).orElseThrow(NoSuchElementException::new);
-       return tagMapper.toDTO(tag);
+        Tag tag = getEntityById(id);
+        return tagMapper.toDTO(tag);
+    }
+
+    @Override
+    public Tag getEntityById(Long id) {
+        return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Tag"));
     }
 
     @Override
@@ -46,7 +51,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagResponseDto update(Long id, TagCreateDto tagCreateDto) {
-        Tag tag = tagRepository.findById(id).orElseThrow(NoSuchElementException::new);
+        Tag tag = getEntityById(id);
         tag.setLabel(tagCreateDto.getLabel());
         return tagMapper.toDTO(tagRepository.save(tag));
     }

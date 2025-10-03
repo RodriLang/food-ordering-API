@@ -2,6 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dto.create.CategoryCreateDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
+import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.CategoryMapper;
 import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.repositories.CategoryRepository;
@@ -10,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponseDto create(CategoryCreateDto categoryCreateDto) {
         Category category = categoryMapper.toEntity(categoryCreateDto);
         if (categoryCreateDto.getParentCategoryId() != null) {
-            Category parent = categoryRepository.findById(categoryCreateDto.getParentCategoryId())
-                    .orElseThrow(() -> new NoSuchElementException("Parent category not found"));
+            Category parent = getEntityById(categoryCreateDto.getParentCategoryId());
             category.setParentCategory(parent);
         }
         return categoryMapper.toDto(categoryRepository.save(category));
@@ -34,15 +33,21 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponseDto update(Long id, CategoryCreateDto categoryCreateDto) {
-        Category category = categoryRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        Category category = getEntityById(categoryCreateDto.getParentCategoryId());
         category.setName(categoryCreateDto.getName());
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
     public CategoryResponseDto getById(Long id) {
-        Category category = categoryRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        Category category = getEntityById(id);
         return categoryMapper.toDto(category);
+    }
+
+    @Override
+    public Category getEntityById(Long id) {
+        return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category"));
+
     }
 
     @Override
@@ -52,7 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        List<Category> roots = categoryRepository.findByParentCategoryIsNull();
+        List<Category> roots = categoryRepository.findByParentCategoryIsNullAndDeletedFalse();
 
         return roots.stream()
                 .map(categoryMapper::toDto)
@@ -61,7 +66,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id) {
-       List<Category> children = categoryRepository.findByParentCategoryId(id);
+       List<Category> children = categoryRepository.findByParentCategoryIdAndDeletedFalse(id);
        return children.stream()
                .map(categoryMapper::toDto)
                .toList();

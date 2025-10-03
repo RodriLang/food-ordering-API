@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity (name = "categories")
+@Entity(name = "categories")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,4 +30,13 @@ public class Category {
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
     private List<Category> childrenCategories = new ArrayList<>();
 
+    @Column
+    private Boolean deleted;
+
+    @PrePersist
+    public void onCreate() {
+        if (deleted == null) {
+            deleted = false;
+        }
+    }
 }

@@ -47,7 +47,7 @@ public class FoodVenueRequestDto {
 
     private List<EmploymentRequestDto> employees;
 
-    private List<ProductCreateDto> products;
+    private List<ProductRequestDto> products;
 
     private List<TableCreateDto> tables;
 

@@ -69,7 +69,7 @@ public class MenuServiceImpl implements MenuService {
         List<FlatCategoryMenuResponseDto> categories = new ArrayList<>();
 
         for (Category category : leafCategories) {
-            List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategory(
+            List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategoryAndDeletedFalse(
                     foodVenue.getId(), true, category);
 
             List<ItemMenuResponseDto> productsDto = products.stream()
@@ -127,7 +127,7 @@ public class MenuServiceImpl implements MenuService {
      */
     private HierarchicalCategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
         // Productos de esta categoría
-        List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategory(
+        List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategoryAndDeletedFalse(
                 foodVenueId, true, category);
 
         List<ItemMenuResponseDto> productsDto = products.stream()

@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,6 @@ public class InitSessionResponseDto {
 
     private List<ParticipantResponseDto> participants;
 
-    private String accessToken;
+    private AuthResponse authResponse;
 
 }
