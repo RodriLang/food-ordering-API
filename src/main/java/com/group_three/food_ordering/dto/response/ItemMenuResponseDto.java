@@ -21,5 +21,6 @@ public class ItemMenuResponseDto {
     private String description;
     private String image;
     private BigDecimal price;
+    private String category;
     private List<TagResponseDto> tags;
 }
