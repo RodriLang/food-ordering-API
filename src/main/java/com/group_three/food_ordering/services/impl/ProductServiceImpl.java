@@ -2,6 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
+import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
@@ -80,13 +81,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto getByNameAndContext(String name) {
+    public ItemMenuResponseDto getByNameAndContext(String name) {
         UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getId();
         Product product = productRepository.findByNameAndFoodVenue_IdAndDeletedFalse(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
 
-        return productMapper.toDto(product);
+        return productMapper.toItemMenuDto(product);
     }
 
     @Override

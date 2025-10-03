@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
+import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.models.Product;
@@ -17,7 +18,7 @@ public interface ProductService {
 
     Product getEntityById(Long id);
 
-    ProductResponseDto getByNameAndContext(String name);
+    ItemMenuResponseDto getByNameAndContext(String name);
 
     void delete(Long id);
 

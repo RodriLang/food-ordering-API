@@ -2,6 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
+import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,15 +53,15 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
 
-    @PreAuthorize("hasRole('ROOT')")
-    @GetMapping("/fid-by-id/{id}")
+    @PreAuthorize("hasAnyRole('ROOT', 'ADMIN', 'MANAGER')")
+    @GetMapping("/find-by-id/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.getById(id));
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/find-by-name/{productName}")
-    public ResponseEntity<ProductResponseDto> getProductByNameAndContext(@PathVariable String productName) {
+    public ResponseEntity<ItemMenuResponseDto> getProductByNameAndContext(@PathVariable String productName) {
         return ResponseEntity.ok(productService.getByNameAndContext(productName));
     }
 
