@@ -13,8 +13,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CustomUserPrincipal implements UserDetails {
 
+    private final UUID userId;
     private final String email;
-    private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
     private final RoleType role;
     private final UUID participantId;
@@ -37,4 +37,9 @@ public class CustomUserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
 }

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 @Builder
 public record SessionInfo(
+        UUID userId,
         String subject,
         UUID foodVenueId,
         String role,

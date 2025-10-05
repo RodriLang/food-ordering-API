@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface AuthService {
 
-    AuditorUser getCurrentUser();
+    AuditorUser getAuditorUser();
 
     LoginResponse login(LoginRequest loginRequest);
 

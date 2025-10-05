@@ -60,6 +60,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     private LoginResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
         String accessToken = jwtService.generateAccessToken(SessionInfo.builder()
+                .userId(user.getPublicId())
                 .subject(user.getEmail())
                 .foodVenueId(foodVenueId)
                 .role(role)

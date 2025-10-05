@@ -51,19 +51,23 @@ public class AuthServiceImpl implements AuthService {
     private static final String AUDITOR_USER_ENTITY_NAME = "Auditor User";
 
     @Override
-    public AuditorUser getCurrentUser() {
+    public AuditorUser getAuditorUser() {
         log.debug("[AuthService] Getting current auditor user");
-        User authUser = getAuthUser().orElseThrow(() -> new EntityNotFoundException(AUDITOR_USER_ENTITY_NAME));
-        log.debug("[AuthService] Current auditor user email={}", authUser.getEmail());
-        String email = authUser.getEmail();
-        UUID userId = authUser.getPublicId();
-        log.debug("[AuthService] Current auditor user id={}", userId);
-        return new AuditorUser(userId,email);
+        return getCurrentPrincipal()
+                .map(principal -> {
+                    UUID userId = principal.getUserId();
+                    String email = principal.getEmail();
+                    log.debug("[AuthService] Current auditor user id={}, email={}", userId, email);
+                    return new AuditorUser(userId, email);
+                })
+                .orElseThrow(() -> new EntityNotFoundException(AUDITOR_USER_ENTITY_NAME));
     }
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
+        log.debug("[AuthService] Login request received");
         User loggedUser = authenticateUser(loginRequest);
+        log.debug("[AuthService] Logged in user={}", loggedUser.getEmail());
         SessionInfo sessionInfo = resolveSessionInfo(loggedUser);
         String accessToken = jwtService.generateAccessToken(sessionInfo);
         String refreshToken = refreshTokenService.generateRefreshToken(loggedUser.getEmail());
@@ -150,15 +154,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User authenticateUser(LoginRequest loginRequest) {
-        User loggedUser = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
-
-        if (!passwordEncoder.matches(loginRequest.getPassword(), loggedUser.getPassword())) {
+        log.debug("[AuthService] Authenticating user");
+        Optional<User> loggedUser = userRepository.findByEmail(loginRequest.getEmail());
+        log.debug("[AuthService] Logged in user=");
+        if (loggedUser.isEmpty()) {
+            log.warn("[AuthController] User not found for email={}", loginRequest.getEmail());
+            throw new UsernameNotFoundException("Usuario o contraseña incorrectos");
+        }
+        User user = loggedUser.get();
+        log.debug("[AuthService] Authenticating user={}", user.getEmail());
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             log.warn("[AuthController] User authentication failed for email={}", loginRequest.getEmail());
             throw new BadCredentialsException("Usuario o contraseña incorrectos");
         }
-        log.debug("[AuthService] Authenticated user: {}", loggedUser.getEmail());
-        return loggedUser;
+        log.debug("[AuthService] Authenticated user: {}", user.getEmail());
+        return user;
     }
 
     private SessionInfo resolveSessionInfo(User loggedUser) {
@@ -169,7 +179,7 @@ public class AuthServiceImpl implements AuthService {
                 tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(loggedUser.getEmail());
         if (previousActiveSession.isPresent()) {
             log.debug("[AuthService] Found active session={} for user={}",
-                    previousActiveSession.get().getId(), loggedUser.getEmail());
+                    previousActiveSession.get().getPublicId(), loggedUser.getEmail());
             return createSessionInfoFromActiveSession(previousActiveSession.get(), loggedUser);
         }
 
@@ -227,7 +237,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
+        log.debug("[AuthService] Creating session info from active TableSession id={} for user={}",
+                tableSession.getPublicId(), loggedUser.getPublicId());
+
         SessionInfo activeSession = SessionInfo.builder()
+                .userId(loggedUser.getPublicId())
                 .subject(loggedUser.getEmail())
                 .foodVenueId(tableSession.getFoodVenue().getPublicId())
                 .participantId(findParticipantIdForUser(tableSession, loggedUser))
@@ -255,6 +269,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Crear nueva sesión info con datos actualizados
         SessionInfo promotedSession = SessionInfo.builder()
+                .userId(loggedUser.getPublicId())
                 .subject(loggedUser.getEmail())
                 .foodVenueId(guestSession.foodVenueId())
                 .participantId(guestSession.participantId())
@@ -266,7 +281,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private SessionInfo createSessionInfoForLoggedUser(User loggedUser) {
+        log.debug("[AuthService] Creating clean session info for logged user={} id={}",
+                loggedUser.getEmail(), loggedUser.getPublicId());
+
         return SessionInfo.builder()
+                .userId(loggedUser.getPublicId())
                 .foodVenueId(extractFoodVenueId())
                 .participantId(getCurrentParticipant()
                         .map(Participant::getPublicId)

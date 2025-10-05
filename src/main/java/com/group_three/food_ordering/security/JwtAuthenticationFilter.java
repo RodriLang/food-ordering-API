@@ -2,6 +2,7 @@ package com.group_three.food_ordering.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.enums.RoleType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -70,39 +71,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 sendUnauthorizedError(response, "INVALID_TOKEN", "JWT token is invalid");
                 return;
             }
-
-            log.debug("[JwtAuthenticationFilter] Extracting claims from token");
-            String email = jwtService.getUsernameFromToken(token);
-            String role = jwtService.getClaim(token, claims -> claims.get("role", String.class));
-            String participantIdStr = jwtService.getClaim(token, claims -> claims.get("participantId", String.class));
-            String tableSessionIdStr = jwtService.getClaim(token, claims -> claims.get("tableSessionId", String.class));
-            String foodVenueIdStr = jwtService.getClaim(token, claims -> claims.get("foodVenueId", String.class));
-
-            log.info("[JwtAuthenticationFilter] User: {}, Role: {}, FoodVenueId: {}",
-                    email, role, foodVenueIdStr != null ? foodVenueIdStr : "NULL");
-
-            UUID participantId = participantIdStr != null ? UUID.fromString(participantIdStr) : null;
-            UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
-            UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
+            SessionInfo sessionInfo = jwtService.getSessionInfoFromToken(token);
 
             List<org.springframework.security.core.GrantedAuthority> authorities =
-                    List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+                    List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority(sessionInfo.role()));
 
             CustomUserPrincipal principal = new CustomUserPrincipal(
-                    email,
-                    null,
+
+                    sessionInfo.userId(),
+                    sessionInfo.subject(),
                     authorities,
-                    RoleType.valueOf(role),
-                    participantId,
-                    tableSessionId,
-                    foodVenueId
+                    RoleType.valueOf(sessionInfo.role()),
+                    sessionInfo.participantId(),
+                    sessionInfo.tableSessionId(),
+                    sessionInfo.foodVenueId()
             );
 
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(principal, null, authorities);
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.info("[JwtAuthenticationFilter] Authentication set successfully for user: {}", email);
+            log.info("[JwtAuthenticationFilter] Authentication set successfully for user: {}", sessionInfo.subject());
 
         } catch (Exception e) {
             log.error("[JwtAuthenticationFilter] Token processing failed: {}", e.getMessage(), e);
