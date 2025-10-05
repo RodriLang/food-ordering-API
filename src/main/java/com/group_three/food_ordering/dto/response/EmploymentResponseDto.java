@@ -12,12 +12,12 @@ import java.util.UUID;
 
 public class EmploymentResponseDto {
 
-    private UUID id;
+    private UUID publicId;
 
     private UserResponseDto user;
 
     private String role;
 
-    private FoodVenuePublicResponseDto foodVenue;
+    private String foodVenue;
 }
 

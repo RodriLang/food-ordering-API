@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DataInitializer implements CommandLineRunner {
+public class DataInitializer { //implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
@@ -27,10 +27,9 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductRepository productRepository;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
-    private final TableRepository tableRepository;
+    private final DiningTableRepository diningTableRepository;
     private final TableSessionRepository tableSessionRepository;
     private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmploymentRepository employmentRepository;
@@ -39,8 +38,8 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${password-for-all-users}")
     private String password;
 
-    @Override
-    public void run(String... args) throws Exception {
+   // @Override
+    public void run(String... args) {
         // Categories
 
         if (categoryRepository.count() == 0) {
@@ -108,31 +107,82 @@ public class DataInitializer implements CommandLineRunner {
             tagRepository.saveAll(List.of(spicy, vegan, glutenFree, fresh));
         }
 
+        VenueStyle style1 = VenueStyle.builder()
+                .logoUrl("https://example.com/burger.jpg")
+                .bannerUrl("https://example.com/banner1.png")
+                .primaryColor("#FF5733")
+                .secondaryColor("#C70039")
+                .accentColor("#900C3F")
+                .backgroundColor("#F0E68C")
+                .textColor("#000000")
+                .colorsComplete(true)
+                .slogan("¡Comida rápida, feliz vida!")
+                .description("Un lugar ideal para disfrutar de la mejor comida rápida de la ciudad.")
+                .publicMenu(true)
+                .instagramUrl("https://instagram.com/fv1")
+                .facebookUrl("https://facebook.com/fv1")
+                .whatsappNumber("+5491123456789")
+                .build();
+
+        VenueStyle style2 = VenueStyle.builder()
+                .logoUrl("https://example.com/pasta.jpg")
+                .bannerUrl("https://example.com/banner2.png")
+                .primaryColor("#1E90FF")
+                .secondaryColor("#00BFFF")
+                .accentColor("#87CEFA")
+                .backgroundColor("#F5F5F5")
+                .textColor("#333333")
+                .colorsComplete(true)
+                .slogan("Sabores que te hacen volver")
+                .description("Comida gourmet para los que buscan experiencias únicas.")
+                .publicMenu(true)
+                .instagramUrl("https://instagram.com/fv2")
+                .facebookUrl("https://facebook.com/fv2")
+                .whatsappNumber("+5491123456790")
+                .build();
+
+        VenueStyle style3 = VenueStyle.builder()
+                .logoUrl("https://example.com/taco.jpg")
+                .bannerUrl("https://example.com/banner3.png")
+                .primaryColor(null)
+                .secondaryColor(null)
+                .accentColor(null)
+                .backgroundColor(null)
+                .textColor(null)
+                .colorsComplete(false) // aquí no mostramos colores
+                .slogan("La tradición en cada plato")
+                .description("Restaurante familiar con recetas tradicionales.")
+                .publicMenu(false)
+                .instagramUrl("https://instagram.com/fv3")
+                .facebookUrl("https://facebook.com/fv3")
+                .whatsappNumber("+5491123456791")
+                .build();
+
         // FoodVenues
         if (foodVenueRepository.count() == 0) {
             FoodVenue v1 = FoodVenue.builder()
-                    .id(UUID.fromString("46b63071-f6fb-48bf-a2e0-4f7144e5a09b"))
+                    .publicId(UUID.fromString("46b63071-f6fb-48bf-a2e0-4f7144e5a09b"))
                     .name("Burger House")
                     .email("contact@burgerhouse.com")
                     .phone("1234567891")
-                    .imageUrl("https://example.com/burger.jpg")
                     .address(new Address("Main St", "123", "CityA", "ProvinceA", "CountryA", "1000"))
+                    .venueStyle(style1)
                     .build();
             FoodVenue v2 = FoodVenue.builder()
-                    .id(UUID.fromString("a9ff20fc-606b-49cd-a19f-8e434eb0af44"))
+                    .publicId(UUID.fromString("a9ff20fc-606b-49cd-a19f-8e434eb0af44"))
                     .name("Pasta Palace")
                     .email("hello@pastapalace.com")
                     .phone("0987654321")
-                    .imageUrl("https://example.com/pasta.jpg")
                     .address(new Address("Second St", "456", "CityB", "ProvinceB", "CountryB", "2000"))
+                    .venueStyle(style2)
                     .build();
             FoodVenue v3 = FoodVenue.builder()
-                    .id(UUID.fromString("df365b85-dc66-4437-96fc-da7e8f0e5a4a"))
+                    .publicId(UUID.fromString("df365b85-dc66-4437-96fc-da7e8f0e5a4a"))
                     .name("Taco Town")
                     .email("info@tacotown.com")
                     .phone("5555555555")
-                    .imageUrl("https://example.com/taco.jpg")
                     .address(new Address("Third St", "789", "CityC", "ProvinceC", "CountryC", "3000"))
+                    .venueStyle(style3)
                     .build();
             List<FoodVenue> foodVenues = List.of(v1, v2, v3);
             foodVenueRepository.saveAll(foodVenues);
@@ -141,7 +191,7 @@ public class DataInitializer implements CommandLineRunner {
 
             // Products
             List<Category> cats = categoryRepository.findAll();
-                List<Tag> tags = tagRepository.findAll();
+            List<Tag> tags = tagRepository.findAll();
 
 
             Category burgers = cats.stream().filter(c -> c.getName().equals("Burgers")).findFirst().orElse(null);
@@ -352,104 +402,111 @@ public class DataInitializer implements CommandLineRunner {
                     .tags(List.of(tags.get(1), tags.get(2))) // Vegan + Spicy
                     .build();
 
-            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15 , p16, p17, p18));
+            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18));
 
 
             // Root
             User rootUser = User.builder()
+                    .publicId(UUID.randomUUID())
                     .name("Root")
                     .lastName("System")
                     .email("root@test.com")
                     .password(passwordEncoder.encode(password))
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .phone("1111111111")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Root St", "1", "Root City", "Root Province", "Root Country", "0000"))
                     .build();
 
             // Admin/Super Admin
             User adminUser = User.builder()
+                    .publicId(UUID.randomUUID())
                     .name("Admin")
                     .lastName("System")
                     .email("admin@test.com")
                     .password(passwordEncoder.encode(password))
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .phone("1111111111")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Admin St", "1", "Admin City", "Admin Province", "Admin Country", "0000"))
                     .build();
 
             Employment adminEmployee = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v1)
                     .user(adminUser)
                     .role(RoleType.ROLE_ADMIN)
                     .build();
             Employment adminEmployee2 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v2)
                     .user(adminUser)
                     .role(RoleType.ROLE_ADMIN)
                     .build();
             Employment adminEmployee3 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v3)
                     .user(adminUser)
                     .role(RoleType.ROLE_MANAGER)
                     .build();
             Employment rootV1 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v1)
                     .user(rootUser)
                     .role(RoleType.ROLE_ROOT)
                     .build();
             Employment rootV2 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v3)
                     .user(rootUser)
                     .role(RoleType.ROLE_ROOT)
                     .build();
             Employment rootV3 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v2)
                     .user(rootUser)
                     .role(RoleType.ROLE_ROOT)
                     .build();
 
             User u1 = User.builder()
+                    .publicId(UUID.randomUUID())
                     .email("user1@example.com")
                     .name("Leonardo")
                     .lastName("Juarez")
                     .birthDate(LocalDate.of(2000, 1, 1))
-                    .createdAt(LocalDateTime.now())
                     .password(passwordEncoder.encode(password))
                     .phone("1234567890")
                     .build();
             User u2 = User.builder()
+                    .publicId(UUID.randomUUID())
                     .email("cliente@cliente.com")
                     .name("David")
                     .lastName("Fernandez")
                     .birthDate(LocalDate.of(2000, 1, 1))
-                    .createdAt(LocalDateTime.now())
                     .password(passwordEncoder.encode(password))
                     .phone("1234")
                     .build();
             User u3 = User.builder()
+                    .publicId(UUID.randomUUID())
                     .email("user3@example.com")
                     .name("Diego")
                     .lastName("Alonso")
                     .birthDate(LocalDate.of(2000, 1, 1))
-                    .createdAt(LocalDateTime.now())
                     .password(passwordEncoder.encode(password))
                     .phone("1234567890")
                     .build();
 
 
             User managerUser = User.builder()
+                    .publicId(UUID.randomUUID())
                     .name("Manolo")
                     .lastName("Lamas")
                     .email("manager@test.com")
                     .password(passwordEncoder.encode(password))
                     .birthDate(LocalDate.of(1985, 5, 15))
                     .phone("2222222222")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Manager St", "2", "Restaurant City", "Restaurant Province", "Restaurant Country", "1111"))
                     .build();
             Employment employeeManager = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v1)
                     .user(managerUser)
                     .role(RoleType.ROLE_MANAGER)
@@ -457,17 +514,18 @@ public class DataInitializer implements CommandLineRunner {
 
             // Employee
             User employeeUser = User.builder()
+                    .publicId(UUID.randomUUID())
                     .email("employee@test.com")
                     .password(passwordEncoder.encode(password))
                     .name("Diego")
                     .lastName("Torres")
                     .birthDate(LocalDate.of(1995, 8, 20))
                     .phone("3333333333")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Employee St", "3", "Work City", "Work Province", "Work Country", "2222"))
                     .build();
 
             Employment employee1 = Employment.builder()
+                    .publicId(UUID.randomUUID())
                     .foodVenue(v1)
                     .user(employeeUser)
                     .role(RoleType.ROLE_STAFF)
@@ -475,16 +533,17 @@ public class DataInitializer implements CommandLineRunner {
 
             // Client
             User clientUser = User.builder()
+                    .publicId(UUID.randomUUID())
                     .name("Client")
                     .lastName("Customer")
                     .email("client@test.com")
                     .password(passwordEncoder.encode(password))
                     .birthDate(LocalDate.of(2000, 12, 10))
                     .phone("4444444444")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Client St", "4", "Customer City", "Customer Province", "Customer Country", "3333"))
                     .build();
             Participant participant = Participant.builder()
+                    .publicId(UUID.randomUUID())
                     .user(clientUser)
                     .nickname(clientUser.getName())
                     .role(RoleType.ROLE_CLIENT)
@@ -493,20 +552,20 @@ public class DataInitializer implements CommandLineRunner {
 
             // Generic user
             User genericUser = User.builder()
-                    .id(UUID.fromString("00000000-0000-4437-96fc-da7e8f0e5a4a"))
+                    .publicId(UUID.randomUUID())
+                    .publicId(UUID.fromString("00000000-0000-4437-96fc-da7e8f0e5a4a"))
                     .name("Guest")
                     .lastName("User")
                     .email("guest@guest.com")
                     .password(passwordEncoder.encode(password))
                     .birthDate(LocalDate.of(1992, 6, 15))
                     .phone("0000000000")
-                    .createdAt(LocalDateTime.now())
                     .address(new Address("Guest", "0", "Guest City", "Guest Province", "Guest Country", "0000"))
                     .build();
 
 
             Participant genericParticipant = Participant.builder()
-                    .id(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
+                    .publicId(UUID.fromString("11111111-0000-4437-96fc-da7e8f0e5a4a"))
                     .nickname("invitado")
                     .role(RoleType.ROLE_GUEST)
                     .build();
@@ -525,13 +584,16 @@ public class DataInitializer implements CommandLineRunner {
 
             // Participants
             Participant c1 = Participant.builder()
+                    .publicId(UUID.randomUUID())
                     .nickname(u1.getName())
                     .user(u1)
                     .build();
             Participant c2 = Participant.builder()
+                    .publicId(UUID.randomUUID())
                     .nickname("Frank")
                     .build();
             Participant c3 = Participant.builder()
+                    .publicId(UUID.randomUUID())
                     .nickname(u2.getName())
                     .user(u2)
                     .build();
@@ -539,90 +601,62 @@ public class DataInitializer implements CommandLineRunner {
 
 
             // Tables
-            Table t1 = Table.builder()
-                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8"))
+            DiningTable t1 = DiningTable.builder()
+                    .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2ea42b8"))
                     .number(1)
                     .capacity(4)
-                    .status(TableStatus.AVAILABLE)
+                    .status(DiningTableStatus.AVAILABLE)
                     .foodVenue(v1).build();
-            Table t2 = Table.builder()
-                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e14098"))
+            DiningTable t2 = DiningTable.builder()
+                    .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e14098"))
                     .number(2)
                     .capacity(2)
-                    .status(TableStatus.COMPLETE)
+                    .status(DiningTableStatus.COMPLETE)
                     .foodVenue(v2)
                     .build();
-            Table t3 = Table.builder()
-                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556"))
+            DiningTable t3 = DiningTable.builder()
+                    .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556"))
                     .number(3)
                     .capacity(6)
-                    .status(TableStatus.OCCUPIED)
+                    .status(DiningTableStatus.OCCUPIED)
                     .foodVenue(v3).build();
-            Table t4 = Table.builder()
-                    .id(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84533"))
+            DiningTable t4 = DiningTable.builder()
+                    .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84533"))
                     .number(3)
                     .capacity(6)
-                    .status(TableStatus.OUT_OF_SERVICE)
+                    .status(DiningTableStatus.OUT_OF_SERVICE)
                     .foodVenue(v3).build();
-            List<Table> tables = List.of(t1, t2, t3, t4);
-            tableRepository.saveAll(tables);
+            List<DiningTable> diningTables = List.of(t1, t2, t3, t4);
+            diningTableRepository.saveAll(diningTables);
 
             log.info("[DataInitializer] =========================TABLES==========================");
-            tables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getId(), t.getStatus()));
+            diningTables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getId(), t.getStatus()));
 
 
             // TableSessions
             TableSession ts1 = TableSession.builder()
-                    .table(t3)
+                    .publicId(UUID.randomUUID())
+                    .diningTable(t3)
                     .foodVenue(v3)
                     .sessionHost(c1)
                     .startTime(LocalDateTime.now())
                     .build();
             TableSession ts2 = TableSession.builder()
-                    .table(t2)
+                    .publicId(UUID.randomUUID())
+                    .diningTable(t2)
                     .foodVenue(v2)
                     .sessionHost(c2)
                     .startTime(LocalDateTime.now())
                     .build();
             TableSession ts3 = TableSession.builder()
-                    .table(t3)
+                    .publicId(UUID.randomUUID())
+                    .diningTable(t3)
                     .foodVenue(v3)
                     .sessionHost(c3)
                     .startTime(LocalDateTime.now())
                     .build();
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
 
-
-            // Orders and OrderDetails + Payments
-            Order o1 = Order.builder()
-                    .id(UUID.fromString("00000000-0000-0000-0000-000123000000"))
-                    .participant(c1)
-                    .orderNumber(1)
-                    .foodVenue(v1)
-                    .tableSession(ts2)
-                    .specialRequirements("Estamos festejando un cumpleaños, pueden traer una velita?")
-                    .status(OrderStatus.PENDING)
-                    .totalPrice(BigDecimal.ZERO)
-                    .build();
-            Order o2 = Order.builder()
-                    .id(UUID.fromString("00000000-0000-0000-0000-000124000000"))
-                    .participant(c2)
-                    .orderNumber(2)
-                    .foodVenue(v1)
-                    .tableSession(ts2)
-                    .status(OrderStatus.PENDING)
-                    .totalPrice(BigDecimal.ZERO)
-                    .build();
-            Order o3 = Order.builder()
-                    .id(UUID.fromString("00000000-0000-0000-0000-000125000000"))
-                    .participant(c3)
-                    .orderNumber(456)
-                    .foodVenue(v3)
-                    .tableSession(ts3)
-                    .status(OrderStatus.PENDING)
-                    .totalPrice(BigDecimal.ZERO)
-                    .build();
-            orderRepository.saveAll(List.of(o1, o2, o3));
 
             OrderDetail od1 = OrderDetail.builder()
                     .product(p1)
@@ -639,11 +673,42 @@ public class DataInitializer implements CommandLineRunner {
                     .quantity(3)
                     .price(p3.getPrice())
                     .build();
-            orderDetailRepository.saveAll(List.of(od1, od2, od3));
+
+            // Orders and OrderDetails + Payments
+            Order o1 = Order.builder()
+                    .publicId(UUID.fromString("00000000-0000-0000-0000-000123000000"))
+                    .participant(c1)
+                    .orderNumber(1)
+                    .foodVenue(v1)
+                    .tableSession(ts2)
+                    .specialRequirements("Estamos festejando un cumpleaños, pueden traer una velita?")
+                    .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
+                    .build();
+            Order o2 = Order.builder()
+                    .publicId(UUID.fromString("00000000-0000-0000-0000-000124000000"))
+                    .participant(c2)
+                    .orderNumber(2)
+                    .foodVenue(v1)
+                    .tableSession(ts2)
+                    .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
+                    .build();
+            Order o3 = Order.builder()
+                    .publicId(UUID.fromString("00000000-0000-0000-0000-000125000000"))
+                    .participant(c3)
+                    .orderNumber(456)
+                    .foodVenue(v3)
+                    .tableSession(ts3)
+                    .status(OrderStatus.PENDING)
+                    .totalPrice(BigDecimal.ZERO)
+                    .build();
+            orderRepository.saveAll(List.of(o1, o2, o3));
+
 
             // Payment grouping all orders
             Payment pay1 = Payment.builder()
-                    .id(UUID.fromString("00000000-0000-0000-0000-123123000000"))
+                    .publicId(UUID.fromString("00000000-0000-0000-0000-123123000000"))
                     .amount(BigDecimal.ZERO) // will adjust
                     .orders(List.of(o1, o2, o3))
                     .status(PaymentStatus.PENDING)

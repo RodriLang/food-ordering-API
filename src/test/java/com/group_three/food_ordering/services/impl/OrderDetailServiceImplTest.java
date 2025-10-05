@@ -53,7 +53,6 @@ class OrderDetailServiceImplTest {
     void setUp() {
 
         product = Product.builder()
-                .id(1L)
                 .name("test product")
                 .description("test description")
                 .price(BigDecimal.TEN)
@@ -67,12 +66,10 @@ class OrderDetailServiceImplTest {
                 .build();
 
         orderDetail = OrderDetail.builder()
-                .id(1L)
                 .price(BigDecimal.TEN.multiply(BigDecimal.valueOf(3L)))
                 .quantity(3)
                 .product(product)
                 .specialInstructions("test instructions")
-                .deleted(false)
                 .build();
 
         orderDetailResponseDto = OrderDetailResponseDto.builder()
@@ -145,7 +142,7 @@ class OrderDetailServiceImplTest {
 
     @Test
     void getAll() {
-        when(orderDetailRepository.findAllByDeletedFalse()).thenReturn(List.of(orderDetail));
+        when(orderDetailRepository.findAll()).thenReturn(List.of(orderDetail));
         when(orderDetailMapper.toDTO(any(OrderDetail.class))).thenReturn(orderDetailResponseDto);
 
         List<OrderDetailResponseDto> responseDtoList = orderDetailService.getAll();
@@ -158,7 +155,7 @@ class OrderDetailServiceImplTest {
     @Test
     void getOrderDetailById() {
 
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(orderDetail));
+        when(orderDetailRepository.findById(1L)).thenReturn(Optional.of(orderDetail));
         when(orderDetailMapper.toDTO(orderDetail)).thenReturn(orderDetailResponseDto);
 
         OrderDetailResponseDto response = orderDetailService.getOrderDetailById(1L);
@@ -169,7 +166,7 @@ class OrderDetailServiceImplTest {
 
     @Test
     void softDelete() {
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(orderDetail));
+        when(orderDetailRepository.findById(1L)).thenReturn(Optional.of(orderDetail));
 
         assertFalse(orderDetail.getDeleted());
 
@@ -183,7 +180,7 @@ class OrderDetailServiceImplTest {
     @Test
     void updateQuantity_shouldUpdateQuantityAndPrice_whenStockIsSufficient() {
         // given
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L))
+        when(orderDetailRepository.findById(1L))
                 .thenReturn(Optional.of(orderDetail));
 
         doNothing().when(productService).validateStock(eq(product), anyInt());
@@ -205,7 +202,7 @@ class OrderDetailServiceImplTest {
     @Test
     void updateQuantity_shouldUpdateQuantityAndPrice_whenStockIsInsufficient() {
         // given
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L))
+        when(orderDetailRepository.findById(1L))
                 .thenReturn(Optional.of(orderDetail));
 
         doThrow(new InsufficientStockException())
@@ -220,7 +217,7 @@ class OrderDetailServiceImplTest {
         product.setStock(10);
         orderDetail.setQuantity(5);
 
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L))
+        when(orderDetailRepository.findById(1L))
                 .thenReturn(Optional.of(orderDetail));
         when(orderDetailRepository.save(any(OrderDetail.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
@@ -237,7 +234,7 @@ class OrderDetailServiceImplTest {
     void updateSpecialInstructions() {
 
         String instructions = "new instructions";
-        when(orderDetailRepository.findByIdAndDeletedFalse(1L))
+        when(orderDetailRepository.findById(1L))
                 .thenReturn(Optional.of(orderDetail));
         when(orderDetailRepository.save(orderDetail))
                 .thenReturn(orderDetail);

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.create.TagCreateDto;
+import com.group_three.food_ordering.dto.request.TagRequestDto;
 import com.group_three.food_ordering.dto.response.TagResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.TagMapper;
@@ -19,10 +19,11 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
 
-    @Override
-    public TagResponseDto create(TagCreateDto tagCreateDto) {
-        Tag tag = tagMapper.toEntity(tagCreateDto);
+    private static final String ENTITY_NAME = "Tag";
 
+    @Override
+    public TagResponseDto create(TagRequestDto tagRequestDto) {
+        Tag tag = tagMapper.toEntity(tagRequestDto);
         return tagMapper.toDTO(tagRepository.save(tag));
     }
 
@@ -41,7 +42,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Tag getEntityById(Long id) {
-        return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Tag"));
+        return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
     }
 
     @Override
@@ -50,9 +51,9 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public TagResponseDto update(Long id, TagCreateDto tagCreateDto) {
+    public TagResponseDto update(Long id, TagRequestDto tagRequestDto) {
         Tag tag = getEntityById(id);
-        tag.setLabel(tagCreateDto.getLabel());
+        tag.setLabel(tagRequestDto.getLabel());
         return tagMapper.toDTO(tagRepository.save(tag));
     }
 }

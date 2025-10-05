@@ -7,6 +7,7 @@ import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
+import com.group_three.food_ordering.listener.AuditorUser;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.CustomUserPrincipal;
@@ -44,6 +45,22 @@ public class AuthServiceImpl implements AuthService {
     private final RoleSelectionService roleSelectionService;
     private final RefreshTokenService refreshTokenService;
 
+    private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
+    private static final String PARTICIPANT_ENTITY_NAME = "Participant";
+    private static final String USER_ENTITY_NAME = "User";
+    private static final String AUDITOR_USER_ENTITY_NAME = "Auditor User";
+
+    @Override
+    public AuditorUser getCurrentUser() {
+        log.debug("[AuthService] Getting current auditor user");
+        User authUser = getAuthUser().orElseThrow(() -> new EntityNotFoundException(AUDITOR_USER_ENTITY_NAME));
+        log.debug("[AuthService] Current auditor user email={}", authUser.getEmail());
+        String email = authUser.getEmail();
+        UUID userId = authUser.getPublicId();
+        log.debug("[AuthService] Current auditor user id={}", userId);
+        return new AuditorUser(userId,email);
+    }
+
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         User loggedUser = authenticateUser(loginRequest);
@@ -67,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException(USER_ENTITY_NAME));
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
 
@@ -83,10 +100,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Optional<User> getAuthUser() {
-        log.debug("[AuthService] Getting authenticated user from principal");
-        Optional<CustomUserPrincipal> principalOpt = getCurrentPrincipal();
-        if (principalOpt.isEmpty()) {
-            log.debug("[AuthService] No authenticated principal found");
+        log.debug("[AuthService] Getting auth user from principal");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.debug("[AuthService] Authentication object: {}", auth);
+        if (auth == null || !auth.isAuthenticated()) {
             return Optional.empty();
         }
         return getCurrentPrincipal()
@@ -111,10 +128,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public boolean isParticipantInRole(RoleType role) {
-        return getCurrentParticipant()
-                .map(participant -> participant.getRole() == role)
-                .orElse(false);
+    public User determineAuthUser() {
+        return getAuthUser().orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+    }
+
+    @Override
+    public Participant determineCurrentParticipant() {
+        return getCurrentParticipant().orElseThrow(() -> new EntityNotFoundException(PARTICIPANT_ENTITY_NAME));
+    }
+
+    @Override
+    public TableSession determineCurrentTableSession() {
+        return getCurrentTableSession().orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION_ENTITY_NAME));
     }
 
     @Override
@@ -124,10 +149,9 @@ public class AuthServiceImpl implements AuthService {
                 .orElse(null);
     }
 
-
     private User authenticateUser(LoginRequest loginRequest) {
         User loggedUser = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("User"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), loggedUser.getPassword())) {
             log.warn("[AuthController] User authentication failed for email={}", loginRequest.getEmail());
@@ -160,7 +184,6 @@ public class AuthServiceImpl implements AuthService {
 
             return promoteGuestSessionToClient(loggedUser, guestInfo);
         }
-
 
         // 3. Usuario limpio → generar session info sin mesa
         log.debug("[AuthService] No active or guest session for user={}. Creating clean session.",
@@ -206,9 +229,9 @@ public class AuthServiceImpl implements AuthService {
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         SessionInfo activeSession = SessionInfo.builder()
                 .subject(loggedUser.getEmail())
-                .foodVenueId(tableSession.getFoodVenue().getId())
+                .foodVenueId(tableSession.getFoodVenue().getPublicId())
                 .participantId(findParticipantIdForUser(tableSession, loggedUser))
-                .tableSessionId(tableSession.getId())
+                .tableSessionId(tableSession.getPublicId())
                 .role(RoleType.ROLE_CLIENT.name())
                 .build();
         log.debug("[AuthService] Recovering active TableSession of logged user. Session info={}", activeSession);
@@ -218,7 +241,7 @@ public class AuthServiceImpl implements AuthService {
     private UUID findParticipantIdForUser(TableSession tableSession, User loggedUser) {
         return tableSession.getParticipants().stream()
                 .filter(participant -> loggedUser.getEmail().equals(participant.getUser().getEmail()))
-                .map(Participant::getId)
+                .map(Participant::getPublicId)
                 .findFirst()
                 .orElse(null);
     }
@@ -246,10 +269,10 @@ public class AuthServiceImpl implements AuthService {
         return SessionInfo.builder()
                 .foodVenueId(extractFoodVenueId())
                 .participantId(getCurrentParticipant()
-                        .map(Participant::getId)
+                        .map(Participant::getPublicId)
                         .orElse(null))
                 .tableSessionId(getCurrentTableSession()
-                        .map(TableSession::getId)
+                        .map(TableSession::getPublicId)
                         .orElse(null))
                 .role(RoleType.ROLE_CLIENT.name())
                 .subject(loggedUser.getEmail())
@@ -259,7 +282,7 @@ public class AuthServiceImpl implements AuthService {
     private UUID extractFoodVenueId() {
         return getCurrentTableSession()
                 .map(TableSession::getFoodVenue)
-                .map(FoodVenue::getId)
+                .map(FoodVenue::getPublicId)
                 .orElse(null);
     }
 
@@ -273,11 +296,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Optional<CustomUserPrincipal> getCurrentPrincipal() {
+        log.debug("[AuthService] Getting current principal from SecurityContext");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof CustomUserPrincipal principal)) {
             return Optional.empty();
         }
         return Optional.of(principal);
     }
-
 }

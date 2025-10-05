@@ -10,7 +10,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ParticipantResponseDto {
-    private UUID id;
+
+    private UUID publicId;
+
     private UserResponseDto user;
+
     private String nickname;
+
 }

@@ -1,17 +1,18 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.request.RootUserRequestDto;
-import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
+import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.ROOT_ACCESS_URI)
@@ -24,8 +25,7 @@ public interface RootController {
             }
     )
     @GetMapping("/all")
-    ResponseEntity<List<FoodVenuePublicResponseDto>> getAllRootUsers();
-
+    ResponseEntity<Page<EmploymentResponseDto>> getAllRootUsers(@Parameter(hidden = true) Pageable pageable);
 
     @Operation(
             summary = "Registrar un nuevo usuario root",
@@ -36,9 +36,8 @@ public interface RootController {
             }
     )
     @PostMapping("/register")
-    ResponseEntity<UserResponseDto> registerRootUser(
-            @Valid @RequestBody RootUserRequestDto dto);
-
+    ResponseEntity<EmploymentResponseDto> registerRootUser(
+            @Valid @RequestBody EmploymentRequestDto dto);
 
     @Operation(
             summary = "Registrar un nuevo usuario root",
@@ -48,8 +47,8 @@ public interface RootController {
                     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
             }
     )
-    @PostMapping("/select-context/{foodVenueId}")
-    ResponseEntity<UserResponseDto> selectContext(
-            @PathVariable UUID foodVenueId);
+    @PostMapping("/select-context")
+    ResponseEntity<EmploymentResponseDto> selectContext(
+            @RequestParam UUID foodVenueId);
 
 }

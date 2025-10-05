@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
@@ -34,7 +34,7 @@ public interface CurrentUserController {
             @Parameter(hidden = true) Pageable pageable);
 
     @PostMapping("/table-sessions")
-    ResponseEntity<InitSessionResponseDto> createTableSession(@RequestBody @Valid TableSessionCreateDto tableSessionCreateDto);
+    ResponseEntity<InitSessionResponseDto> createTableSession(@RequestBody @Valid TableSessionRequestDto tableSessionRequestDto);
 
     @GetMapping("/table-sessions")
     ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(

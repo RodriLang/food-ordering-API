@@ -1,11 +1,10 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.TableSessionService;
@@ -48,9 +47,9 @@ public class TableSessionController {
     )
     @PostMapping("/scan-qr")
     public ResponseEntity<InitSessionResponseDto> createTableSession(
-            @RequestBody @Valid TableSessionCreateDto tableSessionCreateDto) {
+            @RequestBody @Valid TableSessionRequestDto tableSessionRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.enter(tableSessionCreateDto));
+                body(tableSessionService.enter(tableSessionRequestDto));
     }
 
 
@@ -224,27 +223,6 @@ public class TableSessionController {
             @PathVariable UUID tableId) {
         return ResponseEntity.ok(tableSessionService.getLatestByTable(tableId));
     }
-
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN', 'ROOT')")
-    @Operation(
-            summary = "Actualizar sesión de mesa",
-            description = "Actualiza la información completa de una sesión existente.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Sesión actualizada correctamente",
-                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Datos inválidos para actualización"),
-                    @ApiResponse(responseCode = "404", description = "Sesión no encontrada")
-            }
-    )
-    @PutMapping("/{id}")
-    public ResponseEntity<TableSessionResponseDto> update(
-            @RequestBody @Valid TableSessionUpdateDto tableSessionUpdateDto,
-            @Parameter(description = "UUID de la sesión a actualizar", required = true)
-            @PathVariable UUID id) {
-        return ResponseEntity.ok(tableSessionService.update(tableSessionUpdateDto, id));
-    }
-
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(

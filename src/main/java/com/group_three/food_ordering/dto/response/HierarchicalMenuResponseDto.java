@@ -16,7 +16,9 @@ import java.util.List;
 public class HierarchicalMenuResponseDto {
 
     private String foodVenueName;
+
     private String foodVenueImageUrl;
+
     private List<HierarchicalCategoryMenuResponseDto> menu;
 
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +14,10 @@ import java.util.List;
 @Builder
 public class CategoryResponseDto {
 
-    private Integer id;
+    private UUID publicId;
+
     private String name;
+
     private List<CategoryResponseDto> childrenCategories;
+
 }

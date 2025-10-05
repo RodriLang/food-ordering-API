@@ -31,6 +31,7 @@ public class TenantContextFilter extends OncePerRequestFilter {
                 || path.startsWith(ApiPaths.AUTH_URI + "/register")
                 || path.startsWith(ApiPaths.AUTH_URI + "/logout")
                 || path.startsWith(ApiPaths.AUTH_URI + "/refresh")
+                || path.startsWith(ApiPaths.ROOT_ACCESS_URI)
                 || path.startsWith(ApiPaths.ROLE_SELECTOR_URI);
 
         if (shouldSkip) {

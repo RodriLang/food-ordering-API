@@ -1,4 +1,5 @@
 package com.group_three.food_ordering.dto.response;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class TagResponseDto {
 
     private Long id;
+
     private String label;
 }

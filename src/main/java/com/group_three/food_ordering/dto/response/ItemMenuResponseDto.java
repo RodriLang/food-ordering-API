@@ -15,10 +15,17 @@ import java.util.List;
 public class ItemMenuResponseDto {
 
     private Long id;
+
     private String name;
+
     private String description;
+
     private String imageUrl;
+
     private BigDecimal price;
+
     private String category;
+
     private List<TagResponseDto> tags;
+
 }

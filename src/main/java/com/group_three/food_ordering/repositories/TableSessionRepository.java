@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.repositories;
 
-import com.group_three.food_ordering.enums.TableStatus;
+import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.models.TableSession;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,31 +15,30 @@ import java.util.UUID;
 @Repository
 public interface TableSessionRepository extends JpaRepository<TableSession, UUID> {
 
-    List<TableSession> findByFoodVenueIdAndDeletedFalse(UUID foodVenueId);
+    List<TableSession> findByFoodVenuePublicId(UUID foodVenueId);
 
-    List<TableSession> findByFoodVenueIdAndTableNumberAndDeletedFalse(UUID foodVenueId, Integer tableNumber);
+    List<TableSession> findByFoodVenuePublicIdAndDiningTableNumber(UUID foodVenueId, Integer tableNumber);
 
-    List<TableSession> findByFoodVenueIdAndTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndDeletedFalse(
+    List<TableSession> findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
             UUID foodVenueId, Integer tableNumber, LocalDateTime start, LocalDateTime end);
 
-    List<TableSession> findByFoodVenueIdAndEndTimeIsNullAndDeletedFalse(UUID foodVenueId);
+    List<TableSession> findByFoodVenuePublicIdAndEndTimeIsNull(UUID foodVenueId);
 
-    List<TableSession> findByFoodVenueIdAndSessionHostIdAndDeletedFalse(UUID foodVenueId, UUID sessionHost);
+    List<TableSession> findByFoodVenuePublicIdAndSessionHostPublicId(UUID foodVenueId, UUID sessionHost);
 
-    @Query("SELECT ts FROM table_sessions ts " +
+    @Query("SELECT ts FROM TableSession ts " +
             "JOIN ts.participants p " +
             "WHERE p.id = :clientId " +
             "AND ts.endTime IS NOT NULL")
     List<TableSession> findPastSessionsByParticipantIdAndDeletedFalse(UUID foodVenueId, UUID clientId);
 
-    Optional<TableSession> findTopByFoodVenueIdAndDeletedFalseAndTableIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
+    Optional<TableSession> findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 
-    Optional<TableSession> findTableSessionByTable_IdAndTableStatusAndDeletedFalse(UUID tableId, TableStatus status);
+    Optional<TableSession> findTableSessionByDiningTable_PublicIdAndDiningTableStatus(UUID tableId, DiningTableStatus status);
 
-    @Query("SELECT ts FROM table_sessions ts " +
+    @Query("SELECT ts FROM TableSession ts " +
             "JOIN ts.participants p " +
             "WHERE p.user.email = :userEmail " +
-            "AND ts.endTime IS NULL " +
-            "AND ts.deleted = false")
+            "AND ts.endTime IS NULL ")
     Optional<TableSession> findActiveSessionByUserEmailAndDeletedFalse(@Param("userEmail") String userEmail);
 }

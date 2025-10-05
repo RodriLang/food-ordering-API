@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class RoleEmploymentResponseDto {
 
-    private UUID id;
+    private UUID publicId;
 
     private String role;
 

@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.services.EmploymentService;
@@ -45,7 +44,7 @@ public class EmployeeController {
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     })
-    public ResponseEntity<EmploymentResponseDto> create(@Valid @org.springframework.web.bind.annotation.RequestBody EmployeeRequestDto dto) {
+    public ResponseEntity<EmploymentResponseDto> create(@Valid @RequestBody EmploymentRequestDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(employmentService.createEmployment(dto));
     }
 
@@ -60,7 +59,7 @@ public class EmployeeController {
     })
     public ResponseEntity<EmploymentResponseDto> update(
             @PathVariable UUID id,
-            @Valid @org.springframework.web.bind.annotation.RequestBody EmploymentRequestDto dto) {
+            @Valid @RequestBody EmploymentRequestDto dto) {
         return ResponseEntity.ok(employmentService.update(id, dto));
     }
 

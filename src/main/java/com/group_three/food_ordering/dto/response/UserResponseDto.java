@@ -17,14 +17,25 @@ import java.util.UUID;
 @NoArgsConstructor
 
 public class UserResponseDto {
-    private UUID id;
+
+    private UUID publicId;
+
     private String name;
+
     private String lastName;
+
     private Address address;
+
     private String email;
+
     private LocalDate birthDate;
+
     private String phone;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime removedAt;
+
     private RoleType role;
+
 }

@@ -1,44 +1,33 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Table;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(name = "categories")
-@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "categories")
+@SQLDelete(sql = "UPDATE categories SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = "childrenCategories")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Category {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Category extends BaseEntity {
 
     @Column
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
 
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
     private List<Category> childrenCategories = new ArrayList<>();
 
-    @Column
-    private Boolean deleted;
-
-    @PrePersist
-    public void onCreate() {
-        if (deleted == null) {
-            deleted = false;
-        }
-    }
 }

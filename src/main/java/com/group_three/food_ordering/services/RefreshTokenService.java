@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services;
 
+import com.group_three.food_ordering.exceptions.InvalidTokenException;
 import com.group_three.food_ordering.repositories.RefreshTokenRepository;
 import com.group_three.food_ordering.security.RefreshToken;
 import lombok.RequiredArgsConstructor;
@@ -39,11 +40,12 @@ public class RefreshTokenService {
                 .build();
 
         refreshTokenRepository.save(refreshToken);
-        log.debug("[Refresh token Service] Generated refresh token for user={} expiresAt={}", refreshToken.getUserEmail(), Date.from(refreshToken.getExpiresAt()));
+        log.debug("[RefreshTokenService] Generated refresh token for user={} expiresAt={}", refreshToken.getUserEmail(), Date.from(refreshToken.getExpiresAt()));
         return refreshToken.getToken();
     }
 
     public Optional<String> validateAndGetUserEmail(String token) {
+        log.debug("[RefreshTokenService] Validating refresh token");
         return refreshTokenRepository.findByTokenAndRevokedFalse(token)
                 .filter(refreshToken -> refreshToken.getExpiresAt().isAfter(Instant.now()))
                 .map(refreshToken -> {
@@ -68,6 +70,7 @@ public class RefreshTokenService {
                 .map(RefreshToken::getExpiresAt)
                 .orElse(null);
     }
+
     public void revokeAllUserTokens(String userEmail) {
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
     }

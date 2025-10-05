@@ -13,9 +13,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OrderDetailRequestDto {
 
+    @NotNull(message = "Product ID is required")
+    private Long productId;
+
     @Size(max = 255, message = "Special instructions must be 255 characters or less")
     private String specialInstructions;
 
-    @NotNull(message = "Product ID is required")
-    private Long productId;
 }

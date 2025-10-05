@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.CurrentUserController;
-import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
@@ -42,9 +42,9 @@ public class CurrentUserControllerImpl implements CurrentUserController {
 
     @Override
     public ResponseEntity<InitSessionResponseDto> createTableSession(
-            TableSessionCreateDto tableSessionCreateDto) {
+            TableSessionRequestDto tableSessionRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.enter(tableSessionCreateDto));
+                body(tableSessionService.enter(tableSessionRequestDto));
     }
 
     @Override

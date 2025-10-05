@@ -10,12 +10,14 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.services.FoodVenueService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FoodVenueServiceImpl implements FoodVenueService {
@@ -26,26 +28,27 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public FoodVenueAdminResponseDto create(FoodVenueRequestDto foodVenueRequestDto) {
+        log.debug("[AuthService] Creating new foodVenue");
         FoodVenue foodVenue = foodVenueMapper.toEntity(foodVenueRequestDto);
-
+        foodVenue.setPublicId(UUID.randomUUID());
         return foodVenueMapper.toAdminDto(foodVenueRepository.save(foodVenue));
     }
 
     @Override
     public Page<FoodVenueAdminResponseDto> getAllAdmin(Pageable pageable) {
-        return foodVenueRepository.findAllByDeletedFalse(pageable)
+        return foodVenueRepository.findAll(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
 
     @Override
     public Page<FoodVenueAdminResponseDto> getDeleted(Pageable pageable) {
-        return foodVenueRepository.findAllByDeletedTrue(pageable)
+        return foodVenueRepository.findAllDeleted(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
 
     @Override
     public Page<FoodVenuePublicResponseDto> getAllPublic(Pageable pageable) {
-        return foodVenueRepository.findAllByDeletedFalse(pageable)
+        return foodVenueRepository.findAll(pageable)
                 .map(foodVenueMapper::toPublicDto);
     }
 
@@ -57,7 +60,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public FoodVenue findEntityById(UUID id) {
-        return foodVenueRepository.findByIdAndDeletedFalse(id)
+        return foodVenueRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Food Venue", id.toString()));
     }
 
@@ -89,10 +92,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public void softDelete(UUID id) {
-
         FoodVenue foodVenue = findEntityById(id);
-        foodVenue.setDeleted(true);
-        foodVenueRepository.save(foodVenue);
+        foodVenueRepository.delete(foodVenue);
     }
-
 }

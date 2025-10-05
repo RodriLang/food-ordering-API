@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +38,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
         User authenticatedUser = getAuthenticatedUser();
         Employment employment = employmentService.getEntityByIdAndActiveTrue(request.employmentId());
         log.debug("[RoleSelection] Role selected={}", employment.getRole());
-        return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getId(), employment.getRole().name());
+        return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getPublicId(), employment.getRole().name());
     }
 
     @Override
@@ -52,9 +51,10 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     @Override
     public List<RoleEmploymentResponseDto> generateRoleSelection(User user) {
-        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getId());
-
-        log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
+        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getPublicId());
+        if (!roleEmployments.isEmpty()) {
+            log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
+        }
         return roleEmployments;
     }
 
@@ -74,9 +74,10 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     }
 
     private User getAuthenticatedUser() {
+        log.debug("[RoleSelectionService] Fetching authenticated user from security context");
         CustomUserPrincipal principal = (CustomUserPrincipal)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        log.debug("[RoleSelectionService] Authenticated user email: {}", principal.getEmail());
         return userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("User"));
     }

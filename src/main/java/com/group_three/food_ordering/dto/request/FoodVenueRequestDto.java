@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.dto.request;
 
-import com.group_three.food_ordering.dto.create.*;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import jakarta.validation.Valid;
@@ -26,7 +25,7 @@ public class FoodVenueRequestDto {
     private String name;
 
     @Valid
-    private AddressCreateDto address;
+    private AddressRequestDto address;
 
     @NotBlank(message = "Email is required", groups = {OnCreate.class})
     @Email(message = "Email must be a valid email address", groups = {OnCreate.class, OnUpdate.class})
@@ -49,7 +48,6 @@ public class FoodVenueRequestDto {
 
     private List<ProductRequestDto> products;
 
-    private List<TableCreateDto> tables;
+    private List<DiningTableRequestDto> tables;
 
-    private List<MenuCreateDto> menus;
 }

@@ -18,11 +18,12 @@ import jakarta.validation.Valid;
 @NoArgsConstructor
 public class OrderRequestDto {
 
-    @Size(max = 255, message = "Special requirements must be 255 characters or less")
-    private String specialRequirements;
-
     @Valid
     @NotEmpty(message = "Order must have at least one detail")
     private List<OrderDetailRequestDto> orderDetails = new ArrayList<>();
+
+    @Size(max = 255, message = "Special requirements must be 255 characters or less")
+    private String specialRequirements;
+
 }
 

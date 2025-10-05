@@ -41,7 +41,7 @@ public class OrderServiceHelper {
         }
 
         // Si no cumple con las condiciones anteriores, lanzamos la excepción
-        throw new OrderInProgressException(order.getId());
+        throw new OrderInProgressException(order.getPublicId());
     }
 
     public Integer generateOrderNumber() {

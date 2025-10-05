@@ -16,8 +16,12 @@ import java.util.UUID;
 @NoArgsConstructor
 public class PaymentResponseDto {
 
-    private UUID id;
+    private UUID publicId;
+
     private BigDecimal amount;
+
     private PaymentStatus status;
+
     private PaymentMethod paymentMethod;
+
 }

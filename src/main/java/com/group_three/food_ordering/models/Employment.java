@@ -8,55 +8,38 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "employments")
-@SQLDelete(sql = "UPDATE employments SET active = false WHERE id = ?")
+@SQLDelete(sql = "UPDATE employments SET deleted = true WHERE id = ?")
 @Getter
 @Setter
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString(exclude = {"foodVenue", "user"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class Employment {
+public class Employment extends BaseEntity {
 
-    @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private UUID publicId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_venue_id", nullable = false)
     private FoodVenue foodVenue;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private RoleType role;
 
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime creationDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime lastUpdateDate;
-
+    @Column
     private Boolean active;
 
-    @PrePersist
-    public void onCreate() {
-        if (this.id == null) this.id = UUID.randomUUID();
-        if (this.active == null) this.active = Boolean.TRUE;
-        creationDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        lastUpdateDate = LocalDateTime.now();
-    }
 }

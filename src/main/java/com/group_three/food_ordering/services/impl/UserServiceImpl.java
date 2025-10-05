@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.create.UserCreateDto;
-import com.group_three.food_ordering.dto.update.UserUpdateDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -12,11 +11,11 @@ import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,37 +28,24 @@ public class UserServiceImpl implements UserService {
     private final AddressMapper addressMapper;
     private final AuthService authService;
 
+    private static final String ENTITY_NAME = "User";
+    private static final String AUTH_ENTITY_NAME = "Authenticated User";
+
     @Override
-    public UserResponseDto create(UserCreateDto dto) {
+    public UserResponseDto create(UserRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
-
         User userEntity = userMapper.toEntity(dto);
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
-        userEntity.setCreatedAt(LocalDateTime.now());
-
+        userEntity.setPublicId(UUID.randomUUID());
         return userMapper.toResponseDto(userRepository.save(userEntity));
-    }
-
-    public User createIfPresent(UserCreateDto dto) {
-        if (dto == null) return null;
-
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new EmailAlreadyUsedException(dto.getEmail());
-        }
-
-        User userEntity = userMapper.toEntity(dto);
-        userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
-        userEntity.setCreatedAt(LocalDateTime.now());
-
-        return userRepository.save(userEntity);
     }
 
     @Override
     public UserResponseDto getAuthenticatedUser() {
         User authUser = authService.getAuthUser().orElseThrow(() ->
-                new EntityNotFoundException("Authenticated User"));
+                new EntityNotFoundException(AUTH_ENTITY_NAME));
         return userMapper.toResponseDto(authUser);
     }
 
@@ -70,31 +56,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDto> getAll() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::toResponseDto)
-                .toList();
+    public Page<UserResponseDto> getAll(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponseDto);
     }
 
     @Override
-    public List<UserResponseDto> getActiveUsers() {
-        return userRepository.findAllByRemovedAtIsNull()
-                .stream()
-                .map(userMapper::toResponseDto)
-                .toList();
+    public Page<UserResponseDto> getActiveUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(userMapper::toResponseDto);
     }
 
     @Override
-    public List<UserResponseDto> getDeletedUsers() {
-        return userRepository.findAllByRemovedAtIsNotNull()
-                .stream()
-                .map(userMapper::toResponseDto)
-                .toList();
+    public Page<UserResponseDto> getDeletedUsers(Pageable pageable) {
+        return userRepository.findAllDeleted(pageable)
+                .map(userMapper::toResponseDto);
     }
 
     @Override
-    public UserResponseDto update(UUID id, UserUpdateDto dto) {
+    public UserResponseDto update(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
         User userEntity = this.getEntityById(id);
 
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
@@ -117,14 +97,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(UUID id) {
         User userEntity = this.getEntityById(id);
-
-        userEntity.setRemovedAt(LocalDateTime.now());
         userRepository.save(userEntity);
     }
 
     @Override
     public User getEntityById(UUID id) {
-        return userRepository.findByIdAndRemovedAtIsNull(id)
-                .orElseThrow(() -> new EntityNotFoundException("User", id.toString()));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 }

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.create.CategoryCreateDto;
+import com.group_three.food_ordering.dto.request.CategoryRequestDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.CategoryMapper;
@@ -20,21 +20,20 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-
     @Override
-    public CategoryResponseDto create(CategoryCreateDto categoryCreateDto) {
-        Category category = categoryMapper.toEntity(categoryCreateDto);
-        if (categoryCreateDto.getParentCategoryId() != null) {
-            Category parent = getEntityById(categoryCreateDto.getParentCategoryId());
+    public CategoryResponseDto create(CategoryRequestDto categoryRequestDto) {
+        Category category = categoryMapper.toEntity(categoryRequestDto);
+        if (categoryRequestDto.getParentCategoryId() != null) {
+            Category parent = getEntityById(categoryRequestDto.getParentCategoryId());
             category.setParentCategory(parent);
         }
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
-    public CategoryResponseDto update(Long id, CategoryCreateDto categoryCreateDto) {
-        Category category = getEntityById(categoryCreateDto.getParentCategoryId());
-        category.setName(categoryCreateDto.getName());
+    public CategoryResponseDto update(Long id, CategoryRequestDto categoryRequestDto) {
+        Category category = getEntityById(categoryRequestDto.getParentCategoryId());
+        category.setName(categoryRequestDto.getName());
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
@@ -57,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        List<Category> roots = categoryRepository.findByParentCategoryIsNullAndDeletedFalse();
+        List<Category> roots = categoryRepository.findByParentCategoryIsNull();
 
         return roots.stream()
                 .map(categoryMapper::toDto)
@@ -66,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id) {
-       List<Category> children = categoryRepository.findByParentCategoryIdAndDeletedFalse(id);
+       List<Category> children = categoryRepository.findByParentCategoryId(id);
        return children.stream()
                .map(categoryMapper::toDto)
                .toList();

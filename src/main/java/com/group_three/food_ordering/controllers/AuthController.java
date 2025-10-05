@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.create.UserCreateDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -85,7 +85,7 @@ public interface AuthController {
     )
     @PostMapping("/register")
     ResponseEntity<UserResponseDto> register(
-            @Valid @RequestBody UserCreateDto dto);
+            @Valid @RequestBody UserRequestDto dto);
 
 
     @PostMapping("/refresh")

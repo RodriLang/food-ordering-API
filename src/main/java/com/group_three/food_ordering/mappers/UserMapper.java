@@ -1,19 +1,17 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dto.create.UserCreateDto;
-import com.group_three.food_ordering.dto.update.UserUpdateDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.models.User;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = AddressMapper.class)
 public interface UserMapper {
 
-    @Mapping(target = "address", source = "address")
-    User toEntity(UserCreateDto dto);
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntity(UserUpdateDto dto, @MappingTarget User userEntity);
+    User toEntity(UserRequestDto dto);
 
     UserResponseDto toResponseDto(User userEntity);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntity(com.group_three.food_ordering.dto.request.UserRequestDto dto, @MappingTarget User userEntity);
 }

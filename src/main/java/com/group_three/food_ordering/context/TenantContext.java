@@ -45,7 +45,7 @@ public class TenantContext {
     }
 
     public UUID getCurrentFoodVenueId() {
-        return getCurrentFoodVenue().getId();
+        return getCurrentFoodVenue().getPublicId();
     }
 
     public FoodVenue determineCurrentFoodVenue() {

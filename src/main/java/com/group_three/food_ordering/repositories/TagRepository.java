@@ -7,8 +7,6 @@ import java.util.Optional;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
 
-    Optional<Tag> findByIdAndDeletedFalse(Long id);
-
-    Optional<Tag> findByLabelAndDeletedFalse(String name);
+    Optional<Tag> findByLabel(String name);
 
 }

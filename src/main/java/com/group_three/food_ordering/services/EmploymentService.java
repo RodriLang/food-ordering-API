@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
@@ -13,7 +12,7 @@ import java.util.UUID;
 
 public interface EmploymentService {
 
-    EmploymentResponseDto createEmployment(EmployeeRequestDto dto);
+    EmploymentResponseDto createEmployment(EmploymentRequestDto dto);
 
     List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId);
 

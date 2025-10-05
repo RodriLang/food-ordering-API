@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.security;
 
 import com.group_three.food_ordering.dto.SessionInfo;
-import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -59,10 +58,6 @@ public class JwtService {
         return token;
     }
 
-    /**
-     * Devuelve claims sin lanzar excepción por expiración.
-     * Solo lanza en caso de firma inválida u otro error crítico.
-     */
     public Claims parseTokenClaimsSafe(String token) throws JwtException {
         try {
             return Jwts.parser()

@@ -12,9 +12,15 @@ import lombok.NoArgsConstructor;
 public class AddressResponseDto {
 
     private String street;
+
     private String number;
+
     private String city;
+
     private String province;
+
     private String postalCode;
+
     private String country;
+
 }

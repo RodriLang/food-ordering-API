@@ -18,6 +18,7 @@ import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class ProductServiceImpl implements ProductService {
 
     private static final String CATEGORY_ENTITY_NAME = "Category";
     private static final String PRODUCT_ENTITY_NAME = "Product";
-
+    private static final String TAG_ENTITY_NAME = "Tag";
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequestDto) {
@@ -59,14 +60,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getEntityById(Long id) {
-        return productRepository.findByIdAndDeletedFalse(id)
+        return productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
     }
 
     @Override
     public ItemMenuResponseDto getByNameAndContext(String name) {
-        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getId();
-        Product product = productRepository.findByNameAndFoodVenue_IdAndDeletedFalse(name, foodVenueId).stream()
+        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
+        Product product = productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
 
@@ -81,19 +82,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponseDto> getAll() {
-        return productRepository.findAllByFoodVenue_IdAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId()).stream()
+        return productRepository.findAllByFoodVenue_PublicId(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     @Override
     public List<ProductResponseDto> getAllAvailable() {
-        return productRepository.findAllByFoodVenue_IdAndAvailableAndDeletedFalse(tenantContext.getCurrentFoodVenue().getId(), true).stream()
+        return productRepository.findAllByFoodVenue_PublicIdAndAvailable(tenantContext.getCurrentFoodVenue().getPublicId(), true).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
 
     private ProductResponseDto applyProductRulesAndSave(Product product, ProductRequestDto productRequestDto) {
+        product.setPrice(productRequestDto.getPrice() != null ? productRequestDto.getPrice() : BigDecimal.ZERO);
+        product.setStock(productRequestDto.getStock() != null ? productRequestDto.getStock() : 0);
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
         product.setCategory(findCategory(productRequestDto.getCategoryId()));
         product.setTags(findTags(productRequestDto.getTagsId()));
@@ -123,8 +126,8 @@ public class ProductServiceImpl implements ProductService {
     private List<Tag> findTags(List<Long> tagsId) {
         if (tagsId != null && !tagsId.isEmpty()) {
             return tagsId.stream()
-                    .map(tagId -> tagRepository.findByIdAndDeletedFalse(tagId)
-                            .orElseThrow(() -> new EntityNotFoundException("Tag")))
+                    .map(tagId -> tagRepository.findById(tagId)
+                            .orElseThrow(() -> new EntityNotFoundException(TAG_ENTITY_NAME)))
                     .toList();
         } else {
             return new ArrayList<>();
@@ -133,7 +136,7 @@ public class ProductServiceImpl implements ProductService {
 
     private Category findCategory(Long categoryId) {
         if (categoryId != null) {
-            return categoryRepository.findByIdAndDeletedFalse(categoryId)
+            return categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new EntityNotFoundException(CATEGORY_ENTITY_NAME));
         } else {
             return null;

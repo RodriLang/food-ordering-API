@@ -14,7 +14,9 @@ import java.util.List;
 public class FlatMenuResponseDto {
 
     private String foodVenueName;
+
     private String foodVenueImageUrl;
+
     private List<FlatCategoryMenuResponseDto> menu;
 
 }

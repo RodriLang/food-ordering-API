@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
@@ -8,17 +9,17 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity(name = "products")
-@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Product extends BaseEntity {
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,9 +44,6 @@ public class Product {
     @Column
     private Integer stock;
 
-    @Column
-    private Boolean deleted;
-
     @ManyToMany
     @JoinTable(
             name = "products_tags",
@@ -58,11 +56,4 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @PrePersist
-    public void onCreate() {
-        this.available = true;
-        if (this.price == null) this.price = BigDecimal.ZERO;
-        if (this.stock == null) this.stock = 0;
-        if (this.deleted == null) this.deleted = false;
-    }
 }

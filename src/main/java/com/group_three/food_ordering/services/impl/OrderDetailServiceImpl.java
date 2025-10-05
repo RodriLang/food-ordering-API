@@ -26,7 +26,8 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final ProductService productService;
     private final ProductRepository productRepository;
 
-    private static final String CLASS_NAME = "Order Detail";
+    private static final String ORDER_DETAIL_ENTITY_NAME = "Order Detail";
+    private static final String PRODUCT_ENTITY_NAME = "Product";
 
     @Transactional
     @Override
@@ -38,7 +39,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     public OrderDetail createInternal(OrderDetailRequestDto orderDetailRequestDto) {
 
         Product product = productRepository.findById(orderDetailRequestDto.getProductId())
-                .orElseThrow(()-> new EntityNotFoundException("Product not found"));
+                .orElseThrow(()-> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
 
         updateProductStock(product, -1);
         OrderDetail orderDetail = orderDetailMapper.toEntity(orderDetailRequestDto);
@@ -49,7 +50,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     @Override
     public List<OrderDetailResponseDto> getAll() {
-        return orderDetailRepository.findAllByDeletedFalse()
+        return orderDetailRepository.findAll()
                 .stream()
                 .map(orderDetailMapper::toDTO)
                 .toList();
@@ -69,10 +70,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         // Incrementar stock según cantidad del detalle eliminado
         updateProductStock(orderDetail.getProduct(), orderDetail.getQuantity());
 
-        // Marcar como eliminado (borrado lógico)
-        orderDetail.setDeleted(true);
-
-        orderDetailRepository.save(orderDetail);
+        orderDetailRepository.delete(orderDetail);
     }
 
     @Override
@@ -114,7 +112,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     private OrderDetail getOrderDetailEntityById(Long id) {
-        return orderDetailRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(()-> new EntityNotFoundException(CLASS_NAME, id.toString()));
+        return orderDetailRepository.findById(id)
+                .orElseThrow(()-> new EntityNotFoundException(ORDER_DETAIL_ENTITY_NAME, id.toString()));
     }
 }

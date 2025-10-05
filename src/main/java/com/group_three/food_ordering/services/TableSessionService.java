@@ -1,9 +1,8 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.dto.create.TableSessionCreateDto;
+import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dto.update.TableSessionUpdateDto;
 import com.group_three.food_ordering.models.TableSession;
 
 import java.time.LocalDateTime;
@@ -12,7 +11,7 @@ import java.util.UUID;
 
 public interface TableSessionService {
 
-    InitSessionResponseDto enter(TableSessionCreateDto tableSessionCreateDto);
+    InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto);
 
     List<TableSessionResponseDto> getAll();
 
@@ -37,8 +36,6 @@ public interface TableSessionService {
     List<TableSessionResponseDto> getPastByAuthUserParticipant();
 
     TableSessionResponseDto getLatestByTable(UUID tableId);
-
-    TableSessionResponseDto update(TableSessionUpdateDto tableSessionUpdateDto, UUID id);
 
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
 

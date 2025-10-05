@@ -8,25 +8,26 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
-@NoArgsConstructor
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = "employments")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+public class User extends BaseEntity {
 
-public class User {
-
-    @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private UUID publicId;
 
     @Column(length = 50)
     private String name;
@@ -49,23 +50,8 @@ public class User {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column
-    private LocalDateTime removedAt;
-
-    @ToString.Exclude
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Employment> employments = new ArrayList<>();
 
-    @Column
-    private Boolean deleted;
-
-    @PrePersist
-    public void onCreate() {
-        if (deleted == null) deleted = false;
-        if (this.id == null) this.id = UUID.randomUUID();
-    }
 }

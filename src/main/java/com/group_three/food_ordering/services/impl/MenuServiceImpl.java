@@ -34,7 +34,7 @@ public class MenuServiceImpl implements MenuService {
         if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }
-        return getHierarchicalMenuByFoodVenueId(foodVenue.getId(), category);
+        return getHierarchicalMenuByFoodVenueId(foodVenue.getPublicId(), category);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class MenuServiceImpl implements MenuService {
         if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }
-        return getFlatMenuByFoodVenueId(foodVenue.getId());
+        return getFlatMenuByFoodVenueId(foodVenue.getPublicId());
     }
 
     @Override
@@ -69,8 +69,8 @@ public class MenuServiceImpl implements MenuService {
         List<FlatCategoryMenuResponseDto> categories = new ArrayList<>();
 
         for (Category category : leafCategories) {
-            List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategoryAndDeletedFalse(
-                    foodVenue.getId(), true, category);
+            List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategory(
+                    foodVenue.getPublicId(), true, category);
 
             List<ItemMenuResponseDto> productsDto = products.stream()
                     .map(productMapper::toItemMenuDto)
@@ -85,10 +85,9 @@ public class MenuServiceImpl implements MenuService {
                 );
             }
         }
-
         return FlatMenuResponseDto.builder()
                 .foodVenueName(foodVenue.getName())
-                .foodVenueImageUrl(foodVenue.getImageUrl())
+                .foodVenueImageUrl(foodVenue.getVenueStyle().getLogoUrl())
                 .menu(categories)
                 .build();
     }
@@ -104,20 +103,19 @@ public class MenuServiceImpl implements MenuService {
 
         if (category == null) {
             categoriesDto = rootCategories.stream()
-                    .map(root -> buildCategoryTree(root, foodVenue.getId()))
+                    .map(root -> buildCategoryTree(root, foodVenue.getPublicId()))
                     .toList();
         } else {
             categoriesDto = rootCategories.stream()
-                    .map(root -> buildCategoryTree(root, foodVenue.getId()))
+                    .map(root -> buildCategoryTree(root, foodVenue.getPublicId()))
                     .map(root -> findLeafCategory(root, category))
                     .flatMap(Optional::stream) // solo devuelve la hoja encontrada
                     .toList();
         }
 
-
         return HierarchicalMenuResponseDto.builder()
                 .foodVenueName(foodVenue.getName())
-                .foodVenueImageUrl(foodVenue.getImageUrl())
+                .foodVenueImageUrl(foodVenue.getVenueStyle().getLogoUrl())
                 .menu(categoriesDto)
                 .build();
     }
@@ -127,7 +125,7 @@ public class MenuServiceImpl implements MenuService {
      */
     private HierarchicalCategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
         // Productos de esta categoría
-        List<Product> products = productRepository.findAllByFoodVenue_IdAndAvailableAndCategoryAndDeletedFalse(
+        List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategory(
                 foodVenueId, true, category);
 
         List<ItemMenuResponseDto> productsDto = products.stream()
@@ -151,13 +149,11 @@ public class MenuServiceImpl implements MenuService {
     private Optional<HierarchicalCategoryMenuResponseDto> findLeafCategory(
             HierarchicalCategoryMenuResponseDto node, String category) {
 
-        // si es hoja y coincide, devolverla
         if ((node.getSubcategory() == null || node.getSubcategory().isEmpty())
                 && node.getCategory().equalsIgnoreCase(category)) {
             return Optional.of(node);
         }
 
-        // si tiene hijos, buscar en ellos
         if (node.getSubcategory() != null) {
             for (HierarchicalCategoryMenuResponseDto child : node.getSubcategory()) {
                 Optional<HierarchicalCategoryMenuResponseDto> result = findLeafCategory(child, category);
@@ -166,8 +162,6 @@ public class MenuServiceImpl implements MenuService {
                 }
             }
         }
-
         return Optional.empty();
     }
-
 }

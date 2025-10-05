@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class OrderResponseDto {
 
-    private UUID id;
+    private UUID publicId;
 
     private String formattedOrderNumber;
 

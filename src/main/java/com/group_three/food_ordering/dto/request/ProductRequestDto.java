@@ -24,11 +24,11 @@ public class ProductRequestDto {
     @Size(min = 2, max = 100, groups = {OnCreate.class, OnUpdate.class})
     private String name;
 
-    @Size(max = 255 , message = "description of product must be 255 characters or less", groups = {OnCreate.class, OnUpdate.class})
+    @Size(max = 255, message = "description of product must be 255 characters or less", groups = {OnCreate.class, OnUpdate.class})
     private String description;
 
     @NotNull(message = "price is required", groups = {OnCreate.class})
-    @DecimalMin(value = "0.0", inclusive = true, message = "price must be greater than or equal to 0", groups = {OnCreate.class, OnUpdate.class})
+    @DecimalMin(value = "0.0", message = "price must be greater than or equal to 0", groups = {OnCreate.class, OnUpdate.class})
     private BigDecimal price;
 
     @Min(value = 0, message = "stock must be 0 or more", groups = {OnCreate.class, OnUpdate.class})
@@ -40,4 +40,5 @@ public class ProductRequestDto {
     private Long categoryId;
 
     private List<Long> tagsId;
+
 }

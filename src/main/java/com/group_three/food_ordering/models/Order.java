@@ -20,17 +20,17 @@ import java.util.UUID;
 @SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString(exclude = "foodVenue")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"foodVenue", "participant", "tableSession", "orderDetails"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class Order {
+public class Order extends BaseEntity {
 
-    @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private UUID publicId;
 
     @Column
     private Integer orderNumber;
@@ -41,10 +41,9 @@ public class Order {
     @Column
     private BigDecimal totalPrice;
 
-    @Column(updatable = false)
-    private LocalDateTime creationDate;
+    @Column(name = "order_date", updatable = false)
+    private LocalDateTime orderDate;
 
-    private LocalDateTime updateDate;
     @Column
     private String specialRequirements;
 
@@ -66,20 +65,4 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @Column
-    private Boolean deleted;
-
-    @PrePersist
-    public void onCreate() {
-        if (deleted == null) deleted = false;
-        this.creationDate = LocalDateTime.now();
-        this.updateDate = LocalDateTime.now();
-        if (this.id == null) this.id = UUID.randomUUID();
-        if (this.status == null) this.status = OrderStatus.PENDING;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updateDate = LocalDateTime.now();
-    }
 }

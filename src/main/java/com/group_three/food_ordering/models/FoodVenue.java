@@ -6,23 +6,26 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity(name = "food_venues")
-@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "food_venues")
+@SQLDelete(sql = "UPDATE food_venues SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"products", "employees", "diningTables"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class FoodVenue {
+public class FoodVenue extends BaseEntity {
 
-    @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private UUID publicId;
 
     @Column(length = 50)
     private String name;
@@ -36,44 +39,20 @@ public class FoodVenue {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column
-    private String imageUrl;
-
-    @Column(nullable = false)
-    private Boolean deleted;
-
-    @Column(nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime creationDate;
-
-    @Column
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime lastUpdateDate;
-
-    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Employment> employees = new ArrayList<>();
 
-    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Product> products = new ArrayList<>();
 
-    @ToString.Exclude
     @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Table> tables = new ArrayList<>();
+    private List<DiningTable> diningTables = new ArrayList<>();
 
-    @PrePersist
-    public void onCreate() {
-        if (this.id == null) this.id = UUID.randomUUID();
-        if (this.deleted == null) this.deleted = Boolean.FALSE;
-        creationDate = LocalDateTime.now();
-    }
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "venue_style_id")
+    private VenueStyle venueStyle;
 
-    @PreUpdate
-    public void onUpdate() {
-        lastUpdateDate = LocalDateTime.now();
-    }
 }

@@ -30,6 +30,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     public Participant create(User user, TableSession tableSession) {
 
         Participant participant = Participant.builder()
+                .publicId(UUID.randomUUID())
                 .tableSession(tableSession)
                 .nickname((user != null) ? user.getName() : "Guest" + System.nanoTime())
                 .role(user != null ? RoleType.ROLE_CLIENT : RoleType.ROLE_GUEST)
@@ -65,14 +66,14 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public ParticipantResponseDto getById(UUID id) {
-        Participant participant = participantRepository.findByIdAndUser_RemovedAtIsNullAndDeletedFalse(id)
+        Participant participant = participantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
         return participantMapper.toResponseDto(participant);
     }
 
     @Override
     public Participant getEntityById(UUID id) {
-        return participantRepository.findByIdAndUser_RemovedAtIsNullAndDeletedFalse(id)
+        return participantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 }

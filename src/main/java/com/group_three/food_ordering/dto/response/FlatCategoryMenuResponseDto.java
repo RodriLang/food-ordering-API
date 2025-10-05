@@ -14,6 +14,7 @@ import java.util.List;
 public class FlatCategoryMenuResponseDto {
 
     private String category;
+
     private List<ItemMenuResponseDto> products;
 
 }

@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
-import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
@@ -32,19 +31,23 @@ public class EmploymentServiceImpl implements EmploymentService {
     private final TenantContext tenantContext;
     private final UserRepository userRepository;
 
+    private static final String USER_ENTITY_NAME = "User";
+    private static final String EMPLOYMENT_ENTITY_NAME = "Employment";
+
+
     @Override
-    public EmploymentResponseDto createEmployment(EmployeeRequestDto dto) {
+    public EmploymentResponseDto createEmployment(EmploymentRequestDto dto) {
         FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
         User employeeUser = userRepository.findByEmail(dto.getUserEmail())
-                .orElseThrow(() -> new EntityNotFoundException("User"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
 
         Employment employment = Employment.builder()
+                .publicId(UUID.randomUUID())
                 .user(employeeUser)
                 .foodVenue(currentFoodVenue)
                 .role(dto.getRole())
                 .build();
         employmentRepository.save(employment);
-
         return employmentMapper.toResponseDto(employment);
     }
 
@@ -52,7 +55,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId) {
 
-        List<Employment> employments = employmentRepository.findByUser_IdAndActiveTrue(userId);
+        List<Employment> employments = employmentRepository.findByUser_PublicId(userId);
 
         return employments.stream()
                 .map(roleEmploymentMapper::toResponseDto)
@@ -73,9 +76,9 @@ public class EmploymentServiceImpl implements EmploymentService {
     public Page<EmploymentResponseDto> getByUserAndActiveTrue(String email, Pageable pageable) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("User"));
+                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
 
-        return employmentRepository.findByUser_IdAndActiveTrue(user.getId(), pageable).map(employmentMapper::toResponseDto);
+        return employmentRepository.findByUser_PublicId(user.getPublicId(), pageable).map(employmentMapper::toResponseDto);
     }
 
     @Override
@@ -87,9 +90,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public void delete(UUID id) {
         Employment employment = getEntityByIdAndActiveTrue(id);
-
-        employment.setActive(false);
-        employmentRepository.save(employment);
+        employmentRepository.delete(employment);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class EmploymentServiceImpl implements EmploymentService {
 
     @Override
     public Employment getEntityByIdAndActiveTrue(UUID id) {
-        return employmentRepository.findByIdAndActiveTrue(id)
-                .orElseThrow(() -> new EntityNotFoundException("Employment"));
+        return employmentRepository.findByPublicIdAndActive(id, Boolean.TRUE)
+                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME));
     }
 }

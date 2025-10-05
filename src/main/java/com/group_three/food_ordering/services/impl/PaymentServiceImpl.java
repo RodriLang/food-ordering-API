@@ -2,14 +2,12 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dto.request.PaymentRequestDto;
 import com.group_three.food_ordering.dto.response.PaymentResponseDto;
-import com.group_three.food_ordering.dto.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.PaymentMapper;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.Payment;
-import com.group_three.food_ordering.repositories.OrderRepository;
 import com.group_three.food_ordering.repositories.PaymentRepository;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.PaymentService;
@@ -17,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,11 +24,12 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final PaymentMapper paymentMapper;
 
-    // Revisar muy muy MUY bien lo que hace este metodo porque es muy importante
+    private static final String ENTITY_NAME = "Payment";
+
+    // Revisar muy muy MUY bien lo que se hace aca porque es muy importante
     @Transactional
     @Override
     public PaymentResponseDto create(PaymentRequestDto dto) {
@@ -40,8 +40,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = paymentMapper.toEntity(dto);
-        payment.calculateAmount();
-
+        payment.setAmount(calculateAmount(payment.getOrders()));
+        payment.setPublicId(UUID.randomUUID());
         // Asignar el payment a cada orden
         orders.forEach(order -> order.setPayment(payment));
 
@@ -58,13 +58,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDto getById(UUID id) {
-        return paymentMapper.toDTO(paymentRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString())));
+        return paymentMapper.toDTO(paymentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString())));
     }
 
     @Transactional
     @Override
-    public PaymentResponseDto update(UUID id, PaymentUpdateDto dto) {
+    public PaymentResponseDto update(UUID id, PaymentRequestDto dto) {
 
         Payment existingPayment = getPaymentEntityByID(id);
 
@@ -86,7 +86,7 @@ public class PaymentServiceImpl implements PaymentService {
 
                 if (payment != null && (payment.getStatus() == PaymentStatus.PENDING
                         || payment.getStatus() == PaymentStatus.COMPLETED)) {
-                    invalidOrders.add(order.getId());
+                    invalidOrders.add(order.getPublicId());
                 } else if ((payment == null || payment.getStatus() == PaymentStatus.CANCELLED)
                         && !existingPayment.getOrders().contains(order)) {
 
@@ -100,12 +100,10 @@ public class PaymentServiceImpl implements PaymentService {
                         "Las siguientes órdenes ya tienen un pago válido asociado: " + invalidOrders);
             }
         }
-        existingPayment.calculateAmount();
+        existingPayment.setAmount(calculateAmount(existingPayment.getOrders()));
 
         return paymentMapper.toDTO(paymentRepository.save(existingPayment));
-
     }
-
 
     @Override
     public PaymentResponseDto updateStatus(UUID id, PaymentStatus paymentStatus) {
@@ -119,11 +117,10 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toDTO(paymentRepository.save(existingPayment));
     }
 
-
     @Override
     public void delete(UUID id) {
-        if (!paymentRepository.existsByIdAndDeletedFalse(id)) {
-            throw new EntityNotFoundException("Payment", id.toString());
+        if (!paymentRepository.existsById(id)) {
+            throw new EntityNotFoundException(ENTITY_NAME, id.toString());
         }
         paymentRepository.deleteById(id);
     }
@@ -131,19 +128,31 @@ public class PaymentServiceImpl implements PaymentService {
     private void verifyUpdatablePayment(Payment payment) {
         if (payment.getStatus() == PaymentStatus.COMPLETED
                 || payment.getStatus() == PaymentStatus.CANCELLED) {
-            throw new InvalidPaymentStatusException(payment.getId(), payment.getStatus(),
+            throw new InvalidPaymentStatusException(payment.getPublicId(), payment.getStatus(),
                     "El pago no puede ser modificado");
         }
     }
 
     private Payment getPaymentEntityByID(UUID id) {
-        return paymentRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new EntityNotFoundException("Payment", id.toString()));
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 
     private List<Order> findOrders(List<UUID> orderIds) {
         return orderIds.stream()
                 .map(orderService::getEntityByIdAndTenantContext)
                 .toList();
+    }
+
+    private BigDecimal calculateAmount(List<Order> orders) {
+        BigDecimal amount;
+        if (orders != null) {
+            amount = orders.stream()
+                    .map(Order::getTotalPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } else {
+            amount = BigDecimal.ZERO;
+        }
+        return amount;
     }
 }

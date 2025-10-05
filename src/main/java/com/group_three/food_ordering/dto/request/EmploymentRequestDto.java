@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.dto.request;
 
 import com.group_three.food_ordering.enums.RoleType;
-import jakarta.validation.Valid;
+import com.group_three.food_ordering.utils.OnCreate;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -13,13 +13,14 @@ import java.util.UUID;
 @Builder
 public class EmploymentRequestDto {
 
-    @Valid
-    private UUID userId;
+    @NotBlank(message = "User email is required", groups = OnCreate.class)
+    private String userEmail;
 
-    @NotBlank(message = "Position is required")
+    @NotNull(message = "Food venue ID is required", groups = OnCreate.class)
+    private UUID foodVenueId;
+
+    @NotBlank(message = "Position is required", groups = OnCreate.class)
     private RoleType role;
 
-    @NotNull(message = "Food venue ID is required")
-    private UUID foodVenueId;
 }
 

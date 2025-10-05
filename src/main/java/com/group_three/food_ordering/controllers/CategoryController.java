@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.create.CategoryCreateDto;
+import com.group_three.food_ordering.dto.request.CategoryRequestDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +27,8 @@ public class CategoryController {
     @ApiResponse(responseCode = "200", description = "Categoría creada correctamente")
     @PostMapping
     public ResponseEntity<CategoryResponseDto> createCategory(
-            @RequestBody @Valid CategoryCreateDto categoryCreateDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.create(categoryCreateDto));
+            @RequestBody @Valid CategoryRequestDto categoryRequestDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.create(categoryRequestDto));
     }
 
 
@@ -40,8 +40,8 @@ public class CategoryController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable Long id,
-                                                                  @RequestBody @Valid CategoryCreateDto categoryCreateDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(id, categoryCreateDto));
+                                                                  @RequestBody @Valid CategoryRequestDto categoryRequestDto) {
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(id, categoryRequestDto));
     }
 
 

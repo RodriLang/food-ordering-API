@@ -3,7 +3,6 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.PaymentRequestDto;
 import com.group_three.food_ordering.dto.response.PaymentResponseDto;
-import com.group_three.food_ordering.dto.update.PaymentUpdateDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.services.PaymentService;
 import com.group_three.food_ordering.utils.constants.ApiDocConstants;
@@ -61,7 +60,7 @@ public class PaymentController {
     public ResponseEntity<PaymentResponseDto> updatePayment(
             @Parameter(description = "ID del pago", required = true)
             @PathVariable UUID id,
-            @RequestBody @Valid PaymentUpdateDto dto) {
+            @RequestBody @Valid PaymentRequestDto dto) {
         PaymentResponseDto response = paymentService.update(id, dto);
         return ResponseEntity.ok(response);
     }

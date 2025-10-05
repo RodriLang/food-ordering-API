@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,10 +15,16 @@ import java.util.List;
 @Builder
 public class TableSessionResponseDto {
 
+    private UUID publicId;
+
     private LocalDateTime startTime;
+
     private LocalDateTime endTime;
+
     private Integer tableNumber;
+
     private ParticipantResponseDto hostClient;
+
     private List<ParticipantResponseDto> participants;
 
 }

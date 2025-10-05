@@ -1,10 +1,7 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.type.SqlTypes;
@@ -12,18 +9,22 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Entity(name = "table_sessions")
-@SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "table_sessions")
+@SQLDelete(sql = "UPDATE table_sessions SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"foodVenue", "orders", "participants"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class TableSession {
+public class TableSession extends BaseEntity {
 
-    @Id
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private UUID publicId;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
@@ -32,8 +33,8 @@ public class TableSession {
     private LocalDateTime endTime;
 
     @ManyToOne
-    @JoinColumn(name = "table_id", nullable = false)
-    private Table table;
+    @JoinColumn(name = "dining_table_id", nullable = false)
+    private DiningTable diningTable;
 
     @ManyToOne
     @JoinColumn(name = "food_venue_id", nullable = false)
@@ -56,13 +57,4 @@ public class TableSession {
     @Builder.Default
     private List<Participant> participants = new ArrayList<>();
 
-    @Column
-    private Boolean deleted;
-
-    @PrePersist
-    public void onCreate() {
-        if (deleted == null) deleted = false;
-        if (this.id == null) this.id = UUID.randomUUID();
-        startTime = LocalDateTime.now();
-    }
 }

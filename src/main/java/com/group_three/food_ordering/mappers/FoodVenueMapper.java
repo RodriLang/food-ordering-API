@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.mappers;
 
-
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -14,15 +13,10 @@ public interface FoodVenueMapper {
 
     FoodVenueAdminResponseDto toAdminDto(FoodVenue foodVenue);
 
-    @Mapping(target = "id", source = "id", qualifiedByName = "uuidToString")
     FoodVenuePublicResponseDto toPublicDto(FoodVenue foodVenue);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(FoodVenueRequestDto dto, @MappingTarget FoodVenue entity);
 
-    @Named("uuidToString")
-    default String uuidToString(java.util.UUID id) {
-        return id != null ? id.toString() : null;
-    }
 }
 

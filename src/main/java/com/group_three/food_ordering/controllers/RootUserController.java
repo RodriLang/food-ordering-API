@@ -1,19 +1,20 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.update.UserUpdateDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.ROOT_USER_URI)
@@ -36,21 +37,21 @@ public interface RootUserController {
             summary = "Listar todos los usuarios",
             description = "Devuelve todos los usuarios registrados, incluyendo los eliminados."
     )
-    ResponseEntity<List<UserResponseDto>> getAll();
+    ResponseEntity<Page<UserResponseDto>> getAll(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/actives")
     @Operation(
             summary = "Listar usuarios activos",
             description = "Devuelve todos los usuarios que no han sido eliminados (removedAt es null)."
     )
-    ResponseEntity<List<UserResponseDto>> getActives();
+    ResponseEntity<Page<UserResponseDto>> getActives(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar usuarios eliminados",
             description = "Devuelve todos los usuarios que han sido marcados como eliminados (removedAt no es null)."
     )
-    ResponseEntity<List<UserResponseDto>> getDeleted();
+    ResponseEntity<Page<UserResponseDto>> getDeleted(@Parameter(hidden = true) Pageable pageable);
 
     @PutMapping("/{id}")
     @Operation(
@@ -63,7 +64,7 @@ public interface RootUserController {
     )
     ResponseEntity<UserResponseDto> updateById(
             @PathVariable UUID id,
-            @Valid @RequestBody UserUpdateDto dto);
+            @Valid @RequestBody UserRequestDto dto);
 
     @PatchMapping("/{id}")
     @Operation(
@@ -76,7 +77,7 @@ public interface RootUserController {
     )
     ResponseEntity<UserResponseDto> patchUserById(
             @PathVariable UUID id,
-            @Valid @org.springframework.web.bind.annotation.RequestBody UserUpdateDto dto);
+            @Valid @org.springframework.web.bind.annotation.RequestBody UserRequestDto dto);
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

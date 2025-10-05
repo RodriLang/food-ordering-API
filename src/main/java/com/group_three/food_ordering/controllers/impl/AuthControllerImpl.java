@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.AuthController;
-import com.group_three.food_ordering.dto.create.UserCreateDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -30,7 +30,7 @@ public class AuthControllerImpl implements AuthController {
     }
 
     @Override
-    public ResponseEntity<UserResponseDto> register(UserCreateDto dto) {
+    public ResponseEntity<UserResponseDto> register(UserRequestDto dto) {
         log.debug("[AuthController] Register request received");
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
     }

@@ -14,8 +14,11 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class HierarchicalCategoryMenuResponseDto {
+
     private String category;
+
     private List<HierarchicalCategoryMenuResponseDto> subcategory;
+
     private List<ItemMenuResponseDto> products;
 
 }

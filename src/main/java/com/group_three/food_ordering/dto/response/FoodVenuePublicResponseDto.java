@@ -1,10 +1,11 @@
 package com.group_three.food_ordering.dto.response;
 
-import com.group_three.food_ordering.models.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -12,9 +13,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FoodVenuePublicResponseDto {
 
-    private String id;
+    private UUID publicId;
+
     private String name;
+
     private String phone;
-    private String imageUrl;
-    private Address address;
+
+    private AddressResponseDto address;
+
+    private VenueStyleResponseDto styles;
+
 }
