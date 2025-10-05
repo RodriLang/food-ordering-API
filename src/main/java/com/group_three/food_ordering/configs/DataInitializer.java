@@ -187,7 +187,7 @@ public class DataInitializer { //implements CommandLineRunner {
             List<FoodVenue> foodVenues = List.of(v1, v2, v3);
             foodVenueRepository.saveAll(foodVenues);
             log.info("[DataInitializer] ===================== FOOD VENUES =======================");
-            foodVenues.forEach((foodVenue -> log.info("[DataInitializer] food venue={} UUID={}", foodVenue.getName(), foodVenue.getId())));
+            foodVenues.forEach((foodVenue -> log.info("[DataInitializer] food venue={} UUID={}", foodVenue.getName(), foodVenue.getPublicId())));
 
             // Products
             List<Category> cats = categoryRepository.findAll();
@@ -630,7 +630,7 @@ public class DataInitializer { //implements CommandLineRunner {
             diningTableRepository.saveAll(diningTables);
 
             log.info("[DataInitializer] =========================TABLES==========================");
-            diningTables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getId(), t.getStatus()));
+            diningTables.forEach(t -> log.info("[Table]  Mesa con ID={} Estado={}", t.getPublicId(), t.getStatus()));
 
 
             // TableSessions

@@ -1,12 +1,13 @@
 package com.group_three.food_ordering.services;
 
-import com.group_three.food_ordering.exceptions.InvalidTokenException;
 import com.group_three.food_ordering.repositories.RefreshTokenRepository;
 import com.group_three.food_ordering.security.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,13 +27,13 @@ public class RefreshTokenService {
     @Value("${jwt.refresh-expiration}")
     private long refreshTokenExpiration;
 
-
     public String generateRefreshToken(String userEmail) {
         // Revocar tokens existentes del usuario
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
 
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         RefreshToken refreshToken = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
+                .token(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .userEmail(userEmail)
                 .expiresAt(Instant.now().plusMillis(refreshTokenExpiration))
                 .createdAt(Instant.now())
@@ -77,6 +78,7 @@ public class RefreshTokenService {
 
     @Scheduled(cron = "0 0 2 * * ?") // Diario a las 2 AM
     public void cleanupExpiredTokens() {
+        log.debug("[RefreshTokenService] Cleaning up expired tokens");
         refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
     }
 }

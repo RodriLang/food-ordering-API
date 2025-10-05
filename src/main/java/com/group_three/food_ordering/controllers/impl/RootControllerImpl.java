@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.RootController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ public class RootControllerImpl implements RootController {
     }
 
     @Override
-    public ResponseEntity<EmploymentResponseDto> selectContext(UUID foodVenueId) {
+    public ResponseEntity<LoginResponse> selectContext(UUID foodVenueId) {
         return ResponseEntity.ok(rootService.selectContext(foodVenueId));
     }
 }

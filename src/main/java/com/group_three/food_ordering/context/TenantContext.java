@@ -37,7 +37,7 @@ public class TenantContext {
         log.debug("[TenantContext] Getting current context foodVenueId={}", currentFoodVenueId);
         if (currentFoodVenue == null && currentFoodVenueId != null) {
             log.debug("[TenantContext] Fetching FoodVenue id={}", currentFoodVenueId);
-            currentFoodVenue = foodVenueRepository.findById(currentFoodVenueId)
+            currentFoodVenue = foodVenueRepository.findByPublicId(currentFoodVenueId)
                     .orElseThrow(() -> new EntityNotFoundException("FoodVenue", currentFoodVenueId.toString()));
             log.info("[TenantContext] Loaded FoodVenue id={} name={}", currentFoodVenueId, currentFoodVenue.getName());
         }

@@ -71,7 +71,7 @@ public class TableSessionServiceImpl implements TableSessionService {
             // No puede iniciar otra hasta cerrar la actual
             TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
             if (activeSession != null) {
-                log.debug("[TableSession] Found active session {} for {}", activeSession.getId(), authUser.getEmail());
+                log.debug("[TableSession] Found active session {} for {}", activeSession.getPublicId(), authUser.getEmail());
                 return generateInitSessionResponseDto(activeSession, authService.getCurrentParticipant()
                         .orElseThrow(() -> new EntityNotFoundException("Participant")));
             }
@@ -92,7 +92,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .map(Participant::getTableSession)
                 .orElseThrow(() -> new EntityNotFoundException("Active guest session not found"));
 
-        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getId());
+        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
 
         Participant currentParticipant = authService.getCurrentParticipant()
                 .orElseThrow(() -> new EntityNotFoundException("Participant"));
@@ -103,17 +103,17 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     private InitSessionResponseDto handleNewTableSession(DiningTable diningTable, User authUser) {
-        log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getId());
+        log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getPublicId());
 
         DiningTableStatus status = diningTable.getStatus();
-        log.debug("[TableSession] Creating session for table={} with status={}", diningTable.getId(), status);
+        log.debug("[TableSession] Creating session for table={} with status={}", diningTable.getPublicId(), status);
 
 
         TableSession tableSession = switch (status) {
             case AVAILABLE -> initSession(diningTable);
             case OCCUPIED ->
                     tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(diningTable.getPublicId(), DiningTableStatus.OCCUPIED)
-                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, diningTable.getId().toString()));
+                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, diningTable.getPublicId().toString()));
             case OUT_OF_SERVICE -> throw new IllegalStateException(
                     "Table is out of service, cannot start or join a session.");
             case COMPLETE -> throw new IllegalStateException(
@@ -127,10 +127,10 @@ public class TableSessionServiceImpl implements TableSessionService {
         tableSession.setStartTime(LocalDateTime.now());
         tableSession.setPublicId(UUID.randomUUID());
         TableSession createdTableSession = tableSessionRepository.save(tableSession);
-        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getId());
+        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getPublicId());
 
         Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getId(), participant.getRole());
+        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getPublicId(), participant.getRole());
 
 
         tableSession.getParticipants().add(participant);
@@ -144,7 +144,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         determineTableStatusPostSessionCreation(diningTable, tableSession);
 
         log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
-                tableSession.getId(), authUser != null ? authUser.getEmail() : "anonymous");
+                tableSession.getPublicId(), authUser != null ? authUser.getEmail() : "anonymous");
 
         return response;
     }
@@ -159,8 +159,8 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     private void configureTenantContext(FoodVenue foodVenue) {
-        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getId());
-        tenantContext.setCurrentFoodVenueId(foodVenue.getId().toString());
+        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getPublicId());
+        tenantContext.setCurrentFoodVenueId(foodVenue.getPublicId().toString());
     }
 
     private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
@@ -170,7 +170,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
 
     private TableSession initSession(DiningTable diningTable) {
-        log.debug("[TableSession] Initializing table session tableId={}", diningTable.getId());
+        log.debug("[TableSession] Initializing table session tableId={}", diningTable.getPublicId());
 
         return TableSession.builder()
                 .diningTable(diningTable)

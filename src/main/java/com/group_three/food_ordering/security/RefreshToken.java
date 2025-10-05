@@ -2,8 +2,11 @@ package com.group_three.food_ordering.security;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Builder
 @AllArgsConstructor
@@ -12,9 +15,12 @@ import java.time.Instant;
 @Entity
 @Table(name = "refresh_tokens")
 public class RefreshToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "id", length = 36, unique = true, nullable = false, updatable = false)
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String token;

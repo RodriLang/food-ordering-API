@@ -1,7 +1,11 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
@@ -11,15 +15,19 @@ import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
+import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
+import com.group_three.food_ordering.services.RefreshTokenService;
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RootServiceImpl implements RootService {
@@ -29,6 +37,8 @@ public class RootServiceImpl implements RootService {
     private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
     private final AuthService authService;
+    private final JwtService jwtService;
+    private final TenantContext tenantContext;
 
     private static final String USER_ENTITY_NAME = "User";
     private static final String FOOD_VENUE_ENTITY_NAME = "FoodVenue";
@@ -62,20 +72,30 @@ public class RootServiceImpl implements RootService {
     }
 
     @Override
-    public EmploymentResponseDto selectContext(UUID foodVenuePublicId) {
-
+    public LoginResponse selectContext(UUID foodVenuePublicId) {
+        log.debug("[RootService] Select context");
         FoodVenue selectedFoodVenue = getFoodVenue(foodVenuePublicId);
-        UUID authenticatedUserId = authService.determineAuthUser().getPublicId();
-
+        log.debug("[RootService] Selected FoodVenue foodVenueId={}", selectedFoodVenue.getPublicId());
+        User authenticatedUser = authService.determineAuthUser();
+        log.debug("[RootService] Authenticated user email={} publicId={}", authenticatedUser.getEmail(), authenticatedUser.getPublicId());
         Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrue(
-                authenticatedUserId, RoleType.ROLE_ROOT).getFirst();
+                authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
 
         if (employment == null) {
             throw new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME);
         }
         employment.setFoodVenue(selectedFoodVenue);
-        employmentRepository.save(employment);
-        return employmentMapper.toResponseDto(employment);
+        log.debug("[RootService] Context Selected foodVenueId={} role={}", employment.getFoodVenue().getPublicId(), employment.getRole());
+        SessionInfo sessionInfo = SessionInfo.builder()
+                .foodVenueId(selectedFoodVenue.getPublicId())
+                .subject(authenticatedUser.getEmail())
+                .role(employment.getRole().name())
+                .userId(authenticatedUser.getPublicId())
+                .build();
+
+        String token = jwtService.generateAccessToken(sessionInfo);
+        AuthResponse authResponse = AuthResponse.builder().accessToken(token).build();
+        return LoginResponse.builder().authResponse(authResponse).build();
     }
 
     private FoodVenue getFoodVenue(UUID foodVenueId) {

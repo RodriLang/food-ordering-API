@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,15 +41,15 @@ public interface RootController {
             @Valid @RequestBody EmploymentRequestDto dto);
 
     @Operation(
-            summary = "Registrar un nuevo usuario root",
-            description = "Crea un usuario con los máximos privilegios.",
+            summary = "Seleccionar un FoodVenue",
+            description = "Entrar en un Tenant Context para gestionar entidades",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
+                    @ApiResponse(responseCode = "200", description = "Usuario creado exitosamente"),
                     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
             }
     )
     @PostMapping("/select-context")
-    ResponseEntity<EmploymentResponseDto> selectContext(
+    ResponseEntity<LoginResponse> selectContext(
             @RequestParam UUID foodVenueId);
 
 }

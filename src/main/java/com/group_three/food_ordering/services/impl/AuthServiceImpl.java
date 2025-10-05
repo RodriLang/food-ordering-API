@@ -106,10 +106,10 @@ public class AuthServiceImpl implements AuthService {
     public Optional<User> getAuthUser() {
         log.debug("[AuthService] Getting auth user from principal");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        log.debug("[AuthService] Authentication object: {}", auth);
         if (auth == null || !auth.isAuthenticated()) {
             return Optional.empty();
         }
+        log.debug("[AuthService] Auth user={}", auth.getPrincipal());
         return getCurrentPrincipal()
                 .map(CustomUserPrincipal::getEmail)
                 .flatMap(userRepository::findByEmail);
@@ -126,9 +126,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Optional<TableSession> getCurrentTableSession() {
         log.debug("[AuthService] Getting current table session from principal");
-        return getCurrentPrincipal()
-                .map(CustomUserPrincipal::getTableSessionId)
-                .flatMap(tableSessionRepository::findById);
+        Optional<CustomUserPrincipal> principal = getCurrentPrincipal();
+
+        if (principal.isPresent()) {
+            log.debug("[AuthService] Principal found");
+            UUID tableSessionId = principal.get().getTableSessionId();
+            log.debug("[AuthService] TableSession found in principal tableSessionId={}", tableSessionId);
+            return tableSessionRepository.findById(tableSessionId);
+        }
+        log.debug("[AuthService] Principal not found");
+        return Optional.empty();
     }
 
     @Override
@@ -154,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User authenticateUser(LoginRequest loginRequest) {
-        log.debug("[AuthService] Authenticating user");
+        log.debug("[AuthService] Authenticating user email={}",loginRequest.getEmail());
         Optional<User> loggedUser = userRepository.findByEmail(loginRequest.getEmail());
         log.debug("[AuthService] Logged in user=");
         if (loggedUser.isEmpty()) {
@@ -317,9 +324,12 @@ public class AuthServiceImpl implements AuthService {
     public Optional<CustomUserPrincipal> getCurrentPrincipal() {
         log.debug("[AuthService] Getting current principal from SecurityContext");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.debug("[AuthService] Authentication found");
         if (auth == null || !(auth.getPrincipal() instanceof CustomUserPrincipal principal)) {
+            log.debug("[AuthService] CustomUserPrincipal not found in authentication");
             return Optional.empty();
         }
+        log.debug("[AuthService] Return CustomUserPrincipal Optional");
         return Optional.of(principal);
     }
 }
