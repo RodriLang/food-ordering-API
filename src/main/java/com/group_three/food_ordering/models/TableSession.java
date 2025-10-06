@@ -42,7 +42,7 @@ public class TableSession extends BaseEntity {
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "table_session_participants",
             joinColumns = @JoinColumn(name = "table_session_id"),
