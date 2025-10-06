@@ -52,4 +52,10 @@ public abstract class BaseEntity {
 
     @Column(name = "deleted", nullable = false)
     private Boolean deleted = false;
+
+    @PrePersist
+    void onCreate(){
+        deleted = false;
+        publicId = UUID.randomUUID();
+    }
 }

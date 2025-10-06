@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DataInitializer { //implements CommandLineRunner {
+public class DataInitializer implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
@@ -38,7 +38,7 @@ public class DataInitializer { //implements CommandLineRunner {
     @Value("${password-for-all-users}")
     private String password;
 
-   // @Override
+   @Override
     public void run(String... args) {
         // Categories
 

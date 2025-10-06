@@ -313,8 +313,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken) {
+        log.debug("[AuthService] Generating login response");
         AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
-
+        log.debug("[AuthService] Auth response generated");
         return LoginResponse.builder()
                 .authResponse(authResponse)
                 .employments(roleSelectionService.generateRoleSelection(loggedUser))

@@ -14,6 +14,7 @@ import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.EmploymentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmploymentServiceImpl implements EmploymentService {
@@ -54,8 +56,10 @@ public class EmploymentServiceImpl implements EmploymentService {
 
     @Override
     public List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId) {
-
+        log.debug("[EmploymentService] Getting active roles by user={}", userId);
         List<Employment> employments = employmentRepository.findByUser_PublicId(userId);
+        employments.forEach(employment -> log.debug("[EmploymentService] Employments founded FoodVenue={} Role={}",
+                employment.getFoodVenue().getName(), employment.getRole()));
 
         return employments.stream()
                 .map(roleEmploymentMapper::toResponseDto)

@@ -19,11 +19,11 @@ import org.hibernate.annotations.SQLDelete;
 @SuperBuilder
 public class Employment extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "food_venue_id", nullable = false)
     private FoodVenue foodVenue;
 

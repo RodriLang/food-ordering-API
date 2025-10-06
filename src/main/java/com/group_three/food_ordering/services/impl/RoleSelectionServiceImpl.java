@@ -51,6 +51,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     @Override
     public List<RoleEmploymentResponseDto> generateRoleSelection(User user) {
+        log.info("[RoleSelection] Searching roles");
         List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getPublicId());
         if (!roleEmployments.isEmpty()) {
             log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
