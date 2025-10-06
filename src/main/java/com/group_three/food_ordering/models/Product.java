@@ -45,7 +45,7 @@ public class Product extends BaseEntity {
     @Column
     private Integer stock;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "products_tags",
             joinColumns = @JoinColumn(name = "product_id"),

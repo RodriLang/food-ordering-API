@@ -38,65 +38,8 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${password-for-all-users}")
     private String password;
 
-   @Override
+    @Override
     public void run(String... args) {
-        // Categories
-
-        if (categoryRepository.count() == 0) {
-
-            // Categorías raíz
-            Category drinks = Category.builder().name("Drinks").build();
-            Category food = Category.builder().name("Food").build();
-            Category desserts = Category.builder().name("Desserts").build();
-
-            categoryRepository.saveAll(List.of(drinks, food, desserts));
-
-            // Subcategorías de Food
-            Category mainCourses = Category.builder().name("Main Courses").parentCategory(food).build();
-            Category appetizers = Category.builder().name("Appetizers").parentCategory(food).build();
-
-            categoryRepository.saveAll(List.of(mainCourses, appetizers));
-
-            // Subcategorías de Drinks
-            Category alcoholic = Category.builder().name("Alcoholic").parentCategory(drinks).build();
-            Category nonAlcoholic = Category.builder().name("Non-Alcoholic").parentCategory(drinks).build();
-
-            categoryRepository.saveAll(List.of(alcoholic, nonAlcoholic));
-
-            // Subcategorías de Desserts
-            Category sweet = Category.builder().name("Sweet").parentCategory(desserts).build();
-            Category savory = Category.builder().name("Savory").parentCategory(desserts).build();
-
-            categoryRepository.saveAll(List.of(sweet, savory));
-
-            // Subcategorías de Main Courses
-            Category pizzas = Category.builder().name("Pizzas").parentCategory(mainCourses).build();
-            Category burgers = Category.builder().name("Burgers").parentCategory(mainCourses).build();
-            Category pasta = Category.builder().name("Pasta").parentCategory(mainCourses).build();
-            Category meet = Category.builder().name("Meet").parentCategory(mainCourses).build();
-            Category tacos = Category.builder().name("Tacos").parentCategory(mainCourses).build();
-
-            categoryRepository.saveAll(List.of(pizzas, burgers, pasta, meet, tacos));
-
-            // Subcategorías de Appetizers
-            Category frenchFries = Category.builder().name("French Fries").parentCategory(appetizers).build();
-            Category calamari = Category.builder().name("Calamari").parentCategory(appetizers).build();
-
-            categoryRepository.saveAll(List.of(frenchFries, calamari));
-
-            // Subcategorías de Alcoholic
-            Category beers = Category.builder().name("Beers").parentCategory(alcoholic).build();
-            Category wines = Category.builder().name("Wines").parentCategory(alcoholic).build();
-            Category cocktails = Category.builder().name("Cocktails").parentCategory(alcoholic).build();
-
-            categoryRepository.saveAll(List.of(beers, wines, cocktails));
-
-            // Subcategorías de Non-Alcoholic
-            Category sodas = Category.builder().name("Sodas").parentCategory(nonAlcoholic).build();
-            Category waters = Category.builder().name("Waters").parentCategory(nonAlcoholic).build();
-
-            categoryRepository.saveAll(List.of(sodas, waters));
-        }
 
         // Tags
         if (tagRepository.count() == 0) {
@@ -186,6 +129,10 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             List<FoodVenue> foodVenues = List.of(v1, v2, v3);
             foodVenueRepository.saveAll(foodVenues);
+
+            for (FoodVenue venue : foodVenues) {
+                createCategoriesForVenue(venue);
+            }
             log.info("[DataInitializer] ===================== FOOD VENUES =======================");
             foodVenues.forEach((foodVenue -> log.info("[DataInitializer] food venue={} UUID={}", foodVenue.getName(), foodVenue.getPublicId())));
 
@@ -401,8 +348,9 @@ public class DataInitializer implements CommandLineRunner {
                     .category(tacos)
                     .tags(List.of(tags.get(1), tags.get(2))) // Vegan + Spicy
                     .build();
-
-            productRepository.saveAll(List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18));
+            List<Product> products = List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18);
+            products.forEach(product -> product.setAvailable(true));
+            productRepository.saveAll(products);
 
 
             // Root
@@ -725,5 +673,48 @@ public class DataInitializer implements CommandLineRunner {
             log.debug("[DataInitializer] Initialized sample data.");
         }
     }
+
+    private void createCategoriesForVenue(FoodVenue venue) {
+        Category drinks = Category.builder().name("Drinks").foodVenue(venue).build();
+        Category food = Category.builder().name("Food").foodVenue(venue).build();
+        Category desserts = Category.builder().name("Desserts").foodVenue(venue).build();
+
+        categoryRepository.saveAll(List.of(drinks, food, desserts));
+
+        Category mainCourses = Category.builder().name("Main Courses").parentCategory(food).foodVenue(venue).build();
+        Category appetizers = Category.builder().name("Appetizers").parentCategory(food).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(mainCourses, appetizers));
+
+        Category alcoholic = Category.builder().name("Alcoholic").parentCategory(drinks).foodVenue(venue).build();
+        Category nonAlcoholic = Category.builder().name("Non-Alcoholic").parentCategory(drinks).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(alcoholic, nonAlcoholic));
+
+        Category sweet = Category.builder().name("Sweet").parentCategory(desserts).foodVenue(venue).build();
+        Category savory = Category.builder().name("Savory").parentCategory(desserts).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(sweet, savory));
+
+        Category pizzas = Category.builder().name("Pizzas").parentCategory(mainCourses).foodVenue(venue).build();
+        Category burgers = Category.builder().name("Burgers").parentCategory(mainCourses).foodVenue(venue).build();
+        Category pasta = Category.builder().name("Pasta").parentCategory(mainCourses).foodVenue(venue).build();
+        Category meet = Category.builder().name("Meet").parentCategory(mainCourses).foodVenue(venue).build();
+        Category tacos = Category.builder().name("Tacos").parentCategory(mainCourses).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(pizzas, burgers, pasta, meet, tacos));
+
+        Category frenchFries = Category.builder().name("French Fries").parentCategory(appetizers).foodVenue(venue).build();
+        Category calamari = Category.builder().name("Calamari").parentCategory(appetizers).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(frenchFries, calamari));
+
+        Category beers = Category.builder().name("Beers").parentCategory(alcoholic).foodVenue(venue).build();
+        Category wines = Category.builder().name("Wines").parentCategory(alcoholic).foodVenue(venue).build();
+        Category cocktails = Category.builder().name("Cocktails").parentCategory(alcoholic).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(beers, wines, cocktails));
+
+        Category sodas = Category.builder().name("Sodas").parentCategory(nonAlcoholic).foodVenue(venue).build();
+        Category waters = Category.builder().name("Waters").parentCategory(nonAlcoholic).foodVenue(venue).build();
+        categoryRepository.saveAll(List.of(sodas, waters));
+
+        log.info("[DataInitializer] Categorías creadas para {}", venue.getName());
+    }
+
 }
 

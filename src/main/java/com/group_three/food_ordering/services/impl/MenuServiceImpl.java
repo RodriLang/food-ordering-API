@@ -6,9 +6,9 @@ import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.Product;
-import com.group_three.food_ordering.repositories.CategoryRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.repositories.ProductRepository;
+import com.group_three.food_ordering.services.CategoryService;
 import com.group_three.food_ordering.services.MenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MenuServiceImpl implements MenuService {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
@@ -62,18 +62,18 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private FlatMenuResponseDto generateFlatMenu(FoodVenue foodVenue) {
-        List<Category> leafCategories = categoryRepository.findAll().stream()
+        List<CategoryResponseDto> leafCategories = categoryService.getAll().stream()
                 .filter(c -> c.getChildrenCategories() == null || c.getChildrenCategories().isEmpty())
                 .toList();
 
         List<FlatCategoryMenuResponseDto> categories = new ArrayList<>();
 
-        for (Category category : leafCategories) {
-            List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategory(
-                    foodVenue.getPublicId(), true, category);
+        for (CategoryResponseDto category : leafCategories) {
+            List<ItemMenuResponseDto> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
+                    foodVenue.getPublicId(), true, category.getPublicId()).stream()
+                    .map(productMapper::toItemMenuDto).toList();
 
             List<ItemMenuResponseDto> productsDto = products.stream()
-                    .map(productMapper::toItemMenuDto)
                     .toList();
 
             if (!productsDto.isEmpty()) {
@@ -94,10 +94,8 @@ public class MenuServiceImpl implements MenuService {
 
 
     private HierarchicalMenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue, String category) {
-        // Categorías raíz (sin padre)
-        List<Category> rootCategories = categoryRepository.findAll().stream()
-                .filter(c -> c.getParentCategory() == null)
-                .toList();
+        // ✅ Solo categorías raíz del venue actual
+        List<Category> rootCategories = categoryService.findParentCategories(foodVenue.getPublicId());
 
         List<HierarchicalCategoryMenuResponseDto> categoriesDto;
 
@@ -109,7 +107,7 @@ public class MenuServiceImpl implements MenuService {
             categoriesDto = rootCategories.stream()
                     .map(root -> buildCategoryTree(root, foodVenue.getPublicId()))
                     .map(root -> findLeafCategory(root, category))
-                    .flatMap(Optional::stream) // solo devuelve la hoja encontrada
+                    .flatMap(Optional::stream)
                     .toList();
         }
 
@@ -120,13 +118,14 @@ public class MenuServiceImpl implements MenuService {
                 .build();
     }
 
+
     /**
      * Construcción recursiva de categorías + productos
      */
     private HierarchicalCategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
         // Productos de esta categoría
-        List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategory(
-                foodVenueId, true, category);
+        List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
+                foodVenueId, true, category.getPublicId());
 
         List<ItemMenuResponseDto> productsDto = products.stream()
                 .map(productMapper::toItemMenuDto)

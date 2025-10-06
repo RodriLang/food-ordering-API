@@ -15,6 +15,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByParentCategoryPublicIdAndFoodVenue_PublicId(UUID id, UUID foodVenuePublicId);
 
+    List<Category> findAllByFoodVenue_PublicIdAndParentCategoryIsNull(UUID foodVenuePublicId);
+
     void deleteByPublicIdAndFoodVenue_PublicId(UUID publicId, UUID foodVenuePublicId);
 
 }

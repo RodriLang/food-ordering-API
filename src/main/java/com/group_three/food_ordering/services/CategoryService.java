@@ -7,7 +7,7 @@ import com.group_three.food_ordering.models.Category;
 import java.util.List;
 import java.util.UUID;
 
-    public interface CategoryService {
+public interface CategoryService {
 
     CategoryResponseDto create(CategoryRequestDto categoryRequestDto);
 
@@ -22,5 +22,9 @@ import java.util.UUID;
     List<CategoryResponseDto> getAll();
 
     List<CategoryResponseDto> getCategoriesByParentCategoryId(UUID publicId);
+
+    List<Category> findParentCategories(UUID foodVenuePublicId);
+
+    List<CategoryResponseDto> getParentCategoriesByPublicId(UUID publicId);
 
 }

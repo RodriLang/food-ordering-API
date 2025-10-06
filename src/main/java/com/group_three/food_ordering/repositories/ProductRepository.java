@@ -23,7 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findAllByFoodVenue_PublicIdAndAvailable(UUID foodVenueId, Boolean available, Pageable pageable);
 
-    List<Product> findAllByFoodVenue_PublicIdAndAvailableAndCategory(UUID foodVenueId, Boolean available, Category category);
+    List<Product> findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(UUID foodVenueId, Boolean available, UUID categoryId);
 
     void deleteByPublicId(UUID publicId);
 

@@ -80,4 +80,22 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(categoryMapper::toDto)
                 .toList();
     }
+
+    @Override
+    public List<Category> findParentCategories(UUID foodVenuePublicId) {
+        return categoryRepository.findAllByFoodVenue_PublicIdAndParentCategoryIsNull(foodVenuePublicId)
+                .stream()
+                .toList();
+    }
+
+    @Override
+    public List<CategoryResponseDto> getParentCategoriesByPublicId(UUID publicId) {
+        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicId(
+                publicId, currentFoodVenueId);
+
+        return children.stream()
+                .map(categoryMapper::toDto)
+                .toList();
+    }
 }
