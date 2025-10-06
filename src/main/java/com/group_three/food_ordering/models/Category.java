@@ -24,7 +24,7 @@ public class Category extends BaseEntity {
     @Column
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 
