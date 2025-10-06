@@ -23,7 +23,7 @@ import java.util.List;
 public class Product extends BaseEntity {
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 

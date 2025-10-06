@@ -19,7 +19,7 @@ import org.hibernate.annotations.SQLDelete;
 @SuperBuilder
 public class Participant extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 

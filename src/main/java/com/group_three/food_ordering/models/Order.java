@@ -40,7 +40,7 @@ public class Order extends BaseEntity {
     @Column
     private String specialRequirements;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private FoodVenue foodVenue;
 
     @ManyToOne
