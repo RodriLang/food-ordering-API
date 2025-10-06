@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.FEAT_PRODUCT_URI)
+@Tag(name = "Productos destacados", description = "Gestión de los productos destacados para mostrar en apartados")
 public interface FeaturedProductController {
 
     @Operation(

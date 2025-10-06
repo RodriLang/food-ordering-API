@@ -7,7 +7,7 @@ import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
-import com.group_three.food_ordering.listener.AuditorUser;
+import com.group_three.food_ordering.dto.AuditorUser;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.CustomUserPrincipal;

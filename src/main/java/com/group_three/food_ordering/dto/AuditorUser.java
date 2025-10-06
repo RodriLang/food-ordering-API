@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.listener;
+package com.group_three.food_ordering.dto;
 
 import java.util.UUID;
 

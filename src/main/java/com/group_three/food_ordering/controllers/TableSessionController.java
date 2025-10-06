@@ -6,19 +6,16 @@ import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.services.OrderService;
-import com.group_three.food_ordering.services.TableSessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +24,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
 @RequestMapping(ApiPaths.TABLE_SESSION_URI)
-@RequiredArgsConstructor
-public class TableSessionController {
-
-    private final TableSessionService tableSessionService;
-    private final OrderService orderService;
+@Tag(name = "Sesiones de mesa", description = "Gestión de las sesiones de mesa, participaciones de clientes")
+public interface TableSessionController {
 
     @PreAuthorize("hasRole('CLIENT') or isAnonymous()")
     @Operation(
@@ -46,11 +39,8 @@ public class TableSessionController {
             }
     )
     @PostMapping("/scan-qr")
-    public ResponseEntity<InitSessionResponseDto> createTableSession(
-            @RequestBody @Valid TableSessionRequestDto tableSessionRequestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.enter(tableSessionRequestDto));
-    }
+    ResponseEntity<InitSessionResponseDto> createTableSession(
+            @RequestBody @Valid TableSessionRequestDto tableSessionRequestDto);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
@@ -63,9 +53,7 @@ public class TableSessionController {
             }
     )
     @GetMapping()
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContext() {
-        return ResponseEntity.ok(tableSessionService.getAll());
-    }
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContext();
 
 
     @PreAuthorize("hasRole('ROOT')")
@@ -78,9 +66,7 @@ public class TableSessionController {
             }
     )
     @GetMapping("/root")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueId() {
-        return ResponseEntity.ok(tableSessionService.getAll());
-    }
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueId();
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -94,11 +80,9 @@ public class TableSessionController {
             }
     )
     @GetMapping("/{id}")
-    public ResponseEntity<TableSessionResponseDto> getTableSessionById(
+    ResponseEntity<TableSessionResponseDto> getTableSessionById(
             @Parameter(description = "UUID de la sesión a buscar", required = true)
-            @PathVariable UUID id) {
-        return ResponseEntity.ok(tableSessionService.getById(id));
-    }
+            @PathVariable UUID id);
 
 
     @PreAuthorize("hasRole('ROOT')")
@@ -111,13 +95,11 @@ public class TableSessionController {
             }
     )
     @GetMapping("{foodVenueId}/table/{tableNumber}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Id del FoodVenue", required = true)
-            @PathVariable UUID foodVenueId) {
-        return ResponseEntity.ok(tableSessionService.getByFoodVenueAndTable(foodVenueId, tableNumber));
-    }
+            @PathVariable UUID foodVenueId);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
@@ -130,11 +112,9 @@ public class TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContextAndTable(
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContextAndTable(
             @Parameter(description = "Número de la mesa", required = true)
-            @PathVariable Integer tableNumber) {
-        return ResponseEntity.ok(tableSessionService.getByContextAndTable(tableNumber));
-    }
+            @PathVariable Integer tableNumber);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -147,15 +127,13 @@ public class TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}/time-range")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @Parameter(description = "Fecha y hora de fin (ISO 8601)")
-            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end));
-    }
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -168,9 +146,7 @@ public class TableSessionController {
             }
     )
     @GetMapping("/active")
-    public ResponseEntity<List<TableSessionResponseDto>> getActiveSessions() {
-        return ResponseEntity.ok(tableSessionService.getActiveSessions());
-    }
+    ResponseEntity<List<TableSessionResponseDto>> getActiveSessions();
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -183,11 +159,9 @@ public class TableSessionController {
             }
     )
     @GetMapping("/host/{clientId}")
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(
+    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(
             @Parameter(description = "UUID del cliente anfitrión", required = true)
-            @PathVariable UUID clientId) {
-        return ResponseEntity.ok(tableSessionService.getByHostClient(clientId));
-    }
+            @PathVariable UUID clientId);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -200,11 +174,9 @@ public class TableSessionController {
             }
     )
     @GetMapping("/participant/{clientId}")
-    public ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(
+    ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(
             @Parameter(description = "UUID del cliente participante", required = true)
-            @PathVariable UUID clientId) {
-        return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId));
-    }
+            @PathVariable UUID clientId);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -218,11 +190,10 @@ public class TableSessionController {
             }
     )
     @GetMapping("/latest/{tableId}")
-    public ResponseEntity<TableSessionResponseDto> getLatestTableSessionByTable(
+    ResponseEntity<TableSessionResponseDto> getLatestTableSessionByTable(
             @Parameter(description = "UUID de la mesa", required = true)
-            @PathVariable UUID tableId) {
-        return ResponseEntity.ok(tableSessionService.getLatestByTable(tableId));
-    }
+            @PathVariable UUID tableId);
+
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(
@@ -235,23 +206,19 @@ public class TableSessionController {
             }
     )
     @PutMapping("/{id}/clients/{clientId}")
-    public ResponseEntity<TableSessionResponseDto> addClientToSession(
+    ResponseEntity<TableSessionResponseDto> addClientToSession(
             @Parameter(description = "UUID de la sesión", required = true)
             @PathVariable UUID id,
             @Parameter(description = "UUID del cliente a agregar", required = true)
-            @PathVariable UUID clientId) {
-        return ResponseEntity.ok(tableSessionService.addClient(id, clientId));
-    }
+            @PathVariable UUID clientId);
 
 
     @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
     @GetMapping("/{id}/orders")
-    public ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
+    ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
             @RequestParam(required = false) OrderStatus status,
-            @Parameter Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByTableSessionAndStatus(id, status, pageable));
-    }
+            @Parameter Pageable pageable);
 
 }

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.ROOT_USER_URI)
-@Tag(name = "Users solo con acceso root", description = "Operaciones relacionadas con usuarios del sistema")
+@Tag(name = "Control de Usuarios", description = "Operaciones privadas relacionadas con usuarios del sistema")
 public interface RootUserController {
 
     @GetMapping("/{id}")

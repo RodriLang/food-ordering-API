@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.configs;
 
-import com.group_three.food_ordering.listener.AuditorUser;
+import com.group_three.food_ordering.dto.AuditorUser;
 import com.group_three.food_ordering.services.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,26 +21,29 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RequestMapping(ApiPaths.CURRENT_URI)
+@Tag(name = "Usuario autenticado", description = "Acciones del usuario que se encuentra usando la aplicación")
 public interface CurrentUserController {
-
 
     @GetMapping("/user")
     ResponseEntity<UserResponseDto> getAuthenticatedUser();
+
 
     @GetMapping("/orders")
     ResponseEntity<Page<OrderResponseDto>> getMyOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
 
+
     @PostMapping("/table-sessions")
     ResponseEntity<InitSessionResponseDto> createTableSession(@RequestBody @Valid TableSessionRequestDto tableSessionRequestDto);
+
 
     @GetMapping("/table-sessions")
     ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
+
 
     @Operation(
             summary = "Obtener sesiones del cliente como anfitrión",

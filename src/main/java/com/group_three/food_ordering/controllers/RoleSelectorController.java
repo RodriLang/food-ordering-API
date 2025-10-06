@@ -6,12 +6,16 @@ import com.group_three.food_ordering.dto.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping(ApiPaths.ROLE_SELECTOR_URI)
+@Tag(
+        name = "Selector de rol",
+        description = "Proporciona un acceso para empleados de todas las jerarquías para gestionar el uso de sus roles disponibles")
 public interface RoleSelectorController {
 
     @Operation(

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.ORDER_URI)
+@Tag(name = "Pedidos", description = "Gestión de los pedidos asociados a las sesiones de mesa")
 public interface OrderController {
 
     @Operation(

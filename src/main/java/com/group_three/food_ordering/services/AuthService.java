@@ -4,7 +4,7 @@ import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.listener.AuditorUser;
+import com.group_three.food_ordering.dto.AuditorUser;
 import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
