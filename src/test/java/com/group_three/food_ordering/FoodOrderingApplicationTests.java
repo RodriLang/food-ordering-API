@@ -8,6 +8,7 @@ class FoodOrderingApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// Test that the Spring Boot context loads correctly
 	}
 
 }

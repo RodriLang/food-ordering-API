@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,7 +62,7 @@ class OrderDetailServiceImplTest {
                 .build();
 
         orderDetailRequestDto = OrderDetailRequestDto.builder()
-                .productId(product.getId())
+                .productId(product.getPublicId())
                 .specialInstructions("test instructions")
                 .build();
 
@@ -117,7 +118,6 @@ class OrderDetailServiceImplTest {
         assertEquals(3, response.getQuantity());
         assertEquals(BigDecimal.valueOf(30), response.getPrice());
         assertEquals("test instructions", response.getSpecialInstructions());
-        assertEquals(false, response.getDeleted());
         verify(orderDetailRepository).save(orderDetail);
     }
 
@@ -127,7 +127,7 @@ class OrderDetailServiceImplTest {
         product.setStock(0); // stock insuficiente
 
         OrderDetailRequestDto dto = new OrderDetailRequestDto();
-        dto.setProductId(1L);
+        dto.setProductId(UUID.randomUUID());
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -162,19 +162,6 @@ class OrderDetailServiceImplTest {
 
         assertNotNull(response);
         assertEquals(1L, response.getId());
-    }
-
-    @Test
-    void softDelete() {
-        when(orderDetailRepository.findById(1L)).thenReturn(Optional.of(orderDetail));
-
-        assertFalse(orderDetail.getDeleted());
-
-        orderDetailService.softDelete(1L);
-
-        assertEquals(1L, orderDetail.getId());
-        assertTrue(orderDetail.getDeleted());
-        verify(orderDetailRepository).save(orderDetail);
     }
 
     @Test

@@ -2,9 +2,8 @@ package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -18,13 +17,8 @@ import java.util.*;
 @ToString(exclude = {"foodVenue", "orders", "participants"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class TableSession extends BaseEntity {
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
-    @EqualsAndHashCode.Include
-    private UUID publicId;
 
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;

@@ -58,15 +58,15 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDto getById(UUID id) {
-        return paymentMapper.toDTO(paymentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString())));
+        Payment payment = getPaymentEntityById(id);
+        return paymentMapper.toDTO(payment);
     }
 
     @Transactional
     @Override
     public PaymentResponseDto update(UUID id, PaymentRequestDto dto) {
 
-        Payment existingPayment = getPaymentEntityByID(id);
+        Payment existingPayment = getPaymentEntityById(id);
 
         // Verifica si el pago se encuentra en un estado que permita la modificación
         verifyUpdatablePayment(existingPayment);
@@ -107,7 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDto updateStatus(UUID id, PaymentStatus paymentStatus) {
-        Payment existingPayment = getPaymentEntityByID(id);
+        Payment existingPayment = getPaymentEntityById(id);
 
         this.verifyUpdatablePayment(existingPayment);
 
@@ -119,10 +119,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void delete(UUID id) {
-        if (!paymentRepository.existsById(id)) {
+        if (!paymentRepository.existsByPublicId(id)) {
             throw new EntityNotFoundException(ENTITY_NAME, id.toString());
         }
-        paymentRepository.deleteById(id);
+        paymentRepository.deleteByPublicId(id);
     }
 
     private void verifyUpdatablePayment(Payment payment) {
@@ -133,8 +133,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private Payment getPaymentEntityByID(UUID id) {
-        return paymentRepository.findById(id)
+    private Payment getPaymentEntityById(UUID id) {
+        return paymentRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 

@@ -14,7 +14,7 @@ public interface TableSessionMapper {
             @Mapping(source = "diningTable.number", target = "tableNumber"),
             @Mapping(source = "sessionHost", target = "hostClient"),
     })
-    TableSessionResponseDto toDTO(TableSession tableSession);
+    TableSessionResponseDto toDto(TableSession tableSession);
 
     TableSession toEntity(TableSessionRequestDto dto);
 }

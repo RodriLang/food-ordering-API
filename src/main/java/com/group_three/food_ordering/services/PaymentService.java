@@ -8,10 +8,16 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PaymentService {
+
     PaymentResponseDto create(PaymentRequestDto dto);
+
     List<PaymentResponseDto> getAll();
+
     PaymentResponseDto getById(UUID id);
+
     PaymentResponseDto update(UUID id, PaymentRequestDto dto);
+
     PaymentResponseDto updateStatus(UUID id, PaymentStatus paymentStatus);
+
     void delete(UUID id);
 }

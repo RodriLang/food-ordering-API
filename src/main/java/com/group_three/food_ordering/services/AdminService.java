@@ -5,7 +5,6 @@ import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface AdminService {

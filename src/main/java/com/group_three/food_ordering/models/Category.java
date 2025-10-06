@@ -3,6 +3,7 @@ package com.group_three.food_ordering.models;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
@@ -14,14 +15,18 @@ import java.util.List;
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-@ToString(exclude = "childrenCategories")
+@ToString(exclude = {"childrenCategories", "foodVenue"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Category extends BaseEntity {
 
     @Column
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_venue_id")
+    private FoodVenue foodVenue;
 
     @ManyToOne
     @JoinColumn(name = "parent_id")

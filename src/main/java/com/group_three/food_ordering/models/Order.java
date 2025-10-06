@@ -5,15 +5,13 @@ import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
@@ -24,13 +22,8 @@ import java.util.UUID;
 @ToString(exclude = {"foodVenue", "participant", "tableSession", "orderDetails"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Order extends BaseEntity {
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
-    @EqualsAndHashCode.Include
-    private UUID publicId;
 
     @Column
     private Integer orderNumber;

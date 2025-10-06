@@ -210,26 +210,26 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public List<TableSessionResponseDto> getAll() {
         return tableSessionRepository.findByFoodVenuePublicId(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
     @Override
     public TableSessionResponseDto getById(UUID id) {
         TableSession tableSession = getEntityById(id);
-        return tableSessionMapper.toDTO(tableSession);
+        return tableSessionMapper.toDto(tableSession);
     }
 
     @Override
     public TableSession getEntityById(UUID sessionId) {
-        return tableSessionRepository.findById(sessionId)
+        return tableSessionRepository.findByPublicId(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, sessionId.toString()));
     }
 
     @Override
     public List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber) {
         return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -239,7 +239,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
 
         return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -256,7 +256,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
                         tenantContext.getCurrentFoodVenue().getPublicId(), tableNumber, start, effectiveEnd)
                 .stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -264,7 +264,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public List<TableSessionResponseDto> getActiveSessions() {
         return tableSessionRepository
                 .findByFoodVenuePublicIdAndEndTimeIsNull(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -272,7 +272,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public List<TableSessionResponseDto> getByHostClient(UUID clientId) {
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
                         tenantContext.getCurrentFoodVenueId(), clientId).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -283,7 +283,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
                         tenantContext.getCurrentFoodVenueId(), authClientId).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -291,7 +291,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public List<TableSessionResponseDto> getPastByParticipant(UUID clientId) {
         return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), clientId).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -302,7 +302,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
                         tenantContext.getCurrentFoodVenueId(), authClientId).stream()
-                .map(tableSessionMapper::toDTO)
+                .map(tableSessionMapper::toDto)
                 .toList();
     }
 
@@ -311,7 +311,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         TableSession tableSession = tableSessionRepository.findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(
                         tenantContext.getCurrentFoodVenueId(), tableId)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
-        return tableSessionMapper.toDTO(tableSession);
+        return tableSessionMapper.toDto(tableSession);
     }
 
     @Override
@@ -320,7 +320,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         Participant participant = participantService.getEntityById(clientId);
         tableSession.getParticipants().add(participant);
         TableSession updatedTableSession = tableSessionRepository.save(tableSession);
-        return tableSessionMapper.toDTO(updatedTableSession);
+        return tableSessionMapper.toDto(updatedTableSession);
     }
 
     @Override

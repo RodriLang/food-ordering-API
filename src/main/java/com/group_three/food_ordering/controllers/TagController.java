@@ -6,7 +6,6 @@ import com.group_three.food_ordering.dto.response.TagResponseDto;
 import com.group_three.food_ordering.services.TagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,7 @@ public class TagController {
     @PostMapping
     public ResponseEntity<TagResponseDto> createTag(
             @RequestBody @Valid TagRequestDto tagRequestDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(tagService.create(tagRequestDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(tagService.create(tagRequestDto));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -38,40 +37,5 @@ public class TagController {
     @GetMapping
     public ResponseEntity<List<TagResponseDto>> getAllTags() {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getAll());
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Obtener una etiqueta por ID")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Etiqueta encontrada"),
-            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
-    })
-    @GetMapping("/{id}")
-    public ResponseEntity<TagResponseDto> getTagById(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(tagService.getById(id));
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Eliminar una etiqueta")
-    @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Etiqueta eliminada correctamente"),
-            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<TagResponseDto> deleteTag(@PathVariable Long id) {
-        tagService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Actualizar una etiqueta existente")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Etiqueta actualizada correctamente"),
-            @ApiResponse(responseCode = "404", description = "Etiqueta no encontrada")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<TagResponseDto> updateTag(@PathVariable Long id,
-                                                    @RequestBody @Valid TagRequestDto tagRequestDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(tagService.update(id, tagRequestDto));
     }
 }

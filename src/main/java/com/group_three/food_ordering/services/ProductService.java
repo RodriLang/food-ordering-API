@@ -5,31 +5,35 @@ import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.models.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.util.UUID;
 
 public interface ProductService {
 
     ProductResponseDto create(ProductRequestDto productRequestDto);
 
-    ProductResponseDto update(Long id, ProductRequestDto productRequestDto);
+    ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto);
 
-    ProductResponseDto getById(Long id);
+    ProductResponseDto getById(UUID publicId);
 
-    Product getEntityById(Long id);
+    Product getEntityById(UUID publicId);
 
     ItemMenuResponseDto getByNameAndContext(String name);
 
-    void delete(Long id);
+    void delete(UUID publicId);
 
-    List<ProductResponseDto> getAll();
+    Page<ProductResponseDto> getAll(Pageable pageable);
 
-    List<ProductResponseDto> getAllAvailable();
+    Page<ProductResponseDto> getAllAvailable(Pageable pageable);
 
     void validateStock(Product product, Integer quantity) throws InsufficientStockException;
 
     void incrementStockProduct(Product product, Integer quantity);
 
     void decrementStockProduct(Product product, Integer quantity);
+
+    Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable);
 
 }

@@ -27,7 +27,7 @@ public class DiningTableController {
 
     private final DiningTableService diningTableService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Operation(
             summary = "Crear una nueva mesa",
             description = "Crea una mesa nueva en el sistema.",
@@ -43,7 +43,7 @@ public class DiningTableController {
         return ResponseEntity.status(HttpStatus.CREATED).body(diningTableService.create(diningTableRequestDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
             summary = "Obtener todas las mesas",
             description = "Devuelve una lista con todas las mesas registradas.",
@@ -57,7 +57,7 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.getAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
             summary = "Obtener mesa por UUID",
             description = "Obtiene una mesa según su identificador UUID.",
@@ -74,7 +74,7 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
             summary = "Obtener mesa por número",
             description = "Busca una mesa mediante su número único.",
@@ -91,7 +91,7 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.getByNumber(number));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
             summary = "Obtener mesas filtradas",
             description = "Filtra mesas por estado y/o capacidad. Ambos parámetros son opcionales.",
@@ -109,10 +109,9 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.getByFilters(status, capacity));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
-            summary = "Actualizar una mesa",
-            description = "Actualiza todos los datos de una mesa existente.",
+            summary = "Actualizar estado de una mesa",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Mesa actualizada correctamente",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class))),
@@ -120,15 +119,16 @@ public class DiningTableController {
                     @ApiResponse(responseCode = "404", description = "Mesa no encontrada")
             }
     )
-    @PutMapping("/{id}")
-    public ResponseEntity<DiningTableResponseDto> update(
-            @RequestBody @Valid DiningTableRequestDto diningTableRequestDto,
+    @PatchMapping("/status/{id}")
+    public ResponseEntity<Void> update(
+            @RequestParam @Valid DiningTableStatus status,
             @Parameter(description = "UUID de la mesa a actualizar", required = true)
             @PathVariable UUID id) {
-        return ResponseEntity.ok(diningTableService.update(diningTableRequestDto, id));
+        diningTableService.updateStatus(status, id);
+        return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(
             summary = "Modificar parcialmente una mesa",
             description = "Modifica parcialmente los datos de una mesa.",
@@ -147,7 +147,7 @@ public class DiningTableController {
         return ResponseEntity.ok(diningTableService.update(diningTableRequestDto, id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Operation(
             summary = "Eliminar una mesa",
             description = "Elimina una mesa del sistema usando su UUID.",

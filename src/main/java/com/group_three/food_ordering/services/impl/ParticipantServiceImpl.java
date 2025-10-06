@@ -66,14 +66,14 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public ParticipantResponseDto getById(UUID id) {
-        Participant participant = participantRepository.findById(id)
+        Participant participant = participantRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
         return participantMapper.toResponseDto(participant);
     }
 
     @Override
     public Participant getEntityById(UUID id) {
-        return participantRepository.findById(id)
+        return participantRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 }

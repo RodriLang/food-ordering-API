@@ -5,14 +5,22 @@ import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.models.Category;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface CategoryService {
+    public interface CategoryService {
+
     CategoryResponseDto create(CategoryRequestDto categoryRequestDto);
-    CategoryResponseDto update(Long id, CategoryRequestDto categoryRequestDto);
-    CategoryResponseDto getById(Long id);
-    Category getEntityById(Long id);
-    void delete(Long id);
+
+    CategoryResponseDto update(UUID publicId, CategoryRequestDto categoryRequestDto);
+
+    CategoryResponseDto getById(UUID publicId);
+
+    Category getEntityById(UUID publicId);
+
+    void delete(UUID publicId);
+
     List<CategoryResponseDto> getAll();
-    List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id);
+
+    List<CategoryResponseDto> getCategoriesByParentCategoryId(UUID publicId);
 
 }

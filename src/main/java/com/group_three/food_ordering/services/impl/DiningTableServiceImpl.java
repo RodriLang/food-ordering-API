@@ -54,7 +54,7 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public DiningTable getEntityById(UUID tableId) {
-        return diningTableRepository.findById(tableId)
+        return diningTableRepository.findByPublicId(tableId)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, tableId.toString()));
     }
 

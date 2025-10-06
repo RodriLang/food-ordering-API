@@ -16,6 +16,7 @@ public class ApiPaths {
     public static final String TAG_URI = URI_BASE_V1 + "/tags";
     public static final String CATEGORY_URI = URI_BASE_V1 + "/categories";
     public static final String PRODUCT_URI = URI_BASE_V1 + "/products";
+    public static final String FEAT_PRODUCT_URI = PRODUCT_URI + "/featured";
     public static final String PAYMENT_URI = URI_BASE_V1 + "/payments";
     public static final String TABLE_URI = URI_BASE_V1 + "/tables";
     public static final String TABLE_SESSION_URI = URI_BASE_V1 + "/table-sessions";

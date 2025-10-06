@@ -2,13 +2,11 @@ package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "food_venues")
@@ -19,13 +17,8 @@ import java.util.UUID;
 @ToString(exclude = {"products", "employees", "diningTables"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class FoodVenue extends BaseEntity {
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
-    @EqualsAndHashCode.Include
-    private UUID publicId;
 
     @Column(length = 50)
     private String name;

@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +21,6 @@ public class CategoryRequestDto {
     @Size(max = 50, message = "Tag name must be 50 characters or less", groups = {OnCreate.class, OnUpdate.class})
     private String name;
 
-    private Long parentCategoryId;
+    private UUID parentCategoryId;
 
 }

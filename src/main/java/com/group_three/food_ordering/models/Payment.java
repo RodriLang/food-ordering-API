@@ -5,13 +5,11 @@ import com.group_three.food_ordering.enums.PaymentStatus;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "payments")
@@ -22,13 +20,8 @@ import java.util.UUID;
 @ToString(exclude = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Payment extends BaseEntity {
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
-    @EqualsAndHashCode.Include
-    private UUID publicId;
 
     @Column
     private BigDecimal amount;

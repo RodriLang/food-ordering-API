@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getEntityById(UUID id) {
-        return userRepository.findById(id)
+        return userRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 }

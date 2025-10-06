@@ -60,7 +60,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public FoodVenue findEntityById(UUID id) {
-        return foodVenueRepository.findById(id)
+        return foodVenueRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Food Venue", id.toString()));
     }
 

@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
+
 @RestController
 @RequestMapping(ApiPaths.CATEGORY_URI)
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Operation(summary = "Crear una nueva categoría")
     @ApiResponse(responseCode = "200", description = "Categoría creada correctamente")
     @PostMapping
@@ -32,20 +34,20 @@ public class CategoryController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Operation(summary = "Actualizar una categoría existente")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Categoría actualizada correctamente"),
             @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable Long id,
+    public ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable UUID id,
                                                                   @RequestBody @Valid CategoryRequestDto categoryRequestDto) {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(id, categoryRequestDto));
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Operation(summary = "Listar todas las categorías")
     @ApiResponse(responseCode = "200", description = "Listado de categorías")
     @GetMapping
@@ -60,18 +62,18 @@ public class CategoryController {
             @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable UUID id) {
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Operation(summary = "Eliminar una categoría")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Categoría eliminada correctamente"),
             @ApiResponse(responseCode = "404", description = "Categoría no encontrada")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }

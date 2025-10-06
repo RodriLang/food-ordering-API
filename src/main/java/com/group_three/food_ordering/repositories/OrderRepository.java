@@ -15,7 +15,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, UUID> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
+
+    Optional<Order> findByPublicId(UUID publicId);
 
     Optional<Order> findByFoodVenue_PublicIdAndOrderNumberAndOrderDateBetween(
             UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
@@ -44,6 +46,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Page<Order> findOrdersByParticipant_PublicIdAndStatus(UUID participantId, OrderStatus status, Pageable pageable);
 
     Page<Order> findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus(UUID participantId, UUID tableSessionId, OrderStatus status, Pageable pageable);
+
+    void deleteByPublicId(UUID publicId);
 
     @Query("SELECT COUNT(o) " +
             "FROM Order o " +

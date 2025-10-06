@@ -3,6 +3,7 @@ package com.group_three.food_ordering.models;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Product extends BaseEntity {
 
     @ToString.Exclude

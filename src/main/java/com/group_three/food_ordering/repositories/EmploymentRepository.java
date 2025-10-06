@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface EmploymentRepository extends JpaRepository<Employment, UUID> {
+public interface EmploymentRepository extends JpaRepository<Employment, Long> {
 
     Optional<Employment> findByPublicIdAndActive(UUID publicId, Boolean active);
 

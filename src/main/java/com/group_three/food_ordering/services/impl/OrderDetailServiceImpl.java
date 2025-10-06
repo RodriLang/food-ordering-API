@@ -38,7 +38,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     public OrderDetail createInternal(OrderDetailRequestDto orderDetailRequestDto) {
 
-        Product product = productRepository.findById(orderDetailRequestDto.getProductId())
+        Product product = productRepository.findByPublicId(orderDetailRequestDto.getProductId())
                 .orElseThrow(()-> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
 
         updateProductStock(product, -1);

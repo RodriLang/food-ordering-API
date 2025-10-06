@@ -4,11 +4,8 @@ import com.group_three.food_ordering.enums.RoleType;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "participants")
@@ -19,13 +16,8 @@ import java.util.UUID;
 @ToString(exclude = {"tableSession", "user"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class Participant extends BaseEntity {
-
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
-    @EqualsAndHashCode.Include
-    private UUID publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")

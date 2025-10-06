@@ -16,9 +16,13 @@ import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.repositories.TagRepository;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -46,21 +50,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto update(Long id, ProductRequestDto productRequestDto) {
-        Product product = getEntityById(id);
+    public ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto) {
+        Product product = getEntityById(publicId);
         productMapper.updateEntity(product, productRequestDto);
         return applyProductRulesAndSave(product, productRequestDto);
     }
 
     @Override
-    public ProductResponseDto getById(Long id) {
-        Product product = getEntityById(id);
+    public ProductResponseDto getById(UUID publicId) {
+        Product product = getEntityById(publicId);
         return productMapper.toDto(product);
     }
 
     @Override
-    public Product getEntityById(Long id) {
-        return productRepository.findById(id)
+    public Product getEntityById(UUID publicId) {
+        return productRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
     }
 
@@ -75,23 +79,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void delete(Long id) {
-        productRepository.deleteById(id);
+    public void delete(UUID publicId) {
+        productRepository.deleteByPublicId(publicId);
     }
 
 
     @Override
-    public List<ProductResponseDto> getAll() {
-        return productRepository.findAllByFoodVenue_PublicId(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(productMapper::toDto)
-                .toList();
+    public Page<ProductResponseDto> getAll(Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
+        return productRepository.findAllByFoodVenue_PublicId(foodVenueId, pageable)
+                .map(productMapper::toDto);
     }
 
     @Override
-    public List<ProductResponseDto> getAllAvailable() {
-        return productRepository.findAllByFoodVenue_PublicIdAndAvailable(tenantContext.getCurrentFoodVenue().getPublicId(), true).stream()
-                .map(productMapper::toDto)
-                .toList();
+    public Page<ProductResponseDto> getAllAvailable(Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
+        return productRepository.findAllByFoodVenue_PublicIdAndAvailable(foodVenueId, true, pageable)
+                .map(productMapper::toDto);
+    }
+
+    @Override
+    public Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable) {
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(days);
+        return productRepository.findTopSellingProducts(fromDate, PageRequest.of(0, limit))
+                .map(productMapper::toItemMenuDto);
     }
 
     private ProductResponseDto applyProductRulesAndSave(Product product, ProductRequestDto productRequestDto) {

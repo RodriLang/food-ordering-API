@@ -15,7 +15,11 @@ import org.hibernate.annotations.SQLDelete;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class VenueStyle extends BaseEntity {
+public class VenueStyle {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
     @Column(length = 500)
     private String logoUrl;

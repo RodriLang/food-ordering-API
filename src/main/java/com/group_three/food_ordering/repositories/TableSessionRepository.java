@@ -13,7 +13,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface TableSessionRepository extends JpaRepository<TableSession, UUID> {
+public interface TableSessionRepository extends JpaRepository<TableSession, Long> {
+
+    Optional<TableSession> findByPublicId(UUID publicId);
 
     List<TableSession> findByFoodVenuePublicId(UUID foodVenueId);
 

@@ -48,7 +48,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public FlatMenuResponseDto getFlatMenuByFoodVenueId(UUID foodVenueId) {
-        FoodVenue foodVenue = foodVenueRepository.findById(foodVenueId)
+        FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
 
         return generateFlatMenu(foodVenue);
@@ -56,7 +56,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
-        FoodVenue foodVenue = foodVenueRepository.findById(foodVenueId)
+        FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
         return generateHierarchicalMenu(foodVenue, category);
     }

@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.CategoryRequestDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final TenantContext tenantContext;
 
     @Override
     public CategoryResponseDto create(CategoryRequestDto categoryRequestDto) {
@@ -31,32 +34,36 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponseDto update(Long id, CategoryRequestDto categoryRequestDto) {
+    public CategoryResponseDto update(UUID publicId, CategoryRequestDto categoryRequestDto) {
         Category category = getEntityById(categoryRequestDto.getParentCategoryId());
         category.setName(categoryRequestDto.getName());
         return categoryMapper.toDto(categoryRepository.save(category));
     }
 
     @Override
-    public CategoryResponseDto getById(Long id) {
-        Category category = getEntityById(id);
+    public CategoryResponseDto getById(UUID publicId) {
+        Category category = getEntityById(publicId);
         return categoryMapper.toDto(category);
     }
 
     @Override
-    public Category getEntityById(Long id) {
-        return categoryRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Category"));
+    public Category getEntityById(UUID publicId) {
+        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        return categoryRepository.findByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId)
+                .orElseThrow(() -> new EntityNotFoundException("Category"));
 
     }
 
     @Override
-    public void delete(Long id) {
-        categoryRepository.deleteById(id);
+    public void delete(UUID publicId) {
+        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        categoryRepository.deleteByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId);
     }
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        List<Category> roots = categoryRepository.findByParentCategoryIsNull();
+        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        List<Category> roots = categoryRepository.findByParentCategoryIsNullAndFoodVenue_PublicId(currentFoodVenueId);
 
         return roots.stream()
                 .map(categoryMapper::toDto)
@@ -64,10 +71,13 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDto> getCategoriesByParentCategoryId(Long id) {
-       List<Category> children = categoryRepository.findByParentCategoryId(id);
-       return children.stream()
-               .map(categoryMapper::toDto)
-               .toList();
+    public List<CategoryResponseDto> getCategoriesByParentCategoryId(UUID publicId) {
+        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicId(
+                publicId, currentFoodVenueId);
+
+        return children.stream()
+                .map(categoryMapper::toDto)
+                .toList();
     }
 }

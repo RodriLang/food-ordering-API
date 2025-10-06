@@ -17,6 +17,7 @@ import com.group_three.food_ordering.utils.OrderServiceHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private static final String ORDER_ENTITY_NAME = "Order";
     private static final String PRODUCT_ENTITY_NAME = "Product";
     private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
+    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -66,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(dto -> {
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
-                    Product product = productRepository.findById(dto.getProductId())
+                    Product product = productRepository.findByPublicId(dto.getProductId())
                             .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME, dto.getProductId().toString()));
                     detail.setProduct(product);
                     detail.setQuantity(1);
@@ -103,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
 
         Participant currentParticipant = authService.determineCurrentParticipant();
 
-        TableSession session = tableSessionRepository.findById(tableSessionId)
+        TableSession session = tableSessionRepository.findByPublicId(tableSessionId)
                 .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION_ENTITY_NAME, tableSessionId.toString()));
 
         RoleType role = authService.getCurrentParticipantRole();
@@ -218,7 +220,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void delete(UUID id) {
-        orderRepository.deleteById(id);
+        orderRepository.deleteByPublicId(id);
     }
 
     @Override
@@ -268,7 +270,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order getEntityByIdAndTenantContext(UUID id) {
-        return orderRepository.findById(id)
+        return orderRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ORDER_ENTITY_NAME, id.toString()));
     }
 

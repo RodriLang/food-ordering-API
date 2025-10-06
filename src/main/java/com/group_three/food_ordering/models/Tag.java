@@ -15,7 +15,11 @@ import org.hibernate.annotations.SQLDelete;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Tag extends BaseEntity {
+public class Tag {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
     @Column
     private String label;

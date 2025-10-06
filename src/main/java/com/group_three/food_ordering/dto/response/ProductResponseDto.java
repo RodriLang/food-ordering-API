@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,7 @@ import java.util.List;
 @Builder
 public class ProductResponseDto {
 
-    private Long id;
+    private UUID publicId;
 
     private String name;
 

@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface FoodVenueRepository extends JpaRepository<FoodVenue, UUID> {
+public interface FoodVenueRepository extends JpaRepository<FoodVenue, Long> {
 
     Optional<FoodVenue> findByEmailIgnoreCase(String email);
 

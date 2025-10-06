@@ -120,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Getting current participant from principal");
         return getCurrentPrincipal()
                 .map(CustomUserPrincipal::getParticipantId)
-                .flatMap(participantRepository::findById);
+                .flatMap(participantRepository::findByPublicId);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class AuthServiceImpl implements AuthService {
             log.debug("[AuthService] Principal found");
             UUID tableSessionId = principal.get().getTableSessionId();
             log.debug("[AuthService] TableSession found in principal tableSessionId={}", tableSessionId);
-            return tableSessionRepository.findById(tableSessionId);
+            return tableSessionRepository.findByPublicId(tableSessionId);
         }
         log.debug("[AuthService] Principal not found");
         return Optional.empty();
