@@ -29,7 +29,7 @@ public class MenuServiceImpl implements MenuService {
     private final FoodVenueRepository foodVenueRepository;
 
     @Override
-    public HierarchicalMenuResponseDto getCurrentContextHierarchicalMenu(String category) {
+    public MenuResponseDto getCurrentContextHierarchicalMenu(String category) {
         FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
         if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
@@ -38,66 +38,17 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public FlatMenuResponseDto getCurrentContextFlatMenu() {
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
-        if (foodVenue == null) {
-            throw new IllegalStateException("No tenant context available for the current request.");
-        }
-        return getFlatMenuByFoodVenueId(foodVenue.getPublicId());
-    }
-
-    @Override
-    public FlatMenuResponseDto getFlatMenuByFoodVenueId(UUID foodVenueId) {
-        FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
-
-        return generateFlatMenu(foodVenue);
-    }
-
-    @Override
-    public HierarchicalMenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
+    public MenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
         FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
         return generateHierarchicalMenu(foodVenue, category);
     }
 
-    private FlatMenuResponseDto generateFlatMenu(FoodVenue foodVenue) {
-        List<CategoryResponseDto> leafCategories = categoryService.getAll().stream()
-                .filter(c -> c.getChildrenCategories() == null || c.getChildrenCategories().isEmpty())
-                .toList();
+    private MenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue, String category) {
 
-        List<FlatCategoryMenuResponseDto> categories = new ArrayList<>();
-
-        for (CategoryResponseDto category : leafCategories) {
-            List<ItemMenuResponseDto> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
-                    foodVenue.getPublicId(), true, category.getPublicId()).stream()
-                    .map(productMapper::toItemMenuDto).toList();
-
-            List<ItemMenuResponseDto> productsDto = products.stream()
-                    .toList();
-
-            if (!productsDto.isEmpty()) {
-                categories.add(
-                        FlatCategoryMenuResponseDto.builder()
-                                .category(category.getName())
-                                .products(productsDto)
-                                .build()
-                );
-            }
-        }
-        return FlatMenuResponseDto.builder()
-                .foodVenueName(foodVenue.getName())
-                .foodVenueImageUrl(foodVenue.getVenueStyle().getLogoUrl())
-                .menu(categories)
-                .build();
-    }
-
-
-    private HierarchicalMenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue, String category) {
-        // ✅ Solo categorías raíz del venue actual
         List<Category> rootCategories = categoryService.findParentCategories(foodVenue.getPublicId());
 
-        List<HierarchicalCategoryMenuResponseDto> categoriesDto;
+        List<CategoryMenuResponseDto> categoriesDto;
 
         if (category == null) {
             categoriesDto = rootCategories.stream()
@@ -111,18 +62,17 @@ public class MenuServiceImpl implements MenuService {
                     .toList();
         }
 
-        return HierarchicalMenuResponseDto.builder()
+        return MenuResponseDto.builder()
                 .foodVenueName(foodVenue.getName())
                 .foodVenueImageUrl(foodVenue.getVenueStyle().getLogoUrl())
                 .menu(categoriesDto)
                 .build();
     }
 
-
     /**
      * Construcción recursiva de categorías + productos
      */
-    private HierarchicalCategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
+    private CategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
         // Productos de esta categoría
         List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
                 foodVenueId, true, category.getPublicId());
@@ -132,21 +82,21 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
 
         // Subcategorías (recursivo)
-        List<HierarchicalCategoryMenuResponseDto> children = category.getChildrenCategories() != null
+        List<CategoryMenuResponseDto> children = category.getChildrenCategories() != null
                 ? category.getChildrenCategories().stream()
                 .map(child -> buildCategoryTree(child, foodVenueId))
                 .toList()
                 : new ArrayList<>();
 
-        return HierarchicalCategoryMenuResponseDto.builder()
+        return CategoryMenuResponseDto.builder()
                 .category(category.getName())
                 .products(productsDto)
                 .subcategory(children)
                 .build();
     }
 
-    private Optional<HierarchicalCategoryMenuResponseDto> findLeafCategory(
-            HierarchicalCategoryMenuResponseDto node, String category) {
+    private Optional<CategoryMenuResponseDto> findLeafCategory(
+            CategoryMenuResponseDto node, String category) {
 
         if ((node.getSubcategory() == null || node.getSubcategory().isEmpty())
                 && node.getCategory().equalsIgnoreCase(category)) {
@@ -154,8 +104,8 @@ public class MenuServiceImpl implements MenuService {
         }
 
         if (node.getSubcategory() != null) {
-            for (HierarchicalCategoryMenuResponseDto child : node.getSubcategory()) {
-                Optional<HierarchicalCategoryMenuResponseDto> result = findLeafCategory(child, category);
+            for (CategoryMenuResponseDto child : node.getSubcategory()) {
+                Optional<CategoryMenuResponseDto> result = findLeafCategory(child, category);
                 if (result.isPresent()) {
                     return result;
                 }

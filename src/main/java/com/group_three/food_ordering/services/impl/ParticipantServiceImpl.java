@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -55,13 +54,6 @@ public class ParticipantServiceImpl implements ParticipantService {
         log.debug("[ParticipantService] Participant updated. Nickname={}. Role={}. User={}",
                 participant.getNickname(), participant.getRole(), user != null ? user.getEmail() : null);
         return participant;
-    }
-
-    @Override
-    public List<ParticipantResponseDto> getAll() {
-        return participantRepository.findAll().stream()
-                .map(participantMapper::toResponseDto)
-                .toList();
     }
 
     @Override

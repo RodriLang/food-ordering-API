@@ -2,7 +2,6 @@ package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.AdminController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
-import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.services.AdminService;
 import lombok.RequiredArgsConstructor;
@@ -39,26 +38,21 @@ public class AdminControllerImpl implements AdminController {
 
     @Override
     public ResponseEntity<Page<EmploymentResponseDto>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(adminService.getAdminUsers(pageable));
+        return ResponseEntity.ok(adminService.getAllAdminUsers(pageable));
     }
 
     @Override
     public ResponseEntity<Page<EmploymentResponseDto>> getActives(Pageable pageable) {
-        return ResponseEntity.ok(adminService.getAdminUsers(pageable));
+        return ResponseEntity.ok(adminService.getActiveAdminUsers(pageable));
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getDeleted(Pageable pageable) {
-        return null;
+    public ResponseEntity<Page<EmploymentResponseDto>> getInactives(Pageable pageable) {
+        return ResponseEntity.ok(adminService.getInactiveAdminUsers(pageable));
     }
 
     @Override
-    public ResponseEntity<EmploymentResponseDto> updateById(UUID id, UserRequestDto dto) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<EmploymentResponseDto> patchUserById(UUID id, UserRequestDto dto) {
+    public ResponseEntity<EmploymentResponseDto> update(UUID id, EmploymentRequestDto dto) {
         return null;
     }
 

@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -64,7 +66,7 @@ public interface RootUserController {
     )
     ResponseEntity<UserResponseDto> updateById(
             @PathVariable UUID id,
-            @Valid @RequestBody UserRequestDto dto);
+            @Validated(OnUpdate.class) @RequestBody UserRequestDto dto);
 
     @PatchMapping("/{id}")
     @Operation(

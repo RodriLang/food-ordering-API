@@ -29,7 +29,7 @@ public class AdminServiceImpl implements AdminService {
     private final TenantContext tenantContext;
 
     private static final String USER_ENTITY_NAME = "User";
-    private static final String EMPLOYMENT_ENTITY_NAME = "Employment";
+    private static final String EMPLOYMENT_ENTITY_NAME = "Employment Admin";
 
     @Override
     public EmploymentResponseDto createAdminUser(EmploymentRequestDto dto) {
@@ -65,8 +65,20 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public Page<EmploymentResponseDto> getAdminUsers(Pageable pageable) {
+    public Page<EmploymentResponseDto> getActiveAdminUsers(Pageable pageable) {
         return employmentRepository.getAllByActiveAndRole(pageable, Boolean.TRUE, RoleType.ROLE_ADMIN)
+                .map(employmentMapper::toResponseDto);
+    }
+
+    @Override
+    public Page<EmploymentResponseDto> getInactiveAdminUsers(Pageable pageable) {
+        return employmentRepository.getAllByActiveAndRole(pageable, Boolean.FALSE, RoleType.ROLE_ADMIN)
+                .map(employmentMapper::toResponseDto);
+    }
+
+    @Override
+    public Page<EmploymentResponseDto> getAllAdminUsers(Pageable pageable) {
+        return employmentRepository.getAllByRole(pageable, RoleType.ROLE_ADMIN)
                 .map(employmentMapper::toResponseDto);
     }
 

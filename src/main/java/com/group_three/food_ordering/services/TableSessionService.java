@@ -4,36 +4,37 @@ import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.models.TableSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 public interface TableSessionService {
 
     InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto);
 
-    List<TableSessionResponseDto> getAll();
+    Page<TableSessionResponseDto> getAll(Pageable pageable);
 
     TableSessionResponseDto getById(UUID sessionId);
 
     TableSession getEntityById(UUID sessionId);
 
-    List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber);
+    Page<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber, Pageable pageable);
 
-    List<TableSessionResponseDto> getByContextAndTable(Integer tableNumber);
+    Page<TableSessionResponseDto> getByContextAndTable(Integer tableNumber, Pageable pageable);
 
-    List<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, LocalDateTime start, LocalDateTime end);
+    Page<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    List<TableSessionResponseDto> getActiveSessions();
+    Page<TableSessionResponseDto> getActiveSessions(Pageable pageable);
 
-    List<TableSessionResponseDto> getByHostClient(UUID clientId);
+    Page<TableSessionResponseDto> getByHostClient(UUID clientId, Pageable pageable);
 
-    List<TableSessionResponseDto> getByAuthUserHostClient();
+    Page<TableSessionResponseDto> getByAuthUserHostClient(Pageable pageable);
 
-    List<TableSessionResponseDto> getPastByParticipant(UUID clientId);
+    Page<TableSessionResponseDto> getPastByParticipant(UUID clientId, Pageable pageable);
 
-    List<TableSessionResponseDto> getPastByAuthUserParticipant();
+    Page<TableSessionResponseDto> getPastByAuthUserParticipant(Pageable pageable);
 
     TableSessionResponseDto getLatestByTable(UUID tableId);
 

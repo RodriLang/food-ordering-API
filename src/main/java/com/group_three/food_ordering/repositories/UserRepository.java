@@ -15,9 +15,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPublicId(UUID publicId);
 
-    @Query("SELECT u.publicId FROM User u WHERE u.email like :email AND u.deleted = false")
-    Optional<UUID> findPublicIdByEmailAndDeletedFalse(String email);
-
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

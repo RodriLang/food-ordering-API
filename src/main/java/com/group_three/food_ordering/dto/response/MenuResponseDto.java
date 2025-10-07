@@ -13,12 +13,12 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class HierarchicalMenuResponseDto {
+public class MenuResponseDto {
 
     private String foodVenueName;
 
     private String foodVenueImageUrl;
 
-    private List<HierarchicalCategoryMenuResponseDto> menu;
+    private List<CategoryMenuResponseDto> menu;
 
 }

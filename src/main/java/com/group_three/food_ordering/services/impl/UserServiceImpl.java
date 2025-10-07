@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
+    public UserResponseDto updateUser(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
         User userEntity = this.getEntityById(id);
 
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
@@ -95,9 +95,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public UserResponseDto updateAuthUser(UserRequestDto dto) {
+        UUID authUserId = authService.determineAuthUser().getPublicId();
+        return updateUser(authUserId, dto);
+    }
+
+    @Override
+    public void deleteUser(UUID id) {
         User userEntity = this.getEntityById(id);
         userRepository.save(userEntity);
+    }
+
+    @Override
+    public void deleteAuthUser() {
+        UUID authUserId = authService.determineAuthUser().getPublicId();
+        deleteUser(authUserId);
     }
 
     @Override

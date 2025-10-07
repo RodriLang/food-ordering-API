@@ -50,4 +50,6 @@ public class FoodVenueRequestDto {
 
     private List<DiningTableRequestDto> tables;
 
+    private VenueStyleRequestDto styleRequestDto;
+
 }

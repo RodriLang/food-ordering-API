@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
+import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,10 +19,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.TABLE_SESSION_URI)
@@ -40,7 +41,7 @@ public interface TableSessionController {
     )
     @PostMapping("/scan-qr")
     ResponseEntity<InitSessionResponseDto> createTableSession(
-            @RequestBody @Valid TableSessionRequestDto tableSessionRequestDto);
+            @RequestBody @Validated(OnCreate.class) TableSessionRequestDto tableSessionRequestDto);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
@@ -53,7 +54,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping()
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContext();
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContext(@Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasRole('ROOT')")
@@ -66,7 +67,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/root")
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueId();
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueId(@Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -95,11 +96,12 @@ public interface TableSessionController {
             }
     )
     @GetMapping("{foodVenueId}/table/{tableNumber}")
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Id del FoodVenue", required = true)
-            @PathVariable UUID foodVenueId);
+            @PathVariable UUID foodVenueId,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
@@ -112,9 +114,10 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}")
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContextAndTable(
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContextAndTable(
             @Parameter(description = "Número de la mesa", required = true)
-            @PathVariable Integer tableNumber);
+            @PathVariable Integer tableNumber,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -127,13 +130,14 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}/time-range")
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
             @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @Parameter(description = "Fecha y hora de fin (ISO 8601)")
-            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end);
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -146,7 +150,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/active")
-    ResponseEntity<List<TableSessionResponseDto>> getActiveSessions();
+    ResponseEntity<Page<TableSessionResponseDto>> getActiveSessions(@Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -159,9 +163,10 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/host/{clientId}")
-    ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(
+    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByHostClient(
             @Parameter(description = "UUID del cliente anfitrión", required = true)
-            @PathVariable UUID clientId);
+            @PathVariable UUID clientId,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -174,9 +179,10 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/participant/{clientId}")
-    ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(
+    ResponseEntity<Page<TableSessionResponseDto>> getPastTableSessionsByParticipant(
             @Parameter(description = "UUID del cliente participante", required = true)
-            @PathVariable UUID clientId);
+            @PathVariable UUID clientId,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")

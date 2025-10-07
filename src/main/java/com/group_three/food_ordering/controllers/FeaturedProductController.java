@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.FeaturedProductRequestDto;
 import com.group_three.food_ordering.dto.response.FeaturedProductResponseDto;
+import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -50,7 +51,7 @@ public interface FeaturedProductController {
     )
     @PostMapping("/register")
     ResponseEntity<FeaturedProductResponseDto> createFeatProduct(
-            @Valid @RequestBody FeaturedProductRequestDto dto);
+            @Validated(OnCreate.class) @RequestBody FeaturedProductRequestDto dto);
 
     @Operation(
             summary = "Obtener un Producto destacado por identificador único",

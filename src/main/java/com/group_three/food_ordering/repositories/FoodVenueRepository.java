@@ -19,4 +19,5 @@ public interface FoodVenueRepository extends JpaRepository<FoodVenue, Long> {
 
     @Query("SELECT fv FROM FoodVenue fv WHERE fv.deleted = true")
     Page<FoodVenue> findAllDeleted(Pageable pageable);
+
 }

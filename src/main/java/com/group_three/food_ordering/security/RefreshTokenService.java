@@ -1,7 +1,6 @@
-package com.group_three.food_ordering.services;
+package com.group_three.food_ordering.security;
 
 import com.group_three.food_ordering.repositories.RefreshTokenRepository;
-import com.group_three.food_ordering.security.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

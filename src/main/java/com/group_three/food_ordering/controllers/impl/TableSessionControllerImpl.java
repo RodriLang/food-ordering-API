@@ -17,7 +17,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -37,14 +36,14 @@ public class TableSessionControllerImpl implements TableSessionController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContext() {
-        return ResponseEntity.ok(tableSessionService.getAll());
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContext(Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getAll(pageable));
     }
 
     @PreAuthorize("hasRole('ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueId() {
-        return ResponseEntity.ok(tableSessionService.getAll());
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueId(Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getAll(pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
@@ -56,45 +55,48 @@ public class TableSessionControllerImpl implements TableSessionController {
 
     @PreAuthorize("hasRole('ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
             Integer tableNumber,
-            UUID foodVenueId) {
-        return ResponseEntity.ok(tableSessionService.getByFoodVenueAndTable(foodVenueId, tableNumber));
+            UUID foodVenueId,
+            Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getByFoodVenueAndTable(foodVenueId, tableNumber, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByContextAndTable(
-            Integer tableNumber) {
-        return ResponseEntity.ok(tableSessionService.getByContextAndTable(tableNumber));
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContextAndTable(
+            Integer tableNumber, Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getByContextAndTable(tableNumber, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             Integer tableNumber,
             LocalDateTime start,
-            LocalDateTime end) {
-        return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end));
+            LocalDateTime end,
+            Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getByTableAndTimeRange(tableNumber, start, end, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getActiveSessions() {
-        return ResponseEntity.ok(tableSessionService.getActiveSessions());
+    public ResponseEntity<Page<TableSessionResponseDto>> getActiveSessions(Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getActiveSessions(pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByHostClient(
-            UUID clientId) {
-        return ResponseEntity.ok(tableSessionService.getByHostClient(clientId));
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByHostClient(
+            UUID clientId, Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getByHostClient(clientId, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByParticipant(UUID clientId) {
-        return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId));
+    public ResponseEntity<Page<TableSessionResponseDto>> getPastTableSessionsByParticipant(
+            UUID clientId, Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getPastByParticipant(clientId, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")

@@ -12,9 +12,10 @@ import com.group_three.food_ordering.repositories.DiningTableRepository;
 import com.group_three.food_ordering.services.DiningTableService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,11 +40,10 @@ public class DiningTableServiceImpl implements DiningTableService {
     }
 
     @Override
-    public List<DiningTableResponseDto> getAll() {
-        return diningTableRepository.findByFoodVenuePublicId(
-                        tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(diningTableMapper::toDTO)
-                .toList();
+    public Page<DiningTableResponseDto> getAll(Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        return diningTableRepository.findByFoodVenuePublicId(foodVenueId, pageable)
+                .map(diningTableMapper::toDTO);
     }
 
     @Override
@@ -60,18 +60,17 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public DiningTableResponseDto getByNumber(Integer number) {
-        DiningTable diningTable = diningTableRepository.findByFoodVenuePublicIdAndNumber(
-                        tenantContext.getCurrentFoodVenue().getPublicId(), number)
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        DiningTable diningTable = diningTableRepository.findByFoodVenuePublicIdAndNumber(foodVenueId, number)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
         return diningTableMapper.toDTO(diningTable);
     }
 
     @Override
-    public List<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity) {
+    public Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return diningTableRepository.findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
-                        tenantContext.getCurrentFoodVenue().getPublicId(), status, capacity).stream()
-                .map(diningTableMapper::toDTO)
-                .toList();
+                foodVenueId, status, capacity, pageable).map(diningTableMapper::toDTO);
     }
 
     @Override

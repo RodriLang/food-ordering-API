@@ -4,15 +4,16 @@ import com.group_three.food_ordering.dto.request.DiningTableRequestDto;
 import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.models.DiningTable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface DiningTableService {
 
     DiningTableResponseDto create(DiningTableRequestDto diningTableRequestDto);
 
-    List<DiningTableResponseDto> getAll();
+    Page<DiningTableResponseDto> getAll(Pageable pageable);
 
     DiningTableResponseDto getById(UUID id);
 
@@ -26,5 +27,5 @@ public interface DiningTableService {
 
     void delete(UUID id);
 
-    List<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity);
+    Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable);
 }

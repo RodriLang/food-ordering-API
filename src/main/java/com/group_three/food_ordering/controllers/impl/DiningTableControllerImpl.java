@@ -6,12 +6,13 @@ import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.services.DiningTableService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -30,8 +31,8 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<List<DiningTableResponseDto>> getTables() {
-        return ResponseEntity.ok(diningTableService.getAll());
+    public ResponseEntity<Page<DiningTableResponseDto>> getTables(Pageable pageable) {
+        return ResponseEntity.ok(diningTableService.getAll(pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
@@ -50,10 +51,11 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<List<DiningTableResponseDto>> getFilteredTables(
+    public ResponseEntity<Page<DiningTableResponseDto>> getFilteredTables(
             DiningTableStatus status,
-            Integer capacity) {
-        return ResponseEntity.ok(diningTableService.getByFilters(status, capacity));
+            Integer capacity,
+            Pageable pageable) {
+        return ResponseEntity.ok(diningTableService.getByFilters(status, capacity, pageable));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")

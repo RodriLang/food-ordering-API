@@ -15,7 +15,7 @@ import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
-import com.group_three.food_ordering.services.RefreshTokenService;
+import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -161,7 +161,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User authenticateUser(LoginRequest loginRequest) {
-        log.debug("[AuthService] Authenticating user email={}",loginRequest.getEmail());
+        log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
         Optional<User> loggedUser = userRepository.findByEmail(loginRequest.getEmail());
         log.debug("[AuthService] Logged in user=");
         if (loggedUser.isEmpty()) {

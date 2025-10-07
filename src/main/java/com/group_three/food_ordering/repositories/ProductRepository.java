@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.repositories;
 
-import com.group_three.food_ordering.models.Category;
 import com.group_three.food_ordering.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

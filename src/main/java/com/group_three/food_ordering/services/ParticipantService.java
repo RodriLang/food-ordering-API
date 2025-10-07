@@ -5,7 +5,6 @@ import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface ParticipantService {
@@ -13,8 +12,6 @@ public interface ParticipantService {
     Participant create(User user, TableSession tableSession);
 
     Participant update(UUID participantIdUser, User user);
-
-    List<ParticipantResponseDto> getAll();
 
     ParticipantResponseDto getById(UUID id);
 

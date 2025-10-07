@@ -2,12 +2,13 @@ package com.group_three.food_ordering.repositories;
 
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.models.DiningTable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
 
     Optional<DiningTable> findByPublicId(UUID publicId);
 
-    List<DiningTable> findByFoodVenuePublicId(UUID foodVenueId);
+    Page<DiningTable> findByFoodVenuePublicId(UUID foodVenueId, Pageable pageable);
 
     Optional<DiningTable> findByFoodVenuePublicIdAndNumber(UUID foodVenueId, Integer number);
 
@@ -24,9 +25,10 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
             "t.foodVenue.publicId = :foodVenuePublicId AND " +
             "(:status IS NULL OR t.status = :status) AND " +
             "(:capacity IS NULL OR t.capacity = :capacity) ")
-    List<DiningTable> findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
+    Page<DiningTable> findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
             @Param("foodVenuePublicId") UUID foodVenuePublicId,
             @Param("status") DiningTableStatus status,
-            @Param("capacity") Integer capacity
+            @Param("capacity") Integer capacity,
+            Pageable pageable
     );
 }

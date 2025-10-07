@@ -3,7 +3,10 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.utils.OnCreate;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -14,6 +17,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -36,7 +40,7 @@ public interface EmployeeController {
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     })
-    ResponseEntity<EmploymentResponseDto> create(@Valid @RequestBody EmploymentRequestDto dto);
+    ResponseEntity<EmploymentResponseDto> create(@Validated(OnCreate.class) @RequestBody EmploymentRequestDto dto);
 
 
     @PutMapping("/{id}")
@@ -49,7 +53,7 @@ public interface EmployeeController {
     })
     ResponseEntity<EmploymentResponseDto> update(
             @PathVariable UUID id,
-            @Valid @RequestBody EmploymentRequestDto dto);
+            @Validated(OnUpdate.class) @RequestBody EmploymentRequestDto dto);
 
 
     @GetMapping("/{id}")
@@ -64,12 +68,13 @@ public interface EmployeeController {
     ResponseEntity<EmploymentResponseDto> getById(@PathVariable UUID id);
 
 
-    @GetMapping("/user")
+    @GetMapping("/user/{email}")
     @Operation(
             summary = "Listar empleados activos",
             description = "Devuelve todos los empleados que no han sido eliminados (removedAt es null en su usuario)."
     )
-    ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(String email, Pageable pageable);
+    ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(
+            @PathVariable String email, @Parameter Pageable pageable);
 
 
     @DeleteMapping("/{id}")

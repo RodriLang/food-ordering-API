@@ -20,7 +20,7 @@ public class ParticipantControllerImpl implements ParticipantController {
 
     @PreAuthorize("hasAnyRole('ROLE_CLIENT', 'ROLE_GUEST')")
     @Override
-    public ResponseEntity<Page<OrderResponseDto>> getPublicOrders(Pageable pageable) {
+    public ResponseEntity<Page<OrderResponseDto>> getCurrentOrders(Pageable pageable) {
         return ResponseEntity.ok(orderService.getOrdersByCurrentParticipant(pageable));
     }
 }

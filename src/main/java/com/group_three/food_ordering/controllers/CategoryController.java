@@ -3,12 +3,15 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.CategoryRequestDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
+import com.group_three.food_ordering.utils.OnCreate;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +25,7 @@ public interface CategoryController {
     @ApiResponse(responseCode = "200", description = "Categoría creada correctamente")
     @PostMapping
     ResponseEntity<CategoryResponseDto> createCategory(
-            @RequestBody @Valid CategoryRequestDto categoryRequestDto);
+            @RequestBody @Validated(OnCreate.class) CategoryRequestDto categoryRequestDto);
 
 
     @Operation(summary = "Actualizar una categoría existente")
@@ -32,7 +35,7 @@ public interface CategoryController {
     })
     @PutMapping("/{id}")
     ResponseEntity<CategoryResponseDto> updateCategory(@PathVariable UUID id,
-                                                       @RequestBody @Valid CategoryRequestDto categoryRequestDto);
+                                                       @RequestBody @Validated(OnUpdate.class) CategoryRequestDto categoryRequestDto);
 
 
     @Operation(summary = "Listar todas las categorías")

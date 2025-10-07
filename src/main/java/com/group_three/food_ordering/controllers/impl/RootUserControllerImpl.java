@@ -46,19 +46,19 @@ public class RootUserControllerImpl implements RootUserController {
     public ResponseEntity<UserResponseDto> updateById(
             UUID id,
             UserRequestDto dto) {
-        return ResponseEntity.ok(userService.update(id, dto));
+        return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
     @Override
     public ResponseEntity<UserResponseDto> patchUserById(
             UUID id,
             UserRequestDto dto) {
-        return ResponseEntity.ok(userService.update(id, dto));
+        return ResponseEntity.ok(userService.updateUser(id, dto));
     }
 
     @Override
     public ResponseEntity<Void> deleteById(UUID id) {
-        userService.delete(id);
+        userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 }

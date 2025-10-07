@@ -2,13 +2,14 @@ package com.group_three.food_ordering.repositories;
 
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.models.TableSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,22 +18,22 @@ public interface TableSessionRepository extends JpaRepository<TableSession, Long
 
     Optional<TableSession> findByPublicId(UUID publicId);
 
-    List<TableSession> findByFoodVenuePublicId(UUID foodVenueId);
+    Page<TableSession> findByFoodVenuePublicId(UUID foodVenueId, Pageable pageable);
 
-    List<TableSession> findByFoodVenuePublicIdAndDiningTableNumber(UUID foodVenueId, Integer tableNumber);
+    Page<TableSession> findByFoodVenuePublicIdAndDiningTableNumber(UUID foodVenueId, Integer tableNumber, Pageable pageable);
 
-    List<TableSession> findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
-            UUID foodVenueId, Integer tableNumber, LocalDateTime start, LocalDateTime end);
+    Page<TableSession> findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
+            UUID foodVenueId, Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    List<TableSession> findByFoodVenuePublicIdAndEndTimeIsNull(UUID foodVenueId);
+    Page<TableSession> findByFoodVenuePublicIdAndEndTimeIsNull(UUID foodVenueId, Pageable pageable);
 
-    List<TableSession> findByFoodVenuePublicIdAndSessionHostPublicId(UUID foodVenueId, UUID sessionHost);
+    Page<TableSession> findByFoodVenuePublicIdAndSessionHostPublicId(UUID foodVenueId, UUID sessionHost, Pageable pageable);
 
     @Query("SELECT ts FROM TableSession ts " +
             "JOIN ts.participants p " +
             "WHERE p.id = :clientId " +
             "AND ts.endTime IS NOT NULL")
-    List<TableSession> findPastSessionsByParticipantIdAndDeletedFalse(UUID foodVenueId, UUID clientId);
+    Page<TableSession> findPastSessionsByParticipantIdAndDeletedFalse(UUID foodVenueId, UUID clientId, Pageable pageable);
 
     Optional<TableSession> findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 

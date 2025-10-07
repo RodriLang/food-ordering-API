@@ -20,9 +20,13 @@ public interface UserService {
 
     Page<UserResponseDto> getDeletedUsers(Pageable pageable);
 
-    UserResponseDto update(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto);
+    UserResponseDto updateUser(UUID id, UserRequestDto dto);
 
-    void delete(UUID id);
+    UserResponseDto updateAuthUser(UserRequestDto dto);
+
+    void deleteUser(UUID id);
+
+    void deleteAuthUser();
 
     User getEntityById(UUID id);
 

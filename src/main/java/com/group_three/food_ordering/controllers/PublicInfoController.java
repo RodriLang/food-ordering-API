@@ -1,9 +1,8 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.response.FlatMenuResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
-import com.group_three.food_ordering.dto.response.HierarchicalMenuResponseDto;
+import com.group_three.food_ordering.dto.response.MenuResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,23 +25,23 @@ public interface PublicInfoController {
 
     @Operation(
             summary = "Obtener todos los lugares de comida",
-            description = "Devuelve la lista con datos reducidos de lugares de comida.",
+            description = "Devuelve la lista con datos públicos de los lugares de comida.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de lugares de comida", content = @Content(
-                            schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array")))
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Lista de lugares de comida",
+                            content = @Content(
+                                    schema = @Schema(implementation = FoodVenuePublicResponseDto.class, type = "array")))
             }
     )
     @GetMapping("/food-venues")
     ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(@Parameter Pageable pageable);
 
 
-    @Operation(summary = "Listar todos los productos del Menu ordenados por categoria")
-    @ApiResponse(responseCode = "200", description = "Listado de productos por categoria")
+    @Operation(summary = "Muestra el menu del lugar si es público")
+    @ApiResponse(responseCode = "200", description = "Listado de productos por categoría")
     @GetMapping("/food-venues/{foodVenueId}/menu")
-    ResponseEntity<FlatMenuResponseDto> getFlatMenu(@PathVariable UUID foodVenueId);
-
-    @Operation(summary = "Listar todos los productos del Menu ordenados por categoria")
-    @ApiResponse(responseCode = "200", description = "Listado de productos por categoria")
-    @GetMapping("/food-venues/{foodVenueId}/menu/categories")
-    ResponseEntity<HierarchicalMenuResponseDto> getHierarchicalMenu(@PathVariable UUID foodVenueId, @RequestParam(required = false) String category);
+    ResponseEntity<MenuResponseDto> getHierarchicalMenu(
+            @PathVariable UUID foodVenueId,
+            @RequestParam(required = false) String category);
 }

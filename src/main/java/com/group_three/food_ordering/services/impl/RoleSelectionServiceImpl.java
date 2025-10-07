@@ -13,7 +13,7 @@ import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.EmploymentService;
-import com.group_three.food_ordering.services.RefreshTokenService;
+import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

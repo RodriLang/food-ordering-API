@@ -21,6 +21,8 @@ import com.group_three.food_ordering.services.DiningTableService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -208,10 +210,10 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     @Override
-    public List<TableSessionResponseDto> getAll() {
-        return tableSessionRepository.findByFoodVenuePublicId(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+    public Page<TableSessionResponseDto> getAll(Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        return tableSessionRepository.findByFoodVenuePublicId(foodVenueId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
@@ -227,26 +229,25 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     @Override
-    public List<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber) {
-        return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+    public Page<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber, Pageable pageable) {
+        return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getByContextAndTable(Integer tableNumber) {
+    public Page<TableSessionResponseDto> getByContextAndTable(Integer tableNumber, Pageable pageable) {
 
         UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
 
-        return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+        return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getByTableAndTimeRange(
-            Integer tableNumber, LocalDateTime start, LocalDateTime end) {
+    public Page<TableSessionResponseDto> getByTableAndTimeRange(
+            Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable) {
         LocalDateTime effectiveEnd = (end == null) ? LocalDateTime.now() : end;
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
 
         if (start.isAfter(effectiveEnd)) {
             throw new IllegalArgumentException("Start date must be before or equal to end date");
@@ -254,56 +255,51 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         return tableSessionRepository
                 .findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
-                        tenantContext.getCurrentFoodVenue().getPublicId(), tableNumber, start, effectiveEnd)
-                .stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                        foodVenueId, tableNumber, start, effectiveEnd, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getActiveSessions() {
+    public Page<TableSessionResponseDto> getActiveSessions(Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+
         return tableSessionRepository
-                .findByFoodVenuePublicIdAndEndTimeIsNull(tenantContext.getCurrentFoodVenue().getPublicId()).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                .findByFoodVenuePublicIdAndEndTimeIsNull(foodVenueId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getByHostClient(UUID clientId) {
+    public Page<TableSessionResponseDto> getByHostClient(UUID clientId, Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
-                        tenantContext.getCurrentFoodVenueId(), clientId).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                foodVenueId, clientId, pageable).map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getByAuthUserHostClient() {
+    public Page<TableSessionResponseDto> getByAuthUserHostClient(Pageable pageable) {
 
-        UUID authClientId = tenantContext.getCurrentFoodVenue().getPublicId();
+        UUID authClientId = authService.determineCurrentTableSession().getPublicId();
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
 
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
-                        tenantContext.getCurrentFoodVenueId(), authClientId).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                foodVenueId, authClientId, pageable).map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getPastByParticipant(UUID clientId) {
+    public Page<TableSessionResponseDto> getPastByParticipant(UUID clientId, Pageable pageable) {
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
-                        tenantContext.getCurrentFoodVenueId(), clientId).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                foodVenueId, clientId, pageable).map(tableSessionMapper::toDto);
     }
 
     @Override
-    public List<TableSessionResponseDto> getPastByAuthUserParticipant() {
+    public Page<TableSessionResponseDto> getPastByAuthUserParticipant(Pageable pageable) {
 
-        UUID authClientId = tenantContext.getCurrentFoodVenue().getPublicId();
+        UUID authClientId = authService.determineAuthUser().getPublicId();
+        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
 
         return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
-                        tenantContext.getCurrentFoodVenueId(), authClientId).stream()
-                .map(tableSessionMapper::toDto)
-                .toList();
+                foodVenueId, authClientId, pageable).map(tableSessionMapper::toDto);
     }
 
     @Override

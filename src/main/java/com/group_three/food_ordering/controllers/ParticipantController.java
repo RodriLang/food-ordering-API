@@ -25,6 +25,6 @@ public interface ParticipantController {
     )
     @PreAuthorize("hasAnyRole('ROLE_CLIENT', 'ROLE_GUEST')")
     @GetMapping("/orders")
-    ResponseEntity<Page<OrderResponseDto>> getPublicOrders(@Parameter Pageable pageable);
+    ResponseEntity<Page<OrderResponseDto>> getCurrentOrders(@Parameter Pageable pageable);
 
 }

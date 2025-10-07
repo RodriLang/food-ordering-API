@@ -15,7 +15,11 @@ public interface AdminService {
 
     EmploymentResponseDto findById(UUID id);
 
-    Page<EmploymentResponseDto> getAdminUsers(Pageable pageable);
+    Page<EmploymentResponseDto> getActiveAdminUsers(Pageable pageable);
+
+    Page<EmploymentResponseDto> getInactiveAdminUsers(Pageable pageable);
+
+    Page<EmploymentResponseDto> getAllAdminUsers(Pageable pageable);
 
     EmploymentResponseDto update(UUID publicId, EmploymentRequestDto dto);
 

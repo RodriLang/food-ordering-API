@@ -17,7 +17,6 @@ import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
-import com.group_three.food_ordering.services.RefreshTokenService;
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

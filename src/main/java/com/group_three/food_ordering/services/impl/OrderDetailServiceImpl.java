@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
@@ -49,28 +47,9 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
     @Override
-    public List<OrderDetailResponseDto> getAll() {
-        return orderDetailRepository.findAll()
-                .stream()
-                .map(orderDetailMapper::toDTO)
-                .toList();
-    }
-
-    @Override
     public OrderDetailResponseDto getOrderDetailById(Long orderDetailId) {
         OrderDetail orderDetail = getOrderDetailEntityById(orderDetailId);
         return orderDetailMapper.toDTO(orderDetail);
-    }
-
-    @Override
-    @Transactional
-    public void softDelete(Long orderDetailId) {
-        OrderDetail orderDetail = getOrderDetailEntityById(orderDetailId);
-
-        // Incrementar stock según cantidad del detalle eliminado
-        updateProductStock(orderDetail.getProduct(), orderDetail.getQuantity());
-
-        orderDetailRepository.delete(orderDetail);
     }
 
     @Override

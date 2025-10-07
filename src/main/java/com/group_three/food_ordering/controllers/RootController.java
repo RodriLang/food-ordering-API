@@ -4,6 +4,7 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -40,7 +42,7 @@ public interface RootController {
     )
     @PostMapping("/register")
     ResponseEntity<EmploymentResponseDto> registerRootUser(
-            @Valid @RequestBody EmploymentRequestDto dto);
+            @Validated(OnCreate.class) @RequestBody EmploymentRequestDto dto);
 
     @Operation(
             summary = "Seleccionar un FoodVenue",

@@ -1,8 +1,7 @@
 package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.CurrentUserController;
-import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
-import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
+import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
@@ -13,12 +12,9 @@ import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @PreAuthorize("hasAnyRole('CLIENT')")
 @RestController
@@ -36,15 +32,19 @@ public class CurrentUserControllerImpl implements CurrentUserController {
     }
 
     @Override
-    public ResponseEntity<Page<OrderResponseDto>> getMyOrders(OrderStatus orderStatus, Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByAuthenticatedClientAndStatus(orderStatus, pageable));
+    public ResponseEntity<UserResponseDto> updateUser(UserRequestDto dto) {
+        return ResponseEntity.ok(userService.updateAuthUser(dto));
     }
 
     @Override
-    public ResponseEntity<InitSessionResponseDto> createTableSession(
-            TableSessionRequestDto tableSessionRequestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).
-                body(tableSessionService.enter(tableSessionRequestDto));
+    public ResponseEntity<UserResponseDto> deleteUser() {
+        userService.deleteAuthUser();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Page<OrderResponseDto>> getMyOrders(OrderStatus orderStatus, Pageable pageable) {
+        return ResponseEntity.ok(orderService.getOrdersByAuthenticatedClientAndStatus(orderStatus, pageable));
     }
 
     @Override
@@ -53,13 +53,13 @@ public class CurrentUserControllerImpl implements CurrentUserController {
     }
 
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getTableSessionsByAuthUserHostClient() {
-        return ResponseEntity.ok(tableSessionService.getByAuthUserHostClient());
+    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByAuthUserHostClient(Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getByAuthUserHostClient(pageable));
     }
 
     @Override
-    public ResponseEntity<List<TableSessionResponseDto>> getPastTableSessionsByAuthUserParticipant() {
-        return ResponseEntity.ok(tableSessionService.getPastByAuthUserParticipant());
+    public ResponseEntity<Page<TableSessionResponseDto>> getPastTableSessionsByAuthUserParticipant(Pageable pageable) {
+        return ResponseEntity.ok(tableSessionService.getPastByAuthUserParticipant(pageable));
     }
 
 }

@@ -4,6 +4,8 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.DiningTableRequestDto;
 import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
 import com.group_three.food_ordering.enums.DiningTableStatus;
+import com.group_three.food_ordering.utils.OnCreate;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,10 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.TABLE_URI)
@@ -32,7 +36,7 @@ public interface DiningTableController {
     )
     @PostMapping
     ResponseEntity<DiningTableResponseDto> createTable(
-            @RequestBody @Valid DiningTableRequestDto diningTableRequestDto);
+            @RequestBody @Validated(OnCreate.class) DiningTableRequestDto diningTableRequestDto);
 
 
     @Operation(
@@ -44,7 +48,7 @@ public interface DiningTableController {
             }
     )
     @GetMapping
-    ResponseEntity<List<DiningTableResponseDto>> getTables();
+    ResponseEntity<Page<DiningTableResponseDto>> getTables(@Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -86,11 +90,12 @@ public interface DiningTableController {
             }
     )
     @GetMapping("/filter")
-    ResponseEntity<List<DiningTableResponseDto>> getFilteredTables(
+    ResponseEntity<Page<DiningTableResponseDto>> getFilteredTables(
             @Parameter(description = "Estado de la mesa (opcional)")
             @RequestParam(required = false) DiningTableStatus status,
             @Parameter(description = "Capacidad de la mesa (opcional)")
-            @RequestParam(required = false) Integer capacity);
+            @RequestParam(required = false) Integer capacity,
+            @Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -104,7 +109,7 @@ public interface DiningTableController {
     )
     @PatchMapping("/status/{id}")
     ResponseEntity<Void> update(
-            @RequestParam @Valid DiningTableStatus status,
+            @RequestParam @Validated(OnUpdate.class) DiningTableStatus status,
             @Parameter(description = "UUID de la mesa a actualizar", required = true)
             @PathVariable UUID id);
 

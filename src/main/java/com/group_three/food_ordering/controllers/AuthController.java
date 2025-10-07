@@ -7,6 +7,7 @@ import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -15,10 +16,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RequestMapping(ApiPaths.AUTH_URI)
-@Tag(name = "Autenticación", description = "Acceso al login, logout y refresh token")
+@Tag(name = "Autenticación", description = "Acceso al login, logout, registro y refresh token")
 public interface AuthController {
 
 
@@ -86,7 +88,7 @@ public interface AuthController {
     )
     @PostMapping("/register")
     ResponseEntity<UserResponseDto> register(
-            @Valid @RequestBody UserRequestDto dto);
+            @Validated(OnCreate.class) @RequestBody UserRequestDto dto);
 
 
     @PostMapping("/refresh")

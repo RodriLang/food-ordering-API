@@ -24,6 +24,8 @@ public interface EmploymentRepository extends JpaRepository<Employment, Long> {
 
     Page<Employment> getAllByActiveAndRole(Pageable pageable, Boolean active, RoleType role);
 
+    Page<Employment> getAllByRole(Pageable pageable, RoleType role);
+
     List<Employment> findByUser_PublicId(UUID userPublicId);
 
     List<Employment> findByUser_PublicIdAndRoleAndActiveTrue(UUID userId, RoleType role);
