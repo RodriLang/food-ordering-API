@@ -60,7 +60,7 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<Void> update(
+    public ResponseEntity<Void> updateStatus(
             DiningTableStatus status,
             UUID id) {
         diningTableService.updateStatus(status, id);
@@ -69,7 +69,7 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<DiningTableResponseDto> patch(
+    public ResponseEntity<DiningTableResponseDto> update(
             DiningTableRequestDto diningTableRequestDto, UUID id) {
         return ResponseEntity.ok(diningTableService.update(diningTableRequestDto, id));
     }

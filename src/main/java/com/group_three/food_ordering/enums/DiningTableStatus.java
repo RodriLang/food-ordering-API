@@ -2,8 +2,8 @@ package com.group_three.food_ordering.enums;
 
 public enum DiningTableStatus {
     AVAILABLE,
-    OCCUPIED,
+    IN_SESSION,
     COMPLETE,
-    CLOSED,
+    WAITING_RESET,
     OUT_OF_SERVICE,
 }

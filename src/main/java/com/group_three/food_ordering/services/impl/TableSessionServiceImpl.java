@@ -7,9 +7,11 @@ import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
+import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
@@ -19,10 +21,12 @@ import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.DiningTableService;
 import com.group_three.food_ordering.services.TableSessionService;
+import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,7 @@ import java.util.*;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class TableSessionServiceImpl implements TableSessionService {
 
@@ -45,7 +50,6 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private static final String ENTITY_NAME = "TableSession";
 
-    @Transactional
     @Override
     public InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto) {
         log.debug("[TableSession] Processing table session entry for tableId={}", tableSessionRequestDto.getTableId());
@@ -86,127 +90,6 @@ public class TableSessionServiceImpl implements TableSessionService {
         // Invitado sin autenticar
         log.debug("[TableSession] Anonymous guest detected. Creating new guest session");
         return handleNewTableSession(diningTable, null);
-    }
-
-    private InitSessionResponseDto handleGuestToClientMigration(User authUser) {
-        log.debug("[TableSession] Getting table session of guest participant");
-        TableSession guestSession = authService.getCurrentParticipant()
-                .map(Participant::getTableSession)
-                .orElseThrow(() -> new EntityNotFoundException("Active guest session not found"));
-
-        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
-
-        Participant currentParticipant = authService.getCurrentParticipant()
-                .orElseThrow(() -> new EntityNotFoundException("Participant"));
-
-        participantService.update(currentParticipant.getPublicId(), authUser);
-
-        return generateInitSessionResponseDto(guestSession, currentParticipant);
-    }
-
-    private InitSessionResponseDto handleNewTableSession(DiningTable diningTable, User authUser) {
-        log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getPublicId());
-
-        DiningTableStatus status = diningTable.getStatus();
-        log.debug("[TableSession] Creating session for table={} with status={}", diningTable.getPublicId(), status);
-
-
-        TableSession tableSession = switch (status) {
-            case AVAILABLE -> initSession(diningTable);
-            case OCCUPIED ->
-                    tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(diningTable.getPublicId(), DiningTableStatus.OCCUPIED)
-                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, diningTable.getPublicId().toString()));
-            case OUT_OF_SERVICE -> throw new IllegalStateException(
-                    "Table is out of service, cannot start or join a session.");
-            case COMPLETE -> throw new IllegalStateException(
-                    "Table is complete, cannot start or join a session.");
-            default -> throw new IllegalStateException("Unhandled table status: " + status);
-        };
-
-
-        //verificar que la session se guarda 2 veces porque se necesita id para crear el participante
-
-        tableSession.setStartTime(LocalDateTime.now());
-        tableSession.setPublicId(UUID.randomUUID());
-        TableSession createdTableSession = tableSessionRepository.save(tableSession);
-        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getPublicId());
-
-        Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getPublicId(), participant.getRole());
-
-
-        tableSession.getParticipants().add(participant);
-        if (tableSession.getSessionHost() != null) {
-            tableSession.setSessionHost(participant);
-        }
-
-        TableSession savedTableSession = tableSessionRepository.save(tableSession);
-
-        InitSessionResponseDto response = generateInitSessionResponseDto(savedTableSession, participant);
-        determineTableStatusPostSessionCreation(diningTable, tableSession);
-
-        log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
-                tableSession.getPublicId(), authUser != null ? authUser.getEmail() : "anonymous");
-
-        return response;
-    }
-
-    private void determineTableStatusPostSessionCreation(DiningTable diningTable, TableSession tableSession) {
-
-        if (diningTable.getCapacity().equals(tableSession.getParticipants().size())) {
-            diningTableService.updateStatus(DiningTableStatus.COMPLETE, diningTable.getPublicId());
-        } else {
-            diningTableService.updateStatus(DiningTableStatus.OCCUPIED, diningTable.getPublicId());
-        }
-    }
-
-    private void configureTenantContext(FoodVenue foodVenue) {
-        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getPublicId());
-        tenantContext.setCurrentFoodVenueId(foodVenue.getPublicId().toString());
-    }
-
-    private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
-        log.debug("[AuthService] Verifying active table session.");
-        return tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(authUser.getEmail()).orElse(null);
-    }
-
-
-    private TableSession initSession(DiningTable diningTable) {
-        log.debug("[TableSession] Initializing table session tableId={}", diningTable.getPublicId());
-
-        return TableSession.builder()
-                .diningTable(diningTable)
-                .foodVenue(diningTable.getFoodVenue())
-                .startTime(LocalDateTime.now())
-                .build();
-    }
-
-    private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
-
-        String token = jwtService.generateAccessToken(SessionInfo.builder()
-                .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
-                .foodVenueId(tableSession.getFoodVenue().getPublicId())
-                .participantId(participant.getPublicId())
-                .tableSessionId(tableSession.getPublicId())
-                .role(participant.getRole().name())
-                .build());
-
-        AuthResponse authResponse = AuthResponse.builder()
-                .accessToken(token)
-                .build();
-
-        ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
-
-        return InitSessionResponseDto.builder()
-                .tableNumber(tableSession.getDiningTable().getNumber())
-                .startTime(tableSession.getStartTime())
-                .endTime(tableSession.getEndTime())
-                .participants(tableSession.getParticipants().stream()
-                        .map(participantMapper::toResponseDto)
-                        .toList())
-                .hostClient(participantDto)
-                .authResponse(authResponse)
-                .build();
     }
 
     @Override
@@ -320,7 +203,164 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     @Override
-    public TableSessionResponseDto closeSession(UUID tableId) {
-        return null;
+    public TableSessionResponseDto closeCurrentSession() {
+
+        Participant currentHost = authService.determineCurrentParticipant();
+        TableSession currentTableSession = authService.determineCurrentTableSession();
+
+        if (!currentTableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
+            throw new AccessDeniedException("Only the current host can end the session");
+        }
+        return closeSession(currentTableSession);
     }
+
+    @Override
+    public TableSessionResponseDto closeSessionById(UUID tableId) {
+
+        TableSession tableSession = tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(
+                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
+
+        return closeSession(tableSession);
+    }
+
+    private TableSessionResponseDto closeSession(TableSession tableSession) {
+
+        List<Order> orders = tableSession.getOrders();
+
+        boolean completedPayments = orders.stream()
+                .map(order -> order.getPayment().getStatus())
+                .allMatch(paymentStatus -> paymentStatus.equals(PaymentStatus.COMPLETED));
+        if (!completedPayments) {
+            throw new InvalidPaymentStatusException("All payments must be paid to finish table session");
+        }
+
+        tableSession.setEndTime(LocalDateTime.now());
+        diningTableService.updateStatus(DiningTableStatus.WAITING_RESET, tableSession.getDiningTable().getPublicId());
+        tableSessionRepository.save(tableSession);
+
+        return tableSessionMapper.toDto(tableSession);
+
+    }
+
+    private InitSessionResponseDto handleGuestToClientMigration(User authUser) {
+        log.debug("[TableSession] Getting table session of guest participant");
+        TableSession guestSession = authService.getCurrentParticipant()
+                .map(Participant::getTableSession)
+                .orElseThrow(() -> new EntityNotFoundException("Active guest session not found"));
+
+        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
+
+        Participant currentParticipant = authService.getCurrentParticipant()
+                .orElseThrow(() -> new EntityNotFoundException("Participant"));
+
+        participantService.update(currentParticipant.getPublicId(), authUser);
+
+        return generateInitSessionResponseDto(guestSession, currentParticipant);
+    }
+
+    private InitSessionResponseDto handleNewTableSession(DiningTable diningTable, User authUser) {
+        log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getPublicId());
+
+        DiningTableStatus status = diningTable.getStatus();
+        log.debug("[TableSession] Creating session for table={} with status={}", diningTable.getPublicId(), status);
+
+
+        TableSession tableSession = switch (status) {
+            case AVAILABLE -> initSession(diningTable);
+            case IN_SESSION ->
+                    tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(diningTable.getPublicId(), DiningTableStatus.IN_SESSION)
+                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, diningTable.getPublicId().toString()));
+            case OUT_OF_SERVICE -> throw new IllegalStateException(
+                    "Table is out of service, cannot start or join a session.");
+            case COMPLETE -> throw new IllegalStateException(
+                    "Table is complete, cannot start or join a session.");
+            default -> throw new IllegalStateException("Unhandled table status: " + status);
+        };
+
+
+        //verificar que la session se guarda 2 veces porque se necesita id para crear el participante
+
+        tableSession.setStartTime(LocalDateTime.now());
+        tableSession.setPublicId(UUID.randomUUID());
+        TableSession createdTableSession = tableSessionRepository.save(tableSession);
+        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getPublicId());
+
+        Participant participant = participantService.create(authUser, tableSession);
+        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getPublicId(), participant.getRole());
+
+
+        tableSession.getParticipants().add(participant);
+        if (tableSession.getSessionHost() != null) {
+            tableSession.setSessionHost(participant);
+        }
+
+        TableSession savedTableSession = tableSessionRepository.save(tableSession);
+
+        InitSessionResponseDto response = generateInitSessionResponseDto(savedTableSession, participant);
+        determineTableStatusPostSessionCreation(diningTable, tableSession);
+
+        log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
+                tableSession.getPublicId(), authUser != null ? authUser.getEmail() : "anonymous");
+
+        return response;
+    }
+
+    private void determineTableStatusPostSessionCreation(DiningTable diningTable, TableSession tableSession) {
+
+        if (diningTable.getCapacity().equals(tableSession.getParticipants().size())) {
+            diningTableService.updateStatus(DiningTableStatus.COMPLETE, diningTable.getPublicId());
+        } else {
+            diningTableService.updateStatus(DiningTableStatus.IN_SESSION, diningTable.getPublicId());
+        }
+    }
+
+    private void configureTenantContext(FoodVenue foodVenue) {
+        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getPublicId());
+        tenantContext.setCurrentFoodVenueId(foodVenue.getPublicId().toString());
+    }
+
+    private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
+        log.debug("[AuthService] Verifying active table session.");
+        return tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(authUser.getEmail()).orElse(null);
+    }
+
+
+    private TableSession initSession(DiningTable diningTable) {
+        log.debug("[TableSession] Initializing table session tableId={}", diningTable.getPublicId());
+
+        return TableSession.builder()
+                .diningTable(diningTable)
+                .foodVenue(diningTable.getFoodVenue())
+                .startTime(LocalDateTime.now())
+                .build();
+    }
+
+    private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
+
+        String token = jwtService.generateAccessToken(SessionInfo.builder()
+                .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
+                .foodVenueId(tableSession.getFoodVenue().getPublicId())
+                .participantId(participant.getPublicId())
+                .tableSessionId(tableSession.getPublicId())
+                .role(participant.getRole().name())
+                .build());
+
+        AuthResponse authResponse = AuthResponse.builder()
+                .accessToken(token)
+                .build();
+
+        ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
+
+        return InitSessionResponseDto.builder()
+                .tableNumber(tableSession.getDiningTable().getNumber())
+                .startTime(tableSession.getStartTime())
+                .endTime(tableSession.getEndTime())
+                .participants(tableSession.getParticipants().stream()
+                        .map(participantMapper::toResponseDto)
+                        .toList())
+                .hostClient(participantDto)
+                .authResponse(authResponse)
+                .build();
+    }
+
 }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ROOT')")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
 @RequiredArgsConstructor
 public class EmployeeControllerImpl implements EmployeeController {
 

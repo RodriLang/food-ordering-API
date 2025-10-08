@@ -19,13 +19,13 @@ public class TagControllerImpl implements TagController {
 
     private final TagService tagService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     public ResponseEntity<TagResponseDto> createTag(
             @RequestBody @Valid TagRequestDto tagRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tagService.create(tagRequestDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     public ResponseEntity<List<TagResponseDto>> getAllTags() {
         return ResponseEntity.status(HttpStatus.OK).body(tagService.getAll());
     }

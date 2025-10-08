@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
@@ -8,9 +9,11 @@ import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.repositories.ParticipantRepository;
+import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -22,6 +25,7 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     private final ParticipantRepository participantRepository;
     private final ParticipantMapper participantMapper;
+    private final AuthService authService;
 
     private static final String ENTITY_NAME = "Participant";
 
@@ -67,5 +71,19 @@ public class ParticipantServiceImpl implements ParticipantService {
     public Participant getEntityById(UUID id) {
         return participantRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
+    }
+
+    @Override
+    public LoginResponse delegateHostingDuties(UUID participantId) {
+        Participant hostDesigned = getEntityById(participantId);
+        Participant currentHost = authService.determineCurrentParticipant();
+        TableSession currentTableSession = authService.determineCurrentTableSession();
+
+        if (!currentTableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
+            throw new AccessDeniedException("Only the current host can delegate hosting duties");
+        }
+        //implementar una forma de capturar este evento para avisar al nuevo hot
+        currentTableSession.setSessionHost(hostDesigned);
+        return null;
     }
 }

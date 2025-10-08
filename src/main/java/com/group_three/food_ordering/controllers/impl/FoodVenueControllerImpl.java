@@ -66,7 +66,7 @@ public class FoodVenueControllerImpl implements FoodVenueController {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
     public ResponseEntity<FoodVenuePublicResponseDto> updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
         return ResponseEntity.ok(foodVenueService.updateMyCurrentFoodVenue(foodVenueRequestDto));
     }

@@ -23,7 +23,7 @@ public class PaymentControllerImpl implements PaymentController {
 
     private final PaymentService paymentService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'GUEST', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> createPayment(
             PaymentRequestDto dto) {
@@ -31,14 +31,14 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<List<PaymentResponseDto>> getAllPayments() {
         List<PaymentResponseDto> payments = paymentService.getAll();
         return ResponseEntity.ok(payments);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> getPaymentById(
             UUID id) {
@@ -46,7 +46,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> updatePayment(
             UUID id,
@@ -55,7 +55,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> cancelPayment(
             UUID id) {
@@ -63,7 +63,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> completePayment(
             UUID id) {

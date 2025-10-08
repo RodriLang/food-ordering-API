@@ -14,7 +14,6 @@ import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
-import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +36,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
-    private final ParticipantService participantService;
     private final TableSessionRepository tableSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -269,7 +267,7 @@ public class AuthServiceImpl implements AuthService {
 
     private SessionInfo promoteGuestSessionToClient(User loggedUser, SessionInfo guestSession) {
 
-        Participant guestParticipant = participantService.update(guestSession.participantId(), loggedUser);
+        Participant guestParticipant = updateParticipant(guestSession.participantId(), loggedUser);
 
         log.debug("[AuthService] Promoted guest participant={} to user={}",
                 guestParticipant.getNickname(), loggedUser.getEmail());
@@ -333,4 +331,19 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Return CustomUserPrincipal Optional");
         return Optional.of(principal);
     }
+
+    private Participant updateParticipant(UUID participantIdUser, User user) {
+        Participant participant = participantRepository.findByPublicId(participantIdUser)
+                .orElseThrow(()-> new EntityNotFoundException(PARTICIPANT_ENTITY_NAME));
+
+            participant.setUser(user);
+            participant.setRole(RoleType.ROLE_CLIENT);
+            participant.setNickname(user.getName());
+
+        participantRepository.save(participant);
+        log.debug("[ParticipantService] Participant updated. Nickname={}. Role={}. User={}",
+                participant.getNickname(), participant.getRole(), user.getEmail());
+        return participant;
+    }
+
 }

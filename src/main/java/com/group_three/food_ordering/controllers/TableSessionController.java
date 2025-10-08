@@ -214,7 +214,6 @@ public interface TableSessionController {
                             content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
             }
     )
-
     @GetMapping("/{id}/orders")
     ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
@@ -224,17 +223,28 @@ public interface TableSessionController {
 
 
     @Operation(
-            summary = "Finalizar la sesión de mesa propia",
-            description = "El host de la sesión de mesa puede cerrarla.",
+            summary = "Finalizar la sesión de mesa propia (Host)",
+            description = "Actualiza el endTime de la sesión y coloca la mesa en estado WAITING_RESET hasta que sea limpiada y colocada en AVAILABLE por un STAFF.)",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Sesión creada exitosamente",
                             content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+                    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+                    @ApiResponse(responseCode = "404", description = "Session de mesa no encontrada")
             }
     )
-    @PostMapping("/end")
-    ResponseEntity<InitSessionResponseDto> endYourOwnTableSession(
-            @RequestBody @Validated(OnCreate.class) TableSessionRequestDto tableSessionRequestDto);
+    @PatchMapping("/end")
+    ResponseEntity<Void> endYourOwnTableSession();
 
-
+    @Operation(
+            summary = "Finalizar la sesión de una mesa (Staff)",
+            description = "Actualiza el endTime de la sesión y coloca la mesa en estado WAITING_RESET hasta que sea limpiada y colocada en AVAILABLE por un STAFF.)",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Sesión creada exitosamente",
+                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
+                    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
+                    @ApiResponse(responseCode = "404", description = "Mesa no encontrada")
+            }
+    )
+    @PatchMapping("/end/{tableSessionId}")
+    ResponseEntity<Void> endTableSessionById(@PathVariable UUID tableSessionId);
 }

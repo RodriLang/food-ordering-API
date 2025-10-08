@@ -21,14 +21,14 @@ public class ProductControllerImpl implements ProductController {
 
     private final ProductService productService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Override
     public ResponseEntity<ProductResponseDto> createProduct(
             ProductRequestDto productRequestDto) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.create(productRequestDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<Page<ProductResponseDto>> getProducts(Pageable pageable) {
         return ResponseEntity.ok(productService.getAll(pageable));
@@ -62,14 +62,14 @@ public class ProductControllerImpl implements ProductController {
         return ResponseEntity.ok(productService.getByNameAndContext(productName));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<ProductResponseDto> updateProduct(
             UUID id, ProductRequestDto productRequestDto) {
         return ResponseEntity.ok(productService.update(id, productRequestDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Override
     public ResponseEntity<ProductResponseDto> deleteProduct(UUID id) {
         productService.delete(id);

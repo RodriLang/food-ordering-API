@@ -40,5 +40,7 @@ public interface TableSessionService {
 
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
 
-    TableSessionResponseDto closeSession(UUID tableId);
+    TableSessionResponseDto closeCurrentSession();
+
+    TableSessionResponseDto closeSessionById(UUID tableId);
 }

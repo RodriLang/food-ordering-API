@@ -31,25 +31,25 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     public ResponseEntity<Page<OrderResponseDto>> getOrders(LocalDate from, LocalDate to, OrderStatus status, Pageable pageable) {
         return ResponseEntity.ok(orderService.getOrdersByFilters(from, to, status, pageable));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     public ResponseEntity<Page<OrderResponseDto>> getDailyOrders(OrderStatus status, Pageable pageable) {
         return ResponseEntity.ok(orderService.getOrdersForToday(status, pageable));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     public ResponseEntity<OrderResponseDto> getOrderById(UUID id) {
         return ResponseEntity.ok(orderService.getByIdAndTenantContext(id));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     public ResponseEntity<OrderResponseDto> getOrderByDateAndOrderNumber(LocalDate date, Integer orderNumber) {
         return ResponseEntity.ok(orderService.getOrderByDateAndOrderNumber(date, orderNumber));
     }
@@ -61,13 +61,13 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','GUEST', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','GUEST', 'MANAGER','ROOT')")
     public ResponseEntity<OrderResponseDto> cancelOrder(UUID id) {
         return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.CANCELLED));
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     public ResponseEntity<OrderResponseDto> updateOrderStatus(UUID id, OrderStatus status) {
         return ResponseEntity.ok(orderService.updateStatus(id, status));
     }

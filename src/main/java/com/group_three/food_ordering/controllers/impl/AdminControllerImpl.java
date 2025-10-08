@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@PreAuthorize("hasRole('ROLE_ROOT')")
+@PreAuthorize("hasRole('ROOT')")
 @RestController
 @RequiredArgsConstructor
 public class AdminControllerImpl implements AdminController {

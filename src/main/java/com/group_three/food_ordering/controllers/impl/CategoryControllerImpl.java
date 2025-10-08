@@ -20,7 +20,7 @@ public class CategoryControllerImpl implements CategoryController {
 
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<CategoryResponseDto> createCategory(
             @RequestBody @Valid CategoryRequestDto categoryRequestDto) {
@@ -28,7 +28,7 @@ public class CategoryControllerImpl implements CategoryController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<CategoryResponseDto> updateCategory(UUID id, CategoryRequestDto categoryRequestDto) {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.update(id, categoryRequestDto));
@@ -41,13 +41,13 @@ public class CategoryControllerImpl implements CategoryController {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<CategoryResponseDto> getCategoryById(UUID id) {
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN', 'ROOT')")
     @Override
     public ResponseEntity<Void> deleteCategory(UUID id) {
         categoryService.delete(id);

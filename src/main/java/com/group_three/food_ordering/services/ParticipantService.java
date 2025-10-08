@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services;
 
+import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
@@ -16,4 +17,6 @@ public interface ParticipantService {
     ParticipantResponseDto getById(UUID id);
 
     Participant getEntityById(UUID id);
+
+    LoginResponse delegateHostingDuties(UUID participantId);
 }

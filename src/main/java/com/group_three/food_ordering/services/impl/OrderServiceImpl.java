@@ -17,7 +17,6 @@ import com.group_three.food_ordering.utils.OrderServiceHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +44,6 @@ public class OrderServiceImpl implements OrderService {
     private static final String ORDER_ENTITY_NAME = "Order";
     private static final String PRODUCT_ENTITY_NAME = "Product";
     private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
-    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {

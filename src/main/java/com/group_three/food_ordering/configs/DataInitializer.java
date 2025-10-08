@@ -566,7 +566,7 @@ public class DataInitializer implements CommandLineRunner {
                     .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84556"))
                     .number(3)
                     .capacity(6)
-                    .status(DiningTableStatus.OCCUPIED)
+                    .status(DiningTableStatus.IN_SESSION)
                     .foodVenue(v3).build();
             DiningTable t4 = DiningTable.builder()
                     .publicId(UUID.fromString("141f3ffc-9f03-4242-a1c8-800bd2e84533"))

@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,20 +18,17 @@ import java.util.UUID;
 @Tag(name = "Pagos", description = "Operaciones para gestionar pagos")
 public interface PaymentController {
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'INVITED', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo pago")
     @PostMapping
     ResponseEntity<PaymentResponseDto> createPayment(
             @RequestBody @Valid PaymentRequestDto dto);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener todos los pagos")
     @GetMapping
     ResponseEntity<List<PaymentResponseDto>> getAllPayments();
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Obtener pago por ID")
     @GetMapping("/{id}")
     ResponseEntity<PaymentResponseDto> getPaymentById(
@@ -40,7 +36,6 @@ public interface PaymentController {
             @PathVariable UUID id);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar un pago")
     @PutMapping("/{id}")
     ResponseEntity<PaymentResponseDto> updatePayment(
@@ -49,7 +44,6 @@ public interface PaymentController {
             @RequestBody @Valid PaymentRequestDto dto);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Cancelar pago",
             description = "Actualizar el estado de un pago a CANCELED. " + ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )
@@ -59,7 +53,6 @@ public interface PaymentController {
             @PathVariable UUID id);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Completar un pago",
             description = "Actualizar el estado de un pago a COMPLETED. " + ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )

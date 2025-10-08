@@ -27,7 +27,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Crear una nueva mesa",
-            description = "Crea una mesa nueva en el sistema.",
+            description = "Crea una mesa nueva en el sistema asociada al contexto actual.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "Mesa creada exitosamente",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class))),
@@ -41,7 +41,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Obtener todas las mesas",
-            description = "Devuelve una lista con todas las mesas registradas.",
+            description = "Devuelve una lista con todas las mesas registradas asociadas al contexto actual.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista de mesas",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class, type = "array")))
@@ -53,7 +53,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Obtener mesa por UUID",
-            description = "Obtiene una mesa según su identificador UUID.",
+            description = "Obtiene una mesa según su identificador UUID asociada al contexto actual.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Mesa encontrada",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class))),
@@ -68,7 +68,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Obtener mesa por número",
-            description = "Busca una mesa mediante su número único.",
+            description = "Busca una mesa mediante su número único asociada al contexto actual.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Mesa encontrada",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class))),
@@ -83,7 +83,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Obtener mesas filtradas",
-            description = "Filtra mesas por estado y/o capacidad. Ambos parámetros son opcionales.",
+            description = "Filtra mesas por estado y/o capacidad asociada al contexto actual. Ambos parámetros son opcionales.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lista de mesas filtradas",
                             content = @Content(schema = @Schema(implementation = DiningTableResponseDto.class, type = "array")))
@@ -108,14 +108,14 @@ public interface DiningTableController {
             }
     )
     @PatchMapping("/status/{id}")
-    ResponseEntity<Void> update(
+    ResponseEntity<Void> updateStatus(
             @RequestParam @Validated(OnUpdate.class) DiningTableStatus status,
             @Parameter(description = "UUID de la mesa a actualizar", required = true)
             @PathVariable UUID id);
 
 
     @Operation(
-            summary = "Modificar parcialmente una mesa",
+            summary = "Modificar una mesa",
             description = "Modifica parcialmente los datos de una mesa.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Mesa modificada correctamente",
@@ -125,7 +125,7 @@ public interface DiningTableController {
             }
     )
     @PatchMapping("/{id}")
-    ResponseEntity<DiningTableResponseDto> patch(
+    ResponseEntity<DiningTableResponseDto> update(
             @RequestBody @Valid DiningTableRequestDto diningTableRequestDto,
             @Parameter(description = "UUID de la mesa a modificar", required = true)
             @PathVariable UUID id);
@@ -133,7 +133,7 @@ public interface DiningTableController {
 
     @Operation(
             summary = "Eliminar una mesa",
-            description = "Elimina una mesa del sistema usando su UUID.",
+            description = "Elimina una mesa del sistema asociada al contexto actual usando su UUID.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Mesa eliminada exitosamente"),
                     @ApiResponse(responseCode = "404", description = "Mesa no encontrada")
