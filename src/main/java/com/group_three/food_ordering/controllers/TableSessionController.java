@@ -206,9 +206,6 @@ public interface TableSessionController {
             @PathVariable UUID clientId);
 
 
-<<<<<<< HEAD
-=======
-    @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
     @Operation(
             summary = "Obtener todos los pedidos de la sesión",
             description = "devuelve todas las ordenes asociadas a una sesión de mesa",
@@ -217,7 +214,7 @@ public interface TableSessionController {
                             content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
             }
     )
->>>>>>> 2cfb0aa (agrego documentación swagger)
+
     @GetMapping("/{id}/orders")
     ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
