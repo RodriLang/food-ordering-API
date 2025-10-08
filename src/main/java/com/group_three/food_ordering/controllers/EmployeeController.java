@@ -70,8 +70,8 @@ public interface EmployeeController {
 
     @GetMapping("/user/{email}")
     @Operation(
-            summary = "Listar empleados activos",
-            description = "Devuelve todos los empleados que no han sido eliminados (removedAt es null en su usuario)."
+            summary = "Listar empleos de un usuario",
+            description = "Devuelve todos los empleos relacionados a un usuario."
     )
     ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(
             @PathVariable String email, @Parameter Pageable pageable);

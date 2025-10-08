@@ -94,7 +94,7 @@ public interface FoodVenueController {
             @RequestBody @Validated(OnUpdate.class) FoodVenueRequestDto foodVenueRequestDto);
 
     @Operation(
-            summary = "Eliminar un lugar de comida",
+            summary = "Eliminar un lugar de comida por ID",
             description = "Elimina un lugar de comida por su UUID. Accesible para root.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "Lugar de comida eliminado correctamente"),
@@ -109,7 +109,7 @@ public interface FoodVenueController {
 
 
     @Operation(
-            summary = "Obtener el lugar de comida",
+            summary = "Obtener el lugar de comida actual",
             description = "Devuelve el lugar de comida asociado al usuario, o en que tenga una mesa activa.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lugar de comida encontrado",
@@ -122,7 +122,7 @@ public interface FoodVenueController {
     ResponseEntity<FoodVenuePublicResponseDto> getMyCurrentFoodVenue();
 
     @Operation(
-            summary = "Actualizar un lugar de comida",
+            summary = "Actualizar el lugar de comida actual",
             description = "Actualiza el lugar de comida asociado al usuario registrado. accesible para admin",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Lugar de comida actualizado correctamente",

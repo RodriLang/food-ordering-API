@@ -11,11 +11,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,21 +23,18 @@ import java.util.UUID;
 @Tag(name = "Productos", description = "Gestión de los productos de los lugares de comida")
 public interface ProductController {
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo producto")
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
     @PostMapping
     ResponseEntity<ProductResponseDto> createProduct(
             @RequestBody @Validated(OnCreate.class) ProductRequestDto productRequestDto);
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Listar todos los productos")
     @ApiResponse(responseCode = "200", description = "Listado de productos")
     @GetMapping
     ResponseEntity<Page<ProductResponseDto>> getProducts(Pageable pageable);
 
 
-    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Listar productos disponibles")
     @ApiResponse(responseCode = "200", description = "Listado de productos disponibles")
     @GetMapping("/available")
@@ -51,7 +46,6 @@ public interface ProductController {
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
-    @PreAuthorize("hasAnyRole('ROOT', 'ADMIN', 'MANAGER')")
     @GetMapping("/find-by-id/{id}")
     ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID id);
 
@@ -64,7 +58,6 @@ public interface ProductController {
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
-    @PreAuthorize("hasAnyRole('ROOT', 'ADMIN', 'MANAGER')")
     @GetMapping("/top-selling")
     ResponseEntity<Page<ItemMenuResponseDto>> getTopSellingProducts(
             @RequestParam Integer limit,
@@ -73,12 +66,18 @@ public interface ProductController {
     );
 
 
-    @PreAuthorize("isAuthenticated()")
+    @Operation(
+            summary = "Obtener producto por nombre",
+            description = "Devuelve un producto usando como identificador su nombre y el contexto actual"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     @GetMapping("/find-by-name/{productName}")
     ResponseEntity<ItemMenuResponseDto> getProductByNameAndContext(@PathVariable String productName);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
     @Operation(summary = "Actualizar parcialmente un producto")
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
     @PatchMapping("/{id}")
@@ -86,7 +85,6 @@ public interface ProductController {
             @PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody ProductRequestDto productRequestDto);
 
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Eliminar un producto")
     @ApiResponse(responseCode = "204", description = "Producto eliminado correctamente")
     @DeleteMapping("/{id}")

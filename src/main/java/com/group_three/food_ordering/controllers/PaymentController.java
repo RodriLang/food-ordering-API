@@ -50,8 +50,8 @@ public interface PaymentController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
-            description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
+    @Operation(summary = "Cancelar pago",
+            description = "Actualizar el estado de un pago a CANCELED. " + ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )
     @PatchMapping("/{id}/cancel")
     ResponseEntity<PaymentResponseDto> cancelPayment(
@@ -60,8 +60,8 @@ public interface PaymentController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Actualizar el estado de un pago a COMPLETED (*Irreversible)",
-            description = ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
+    @Operation(summary = "Completar un pago",
+            description = "Actualizar el estado de un pago a COMPLETED. " + ApiDocConstants.PAYMENT_STATE_IRREVERSIBLE
     )
     @PatchMapping("/{id}/complete")
     ResponseEntity<PaymentResponseDto> completePayment(
