@@ -5,6 +5,7 @@ import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
+import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -205,6 +206,18 @@ public interface TableSessionController {
             @PathVariable UUID clientId);
 
 
+<<<<<<< HEAD
+=======
+    @PreAuthorize("hasAnyRole('CLIENT','INVITED','STAFF','ADMIN','ROOT')")
+    @Operation(
+            summary = "Obtener todos los pedidos de la sesión",
+            description = "devuelve todas las ordenes asociadas a una sesión de mesa",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Usuario encontrado",
+                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+            }
+    )
+>>>>>>> 2cfb0aa (agrego documentación swagger)
     @GetMapping("/{id}/orders")
     ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")

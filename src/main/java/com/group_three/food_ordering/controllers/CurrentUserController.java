@@ -53,13 +53,28 @@ public interface CurrentUserController {
     @DeleteMapping("/profile")
     ResponseEntity<UserResponseDto> deleteUser();
 
-
+    @Operation(
+            summary = "Obtener todos los pedidos realizados",
+            description = "devuelve todas las ordenes del usuario autenticado sin importar el lugar de comida actual",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Usuario encontrado",
+                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+            }
+    )
     @GetMapping("/orders")
     ResponseEntity<Page<OrderResponseDto>> getMyOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
 
 
+    @Operation(
+            summary = "Obtener todos los pedidos de la sesión de mesa",
+            description = "devuelve todas las ordenes del usuario autenticado en su sesión actualgit ",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Usuario encontrado",
+                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+            }
+    )
     @GetMapping("/table-sessions")
     ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(
             @RequestParam(required = false) OrderStatus orderStatus,

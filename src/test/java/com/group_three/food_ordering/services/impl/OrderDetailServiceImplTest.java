@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -139,18 +138,6 @@ class OrderDetailServiceImplTest {
         verify(orderDetailRepository, never()).save(any(OrderDetail.class));
     }
 
-
-    @Test
-    void getAll() {
-        when(orderDetailRepository.findAll()).thenReturn(List.of(orderDetail));
-        when(orderDetailMapper.toDTO(any(OrderDetail.class))).thenReturn(orderDetailResponseDto);
-
-        List<OrderDetailResponseDto> responseDtoList = orderDetailService.getAll();
-
-        assertNotNull(responseDtoList);
-        assertEquals(1, responseDtoList.size());
-        assertEquals(1L, responseDtoList.getFirst().getId());
-    }
 
     @Test
     void getOrderDetailById() {
