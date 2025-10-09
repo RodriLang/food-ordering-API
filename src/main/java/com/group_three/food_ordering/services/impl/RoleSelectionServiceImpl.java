@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,7 +70,8 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
         List<RoleEmploymentResponseDto> roleSelection = generateRoleSelection(user);
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
+        Instant expiration = jwtService.getExpirationDateFromToken(refreshToken);
+        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiration);
         return LoginResponse.builder()
                 .authResponse(authResponse)
                 .employments(roleSelection).build();

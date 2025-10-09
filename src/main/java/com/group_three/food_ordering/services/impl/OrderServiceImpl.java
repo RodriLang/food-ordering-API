@@ -43,7 +43,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderServiceHelper orderServiceHelper;
 
     private static final String ORDER_ENTITY_NAME = "Order";
-    private static final String PRODUCT_ENTITY_NAME = "Product";
     private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
 
     @Override

@@ -26,6 +26,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -312,7 +313,8 @@ public class AuthServiceImpl implements AuthService {
 
     private LoginResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken) {
         log.debug("[AuthService] Generating login response");
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken);
+        Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
+        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiration);
         log.debug("[AuthService] Auth response generated");
         return LoginResponse.builder()
                 .authResponse(authResponse)
