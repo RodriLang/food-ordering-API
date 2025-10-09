@@ -39,7 +39,7 @@ public interface ParticipantController {
             }
     )
     @PatchMapping("/host/{participantId}")
-    ResponseEntity<LoginResponse> delegateHostingDuties(@PathVariable UUID participantId);
+    ResponseEntity<AuthResponse> delegateHostingDuties(@PathVariable UUID participantId);
 
 
     @Operation(summary = "Obtener pagos por sesión de mesa actual y estado")

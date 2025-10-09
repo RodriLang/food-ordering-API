@@ -34,7 +34,7 @@ public class ParticipantControllerImpl implements ParticipantController {
     }
 
     @Override
-    public ResponseEntity<LoginResponse> delegateHostingDuties(UUID participantId) {
+    public ResponseEntity<AuthResponse> delegateHostingDuties(UUID participantId) {
         return ResponseEntity.ok(participantService.delegateHostingDuties(participantId));
     }
 

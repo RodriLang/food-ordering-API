@@ -6,7 +6,6 @@ import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -75,7 +74,7 @@ public interface AuthController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping("/login")
-    ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request);
+    ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request);
 
 
     @Operation(

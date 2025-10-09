@@ -9,7 +9,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class RoleEmploymentResponseDto {
 
     private UUID publicId;

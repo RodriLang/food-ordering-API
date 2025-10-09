@@ -2,7 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +27,7 @@ public interface RoleSelectorController {
             }
     )
     @PostMapping("/select")
-    ResponseEntity<LoginResponse> select(@RequestBody RoleSelectionRequestDto request);
+    ResponseEntity<AuthResponse> select(@RequestBody RoleSelectionRequestDto request);
 
 
     @Operation(
@@ -38,5 +38,5 @@ public interface RoleSelectorController {
             }
     )
     @PostMapping("/client")
-    ResponseEntity<LoginResponse> client();
+    ResponseEntity<AuthResponse> client();
 }

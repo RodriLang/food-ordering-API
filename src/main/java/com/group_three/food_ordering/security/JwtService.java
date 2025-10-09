@@ -126,7 +126,14 @@ public class JwtService {
         UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
         UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
 
-        return new SessionInfo(userId, subject, foodVenueId, role, participantId, tableSessionId);
+        return SessionInfo.builder()
+                .userId(userId)
+                .subject(subject)
+                .foodVenueId(foodVenueId)
+                .tableSessionId(tableSessionId)
+                .role(role)
+                .participantId(participantId)
+                .build();
     }
 
     private SecretKey getSignatureKey() {

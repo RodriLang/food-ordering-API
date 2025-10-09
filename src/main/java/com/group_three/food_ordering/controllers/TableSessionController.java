@@ -34,7 +34,7 @@ public interface TableSessionController {
             }
     )
     @PostMapping("/scan-qr")
-    ResponseEntity<InitSessionResponseDto> createTableSession(
+    ResponseEntity<AuthResponse> createTableSession(
             @RequestBody @Validated(OnCreate.class) TableSessionRequestDto tableSessionRequestDto);
 
 

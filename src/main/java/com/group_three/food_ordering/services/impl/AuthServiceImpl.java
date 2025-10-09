@@ -4,15 +4,16 @@ import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
+import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
 import com.group_three.food_ordering.dto.AuditorUser;
+import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
@@ -27,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
+    private final ParticipantMapper participantMapper;
     private final TableSessionRepository tableSessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -60,14 +63,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse login(LoginRequest loginRequest) {
+    public AuthResponse login(LoginRequest loginRequest) {
         log.debug("[AuthService] Login request received");
         User loggedUser = authenticateUser(loginRequest);
         log.debug("[AuthService] Logged in user={}", loggedUser.getEmail());
         SessionInfo sessionInfo = resolveSessionInfo(loggedUser);
         String accessToken = jwtService.generateAccessToken(sessionInfo);
         String refreshToken = refreshTokenService.generateRefreshToken(loggedUser.getEmail());
-        return createLoginResponse(loggedUser, accessToken, refreshToken);
+        return createLoginResponse(loggedUser, accessToken, refreshToken, sessionInfo);
     }
 
     @Override
@@ -243,6 +246,10 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Creating session info from active TableSession id={} for user={}",
                 tableSession.getPublicId(), loggedUser.getPublicId());
 
+        ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());
+        List<ParticipantResponseDto> participants = tableSession.getParticipants().stream()
+                .map(participantMapper::toResponseDto).toList();
+
         SessionInfo activeSession = SessionInfo.builder()
                 .userId(loggedUser.getPublicId())
                 .subject(loggedUser.getEmail())
@@ -250,6 +257,11 @@ public class AuthServiceImpl implements AuthService {
                 .participantId(findParticipantIdForUser(tableSession, loggedUser))
                 .tableSessionId(tableSession.getPublicId())
                 .role(RoleType.ROLE_CLIENT.name())
+                .startTime(tableSession.getStartTime())
+                .endTime(tableSession.getEndTime())
+                .hostClient(host)
+                .participants(participants)
+                .tableNumber(tableSession.getDiningTable().getNumber())
                 .build();
         log.debug("[AuthService] Recovering active TableSession of logged user. Session info={}", activeSession);
         return activeSession;
@@ -308,14 +320,20 @@ public class AuthServiceImpl implements AuthService {
                 .orElse(null);
     }
 
-    private LoginResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken) {
+    private AuthResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken, SessionInfo sessionInfo) {
         log.debug("[AuthService] Generating login response");
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiration);
         log.debug("[AuthService] Auth response generated");
-        return LoginResponse.builder()
-                .authResponse(authResponse)
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expirationDate(expiration)
                 .employments(roleSelectionService.generateRoleSelection(loggedUser))
+                .endTime(sessionInfo.endTime())
+                .startTime(sessionInfo.startTime())
+                .hostClient(sessionInfo.hostClient())
+                .participants(sessionInfo.participants())
+                .tableNumber(sessionInfo.tableNumber())
                 .build();
     }
 

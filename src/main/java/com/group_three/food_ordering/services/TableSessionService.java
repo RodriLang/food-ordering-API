@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
-import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.models.TableSession;
 import org.springframework.data.domain.Page;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface TableSessionService {
 
-    InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto);
+    AuthResponse enter(TableSessionRequestDto tableSessionRequestDto);
 
     Page<TableSessionResponseDto> getAll(Pageable pageable);
 

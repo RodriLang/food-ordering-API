@@ -2,7 +2,7 @@ package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.TableSessionController;
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
-import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
@@ -28,7 +28,7 @@ public class TableSessionControllerImpl implements TableSessionController {
 
     @PreAuthorize("hasRole('CLIENT') or isAnonymous()")
     @Override
-    public ResponseEntity<InitSessionResponseDto> createTableSession(
+    public ResponseEntity<AuthResponse> createTableSession(
             TableSessionRequestDto tableSessionRequestDto) {
         return ResponseEntity.status(HttpStatus.CREATED).
                 body(tableSessionService.enter(tableSessionRequestDto));

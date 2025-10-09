@@ -6,7 +6,6 @@ import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ public class AuthControllerImpl implements AuthController {
     private final UserService userService;
 
     @Override
-    public ResponseEntity<LoginResponse> login(LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(LoginRequest request) {
         log.debug("[AuthController] Login request received");
         return ResponseEntity.ok(authService.login(request));
     }

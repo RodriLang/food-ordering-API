@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
@@ -74,7 +74,7 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public LoginResponse delegateHostingDuties(UUID participantId) {
+    public AuthResponse delegateHostingDuties(UUID participantId) {
         Participant hostDesigned = getEntityById(participantId);
         Participant currentHost = authService.determineCurrentParticipant();
         TableSession currentTableSession = authService.determineCurrentTableSession();

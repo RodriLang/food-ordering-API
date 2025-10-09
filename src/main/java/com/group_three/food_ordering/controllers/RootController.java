@@ -3,7 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,8 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -54,7 +52,7 @@ public interface RootController {
             }
     )
     @PostMapping("/select-context")
-    ResponseEntity<LoginResponse> selectContext(
+    ResponseEntity<AuthResponse> selectContext(
             @RequestParam UUID foodVenueId);
 
 }

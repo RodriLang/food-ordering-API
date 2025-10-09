@@ -4,7 +4,7 @@ import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
@@ -69,7 +69,7 @@ public class RootServiceImpl implements RootService {
     }
 
     @Override
-    public LoginResponse selectContext(UUID foodVenuePublicId) {
+    public AuthResponse selectContext(UUID foodVenuePublicId) {
         log.debug("[RootService] Select context");
         FoodVenue selectedFoodVenue = getFoodVenue(foodVenuePublicId);
         log.debug("[RootService] Selected FoodVenue foodVenueId={}", selectedFoodVenue.getPublicId());
@@ -91,8 +91,9 @@ public class RootServiceImpl implements RootService {
                 .build();
 
         String token = jwtService.generateAccessToken(sessionInfo);
-        AuthResponse authResponse = AuthResponse.builder().accessToken(token).build();
-        return LoginResponse.builder().authResponse(authResponse).build();
+        return AuthResponse.builder()
+                .accessToken(token)
+                .build();
     }
 
     private FoodVenue getFoodVenue(UUID foodVenueId) {

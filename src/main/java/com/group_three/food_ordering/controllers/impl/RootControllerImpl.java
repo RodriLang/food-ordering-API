@@ -3,7 +3,7 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.RootController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
-import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class RootControllerImpl implements RootController {
     }
 
     @Override
-    public ResponseEntity<LoginResponse> selectContext(UUID foodVenueId) {
+    public ResponseEntity<AuthResponse> selectContext(UUID foodVenueId) {
         return ResponseEntity.ok(rootService.selectContext(foodVenueId));
     }
 }

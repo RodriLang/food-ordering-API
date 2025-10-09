@@ -4,7 +4,6 @@ import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
-import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
@@ -51,7 +50,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final ParticipantMapper participantMapper;
 
     @Override
-    public InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto) {
+    public AuthResponse enter(TableSessionRequestDto tableSessionRequestDto) {
         log.debug("[TableSession] Processing table session entry for tableId={}", tableSessionRequestDto.getTableId());
 
         DiningTable diningTable = diningTableService.getEntityById(tableSessionRequestDto.getTableId());
@@ -250,7 +249,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     }
 
-    private InitSessionResponseDto handleGuestToClientMigration(User authUser) {
+    private AuthResponse handleGuestToClientMigration(User authUser) {
         log.debug("[TableSession] Getting table session of guest participant");
         TableSession guestSession = authService.getCurrentParticipant()
                 .map(Participant::getTableSession)
@@ -266,7 +265,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         return generateInitSessionResponseDto(guestSession, currentParticipant);
     }
 
-    private InitSessionResponseDto handleNewTableSession(DiningTable diningTable, User authUser) {
+    private AuthResponse handleNewTableSession(DiningTable diningTable, User authUser) {
         log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getPublicId());
 
         DiningTableStatus status = diningTable.getStatus();
@@ -304,7 +303,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         TableSession savedTableSession = tableSessionRepository.save(tableSession);
 
-        InitSessionResponseDto response = generateInitSessionResponseDto(savedTableSession, participant);
+        AuthResponse response = generateInitSessionResponseDto(savedTableSession, participant);
         determineTableStatusPostSessionCreation(diningTable, tableSession);
 
         log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
@@ -343,7 +342,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .build();
     }
 
-    private InitSessionResponseDto generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
+    private AuthResponse generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
 
         String token = jwtService.generateAccessToken(SessionInfo.builder()
                 .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
@@ -354,13 +353,9 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .role(participant.getRole().name())
                 .build());
 
-        AuthResponse authResponse = AuthResponse.builder()
-                .accessToken(token)
-                .build();
-
         ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
 
-        return InitSessionResponseDto.builder()
+        return AuthResponse.builder()
                 .tableNumber(tableSession.getDiningTable().getNumber())
                 .startTime(tableSession.getStartTime())
                 .endTime(tableSession.getEndTime())
@@ -368,7 +363,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                         .map(participantMapper::toResponseDto)
                         .toList())
                 .hostClient(participantDto)
-                .authResponse(authResponse)
+                .accessToken(token)
                 .build();
     }
 

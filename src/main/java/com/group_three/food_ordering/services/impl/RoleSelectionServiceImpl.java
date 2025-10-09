@@ -11,7 +11,6 @@ import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.services.EmploymentService;
 import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
@@ -35,7 +34,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     private final RefreshTokenService refreshTokenService;
 
     @Override
-    public LoginResponse selectRole(RoleSelectionRequestDto request) {
+    public AuthResponse selectRole(RoleSelectionRequestDto request) {
         User authenticatedUser = getAuthenticatedUser();
         Employment employment = employmentService.getEntityByIdAndActiveTrue(request.employmentId());
         log.debug("[RoleSelection] Role selected={}", employment.getRole());
@@ -43,7 +42,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     }
 
     @Override
-    public LoginResponse selectClient() {
+    public AuthResponse selectClient() {
         User authenticatedUser = getAuthenticatedUser();
         log.debug("[RoleSelection] Employment selected ROLE_CLIENT");
 
@@ -60,7 +59,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
         return roleEmployments;
     }
 
-    private LoginResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
+    private AuthResponse generateLoginResponse(User user, UUID foodVenueId, String role) {
         String accessToken = jwtService.generateAccessToken(SessionInfo.builder()
                 .userId(user.getPublicId())
                 .subject(user.getEmail())
@@ -71,9 +70,10 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
         List<RoleEmploymentResponseDto> roleSelection = generateRoleSelection(user);
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
         Instant expiration = jwtService.getExpirationDateFromToken(refreshToken);
-        AuthResponse authResponse = new AuthResponse(accessToken, refreshToken, expiration);
-        return LoginResponse.builder()
-                .authResponse(authResponse)
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expirationDate(expiration)
                 .employments(roleSelection).build();
     }
 
