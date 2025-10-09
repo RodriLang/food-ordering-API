@@ -30,7 +30,7 @@ public class DiningTable extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private DiningTableStatus status;
 
-    @OneToMany(mappedBy = "diningTable", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "diningTable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<TableSession> tableSessions = new ArrayList<>();
 
     @ManyToOne

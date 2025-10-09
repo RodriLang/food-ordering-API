@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.OrderDetailRequestDto;
 import com.group_three.food_ordering.dto.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -23,6 +24,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailMapper orderDetailMapper;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final TenantContext tenantContext;
 
     private static final String ORDER_DETAIL_ENTITY_NAME = "Order Detail";
     private static final String PRODUCT_ENTITY_NAME = "Product";
@@ -30,14 +32,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Transactional
     @Override
     public OrderDetailResponseDto create(OrderDetailRequestDto orderDetailRequestDto) {
-
         return orderDetailMapper.toDTO(this.createInternal(orderDetailRequestDto));
     }
 
     public OrderDetail createInternal(OrderDetailRequestDto orderDetailRequestDto) {
-
-        Product product = productRepository.findByPublicId(orderDetailRequestDto.getProductId())
-                .orElseThrow(()-> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+        Product product = productService.getEntityByNameAndContext(orderDetailRequestDto.getProductName());
 
         updateProductStock(product, -1);
         OrderDetail orderDetail = orderDetailMapper.toEntity(orderDetailRequestDto);
@@ -92,6 +91,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     private OrderDetail getOrderDetailEntityById(Long id) {
         return orderDetailRepository.findById(id)
-                .orElseThrow(()-> new EntityNotFoundException(ORDER_DETAIL_ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ORDER_DETAIL_ENTITY_NAME, id.toString()));
     }
 }

@@ -12,6 +12,7 @@ import com.group_three.food_ordering.repositories.PaymentRepository;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.PaymentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
@@ -33,19 +35,28 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     @Override
     public PaymentResponseDto create(PaymentRequestDto dto) {
-        List<Order> orders = findOrders(dto.getOrderIds());
+        List<UUID> orderIds = dto.getOrderIds();
+        orderIds.forEach(order -> log.debug("[PaymentService] Generating payment for order={}", order));
+        List<Order> orders = findAndVerifyOrders(orderIds);
 
         if (orders.size() != dto.getOrderIds().size()) {
             throw new IllegalArgumentException("Algunas órdenes no fueron encontradas.");
         }
 
-        Payment payment = paymentMapper.toEntity(dto);
-        payment.setAmount(calculateAmount(payment.getOrders()));
-        payment.setPublicId(UUID.randomUUID());
-        // Asignar el payment a cada orden
-        orders.forEach(order -> order.setPayment(payment));
 
-        return paymentMapper.toDTO(paymentRepository.save(payment));
+        Payment payment = paymentMapper.toEntity(dto);
+        payment.setOrders(orders);
+        payment.setAmount(calculateAmount(orders));
+        payment.setPublicId(UUID.randomUUID());
+        payment.setStatus(PaymentStatus.PENDING);
+        // Asignar el payment a cada orden
+        log.debug("[PaymentService] Assigning payment to orders");
+        orders.forEach(order -> {
+            log.debug("[PaymentService] Assigning payment={} to order={}", payment, order);
+            order.setPayment(payment);
+        });
+        Payment paymentSaved = paymentRepository.save(payment);
+        return paymentMapper.toDTO(paymentSaved);
     }
 
     @Override
@@ -65,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     @Override
     public PaymentResponseDto update(UUID id, PaymentRequestDto dto) {
-
+        log.debug("[PaymentService] Updating order");
         Payment existingPayment = getPaymentEntityById(id);
 
         // Verifica si el pago se encuentra en un estado que permita la modificación
@@ -77,7 +88,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         if (dto.getOrderIds() != null && !dto.getOrderIds().isEmpty()) {
-            List<Order> newOrders = findOrders(dto.getOrderIds());
+            List<Order> newOrders = findAndVerifyOrders(dto.getOrderIds());
 
             List<UUID> invalidOrders = new java.util.ArrayList<>();
 
@@ -138,21 +149,28 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
     }
 
-    private List<Order> findOrders(List<UUID> orderIds) {
-        return orderIds.stream()
-                .map(orderService::getEntityByIdAndTenantContext)
-                .toList();
+    private List<Order> findAndVerifyOrders(List<UUID> orderIds) {
+        List<Order> orders = orderIds.stream()
+                .map(orderService::getEntityById)
+                .filter(order -> order.getPayment() == null ||
+                        order.getPayment().getStatus().equals(PaymentStatus.CANCELLED)).toList();
+
+        orders.forEach(order -> log.debug("[PaymentService] Calculating amount for order={}", order.getPublicId()));
+        return orders;
     }
 
     private BigDecimal calculateAmount(List<Order> orders) {
         BigDecimal amount;
         if (orders != null) {
+            log.debug("[PaymentService] Calculating amount for orders");
             amount = orders.stream()
                     .map(Order::getTotalPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
         } else {
+            log.debug("[PaymentService] There are not orders");
             amount = BigDecimal.ZERO;
         }
+        log.debug("[PaymentService] Amount calculated={}", amount);
         return amount;
     }
 }

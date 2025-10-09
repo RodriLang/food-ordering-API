@@ -61,7 +61,7 @@ class OrderDetailServiceImplTest {
                 .build();
 
         orderDetailRequestDto = OrderDetailRequestDto.builder()
-                .productId(product.getPublicId())
+                .productName(product.getName())
                 .specialInstructions("test instructions")
                 .build();
 
@@ -126,7 +126,7 @@ class OrderDetailServiceImplTest {
         product.setStock(0); // stock insuficiente
 
         OrderDetailRequestDto dto = new OrderDetailRequestDto();
-        dto.setProductId(UUID.randomUUID());
+        dto.setProductName("Hamburguesa");
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 

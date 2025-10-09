@@ -55,7 +55,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
+    @PreAuthorize("isAuthenticated()")
     @Override
     public ResponseEntity<PaymentResponseDto> cancelPayment(
             UUID id) {

@@ -82,23 +82,6 @@ public interface TableSessionController {
 
 
     @Operation(
-            summary = "Obtener sesiones por id del local de comida y número de mesa",
-            description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa de un Lugar de comida específico.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Lista de sesiones por mesa",
-                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class, type = "array")))
-            }
-    )
-    @GetMapping("{foodVenueId}/table/{tableNumber}")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
-            @Parameter(description = "Número de la mesa", required = true)
-            @PathVariable Integer tableNumber,
-            @Parameter(description = "Id del FoodVenue", required = true)
-            @PathVariable UUID foodVenueId,
-            @Parameter(hidden = true) Pageable pageable);
-
-
-    @Operation(
             summary = "Obtener sesiones por número de mesa",
             description = "Devuelve una lista con todas las sesiones asociadas a un número de mesa del Lugar de comida asociado al usuario.",
             responses = {

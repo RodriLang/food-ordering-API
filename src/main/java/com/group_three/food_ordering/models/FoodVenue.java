@@ -32,15 +32,15 @@ public class FoodVenue extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Employment> employees = new ArrayList<>();
 
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Product> products = new ArrayList<>();
 
-    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "foodVenue", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<DiningTable> diningTables = new ArrayList<>();
 

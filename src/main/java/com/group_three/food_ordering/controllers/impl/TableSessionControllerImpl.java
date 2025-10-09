@@ -53,15 +53,6 @@ public class TableSessionControllerImpl implements TableSessionController {
         return ResponseEntity.ok(tableSessionService.getById(id));
     }
 
-    @PreAuthorize("hasRole('ROOT')")
-    @Override
-    public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueAndTable(
-            Integer tableNumber,
-            UUID foodVenueId,
-            Pageable pageable) {
-        return ResponseEntity.ok(tableSessionService.getByFoodVenueAndTable(foodVenueId, tableNumber, pageable));
-    }
-
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContextAndTable(

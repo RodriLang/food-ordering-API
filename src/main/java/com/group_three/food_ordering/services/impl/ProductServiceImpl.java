@@ -79,6 +79,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product getEntityByNameAndContext(String name) {
+        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
+        return productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+
+    }
+
+    @Override
     public void delete(UUID publicId) {
         productRepository.deleteByPublicId(publicId);
     }

@@ -339,6 +339,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         String token = jwtService.generateAccessToken(SessionInfo.builder()
                 .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
+                .userId(participant.getUser().getPublicId())
                 .foodVenueId(tableSession.getFoodVenue().getPublicId())
                 .participantId(participant.getPublicId())
                 .tableSessionId(tableSession.getPublicId())

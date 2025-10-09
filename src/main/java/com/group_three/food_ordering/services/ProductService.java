@@ -20,6 +20,8 @@ public interface ProductService {
 
     Product getEntityById(UUID publicId);
 
+    Product getEntityByNameAndContext(String name);
+
     ItemMenuResponseDto getByNameAndContext(String name);
 
     void delete(UUID publicId);

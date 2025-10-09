@@ -38,6 +38,7 @@ public interface OrderController {
     ResponseEntity<OrderResponseDto> createOrder(
             @RequestBody @Validated(OnCreate.class) OrderRequestDto order);
 
+
     @Operation(
             summary = "Obtener órdenes con filtros opcionales",
             description = "Devuelve una lista de órdenes que pueden ser filtradas por rango de fechas y estado."

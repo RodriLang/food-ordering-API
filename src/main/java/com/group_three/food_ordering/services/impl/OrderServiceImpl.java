@@ -13,6 +13,7 @@ import com.group_three.food_ordering.mappers.OrderMapper;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
+import com.group_three.food_ordering.services.ProductService;
 import com.group_three.food_ordering.utils.OrderServiceHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+    private final ProductService productService;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final TenantContext tenantContext;
@@ -48,8 +49,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
         log.debug("[OrderService] Create Order Request");
+        log.debug("[OrderService] Getting current food Venue.");
         FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
-
+        log.debug("[OrderService] Getting current table session");
+        TableSession tableSession = authService.determineCurrentTableSession();
+        log.debug("[OrderService] Getting current participant");
         Participant participant = authService.determineCurrentParticipant();
 
         Order order = orderMapper.toEntity(orderRequestDto);
@@ -57,7 +61,6 @@ public class OrderServiceImpl implements OrderService {
         order.setParticipant(participant);
         order.setStatus(OrderStatus.PENDING);
         order.setPublicId(UUID.randomUUID());
-        TableSession tableSession = authService.determineCurrentTableSession();
         order.setTableSession(tableSession);
 
         // Revisar porque no permite cantidad de productos mayor a 1 como regla de negocio pero se puede evaluar
@@ -65,9 +68,8 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetails = orderRequestDto.getOrderDetails()
                 .stream()
                 .map(dto -> {
+                    Product product = productService.getEntityByNameAndContext(dto.getProductName());
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
-                    Product product = productRepository.findByPublicId(dto.getProductId())
-                            .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME, dto.getProductId().toString()));
                     detail.setProduct(product);
                     detail.setQuantity(1);
                     detail.setPrice(product.getPrice());
@@ -204,12 +206,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto getByIdAndTenantContext(UUID id) {
-        return orderMapper.toDTO(this.getEntityByIdAndTenantContext(id));
+        return orderMapper.toDTO(this.getEntityById(id));
     }
 
     @Override
     public OrderResponseDto updateSpecialRequirements(UUID orderId, String specialRequirements) {
-        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
+        Order existingOrder = this.getEntityById(orderId);
         existingOrder.setSpecialRequirements(specialRequirements);
         orderRepository.save(existingOrder);
 
@@ -223,7 +225,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseDto updateStatus(UUID id, OrderStatus orderStatus) {
-        Order existingOrder = this.getEntityByIdAndTenantContext(id);
+        Order existingOrder = this.getEntityById(id);
+        Participant participant = authService.determineCurrentParticipant();
+        UUID currentContext = tenantContext.getCurrentFoodVenueId();
+
+        if(!existingOrder.getFoodVenue().getPublicId().equals(currentContext)) {
+           throw new EntityNotFoundException(ORDER_ENTITY_NAME);
+        }
+
+        if((participant.getRole().equals(RoleType.ROLE_CLIENT) || participant.getRole().equals(RoleType.ROLE_GUEST)) &&
+                !existingOrder.getParticipant().getPublicId().equals(participant.getPublicId())) {
+                throw new EntityNotFoundException(ORDER_ENTITY_NAME);
+            }
+
         existingOrder.setStatus(orderStatus);
         orderRepository.save(existingOrder);
 
@@ -247,7 +261,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail) {
 
-        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
+        Order existingOrder = this.getEntityById(orderId);
         orderServiceHelper.validateUpdate(existingOrder);
         existingOrder.getOrderDetails().remove(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
@@ -258,7 +272,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail) {
 
-        Order existingOrder = this.getEntityByIdAndTenantContext(orderId);
+        Order existingOrder = this.getEntityById(orderId);
         orderServiceHelper.validateUpdate(existingOrder);
         existingOrder.getOrderDetails().add(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
@@ -267,7 +281,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getEntityByIdAndTenantContext(UUID id) {
+    public Order getEntityById(UUID id) {
         return orderRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ORDER_ENTITY_NAME, id.toString()));
     }

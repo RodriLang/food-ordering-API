@@ -26,7 +26,7 @@ public class Payment extends BaseEntity {
     @Column
     private BigDecimal amount;
 
-    @OneToMany(mappedBy = "payment")
+    @OneToMany(mappedBy = "payment", fetch = FetchType.EAGER)
     private List<Order> orders;
 
     @Enumerated(EnumType.STRING)

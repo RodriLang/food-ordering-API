@@ -61,7 +61,7 @@ public class OrderControllerImpl implements OrderController {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF','CLIENT','GUEST', 'MANAGER','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'GUEST', 'MANAGER','ROOT')")
     public ResponseEntity<OrderResponseDto> cancelOrder(UUID id) {
         return ResponseEntity.ok(orderService.updateStatus(id, OrderStatus.CANCELLED));
     }

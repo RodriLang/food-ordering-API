@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public interface OrderService {
 
-    Order getEntityByIdAndTenantContext(UUID id);
+    Order getEntityById(UUID id);
 
     OrderResponseDto create(OrderRequestDto orderRequestDto);
 

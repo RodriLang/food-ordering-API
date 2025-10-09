@@ -38,7 +38,7 @@ public class TableSession extends BaseEntity {
     @JoinColumn(name = "host_id")
     private Participant sessionHost;
 
-    @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
