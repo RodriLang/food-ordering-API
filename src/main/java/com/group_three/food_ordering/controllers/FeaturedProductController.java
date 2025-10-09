@@ -89,7 +89,7 @@ public interface FeaturedProductController {
             }
     )
     @GetMapping("/productId/{productId}")
-    ResponseEntity<FeaturedProductResponseDto> disable(@Parameter(hidden = true) Pageable pageable, @PathVariable UUID productId);
+    ResponseEntity<Void> disable(@Parameter(hidden = true) Pageable pageable, @PathVariable UUID productId);
 
     @Operation(
             summary = "Eliminar un producto destacado",

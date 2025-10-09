@@ -1,7 +1,6 @@
 package com.group_three.food_ordering.security;
 
 import com.group_three.food_ordering.dto.SessionInfo;
-import com.group_three.food_ordering.repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -34,8 +33,6 @@ public class JwtService {
 
     @Value("${jwt.access-expiration}")
     private long jwtAccessExpirationMs;
-
-    private final UserRepository userRepository;
 
     public String generateAccessToken(SessionInfo sessionInfo) {
         Date expiration = Date.from(Instant.now().plusMillis(jwtAccessExpirationMs));
@@ -154,9 +151,4 @@ public class JwtService {
         Date d = getClaim(token, Claims::getExpiration);
         return d == null ? null : d.toInstant();
     }
-
-    public Date getIssuedAtDateFromToken(String token) {
-        return getClaim(token, Claims::getIssuedAt);
-    }
-
 }
