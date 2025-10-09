@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
@@ -13,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -62,7 +62,7 @@ public interface CurrentUserController {
             }
     )
     @GetMapping("/orders")
-    ResponseEntity<Page<OrderResponseDto>> getMyOrders(
+    ResponseEntity<PageResponse<OrderResponseDto>> getMyOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
 
@@ -76,7 +76,7 @@ public interface CurrentUserController {
             }
     )
     @GetMapping("/table-sessions")
-    ResponseEntity<Page<OrderResponseDto>> getMyCurrentTableSessionOrders(
+    ResponseEntity<PageResponse<OrderResponseDto>> getMyCurrentTableSessionOrders(
             @RequestParam(required = false) OrderStatus orderStatus,
             @Parameter(hidden = true) Pageable pageable);
 
@@ -90,7 +90,7 @@ public interface CurrentUserController {
             }
     )
     @GetMapping("/table-sessions/host")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByAuthUserHostClient(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByAuthUserHostClient(
             @Parameter(hidden = true) Pageable pageable);
 
 
@@ -103,7 +103,7 @@ public interface CurrentUserController {
             }
     )
     @GetMapping("/table-sessions/participant")
-    ResponseEntity<Page<TableSessionResponseDto>> getPastTableSessionsByAuthUserParticipant(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getPastTableSessionsByAuthUserParticipant(
             @Parameter(hidden = true) Pageable pageable);
 
 }

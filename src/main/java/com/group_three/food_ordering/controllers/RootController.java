@@ -4,6 +4,7 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.LoginResponse;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +31,7 @@ public interface RootController {
             }
     )
     @GetMapping("/all")
-    ResponseEntity<Page<EmploymentResponseDto>> getAllRootUsers(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<EmploymentResponseDto>> getAllRootUsers(@Parameter(hidden = true) Pageable pageable);
 
     @Operation(
             summary = "Registrar un nuevo usuario root",

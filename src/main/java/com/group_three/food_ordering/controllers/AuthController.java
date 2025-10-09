@@ -105,7 +105,6 @@ public interface AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "Cerrar sesión", description = "Revoca el refresh token")
-     ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenRequest request);
-
+    ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenRequest request);
 
 }

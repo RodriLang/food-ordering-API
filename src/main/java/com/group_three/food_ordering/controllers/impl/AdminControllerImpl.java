@@ -3,9 +3,9 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.AdminController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.AdminService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,18 +37,18 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(adminService.getAllAdminUsers(pageable));
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(adminService.getAllAdminUsers(pageable)));
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getActives(Pageable pageable) {
-        return ResponseEntity.ok(adminService.getActiveAdminUsers(pageable));
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getActives(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(adminService.getActiveAdminUsers(pageable)));
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getInactives(Pageable pageable) {
-        return ResponseEntity.ok(adminService.getInactiveAdminUsers(pageable));
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getInactives(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(adminService.getInactiveAdminUsers(pageable)));
     }
 
     @Override

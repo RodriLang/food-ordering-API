@@ -17,6 +17,6 @@ public class AuthResponse {
 
     private String refreshToken;
 
-    private Instant expiryDate;
+    private Instant expirationDate;
 
 }

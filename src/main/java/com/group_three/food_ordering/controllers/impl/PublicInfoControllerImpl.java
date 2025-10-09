@@ -3,10 +3,10 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.PublicInfoController;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import com.group_three.food_ordering.dto.response.MenuResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.FoodVenueService;
 import com.group_three.food_ordering.services.MenuService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +22,8 @@ public class PublicInfoControllerImpl implements PublicInfoController {
 
 
     @Override
-    public ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getAllPublic(pageable));
+    public ResponseEntity<PageResponse<FoodVenuePublicResponseDto>> getPublicFoodVenues(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(foodVenueService.getAllPublic(pageable)));
     }
 
 

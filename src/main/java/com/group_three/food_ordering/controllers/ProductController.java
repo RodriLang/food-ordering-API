@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,13 +32,13 @@ public interface ProductController {
     @Operation(summary = "Listar todos los productos")
     @ApiResponse(responseCode = "200", description = "Listado de productos")
     @GetMapping
-    ResponseEntity<Page<ProductResponseDto>> getProducts(Pageable pageable);
+    ResponseEntity<PageResponse<ProductResponseDto>> getProducts(Pageable pageable);
 
 
     @Operation(summary = "Listar productos disponibles")
     @ApiResponse(responseCode = "200", description = "Listado de productos disponibles")
     @GetMapping("/available")
-    ResponseEntity<Page<ProductResponseDto>> getProductsAvailable(Pageable pageable);
+    ResponseEntity<PageResponse<ProductResponseDto>> getProductsAvailable(Pageable pageable);
 
 
     @Operation(summary = "Obtener un producto por ID")
@@ -59,7 +59,7 @@ public interface ProductController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     @GetMapping("/top-selling")
-    ResponseEntity<Page<ItemMenuResponseDto>> getTopSellingProducts(
+    ResponseEntity<PageResponse<ItemMenuResponseDto>> getTopSellingProducts(
             @RequestParam Integer limit,
             @RequestParam Integer days,
             @Parameter Pageable pageable

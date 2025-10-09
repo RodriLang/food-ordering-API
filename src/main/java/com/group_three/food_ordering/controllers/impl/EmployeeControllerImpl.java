@@ -3,9 +3,9 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.EmployeeController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.EmploymentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,9 +40,9 @@ public class EmployeeControllerImpl implements EmployeeController {
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getEmploymentsByUser(
             String email, Pageable pageable) {
-        return ResponseEntity.ok(employmentService.getByUserAndActiveTrue(email, pageable));
+        return ResponseEntity.ok(PageResponse.of(employmentService.getByUserAndActiveTrue(email, pageable)));
     }
 
     @Override
@@ -52,13 +52,13 @@ public class EmployeeControllerImpl implements EmployeeController {
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getActiveEmployees(Pageable pageable) {
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getActiveEmployees(Pageable pageable) {
 
-        return ResponseEntity.ok(employmentService.getAllAndActiveTrue(pageable));
+        return ResponseEntity.ok(PageResponse.of(employmentService.getAllAndActiveTrue(pageable)));
     }
 
     @Override
-    public ResponseEntity<Page<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable) {
-        return ResponseEntity.ok(employmentService.getAllAndActiveFalse(pageable));
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(employmentService.getAllAndActiveFalse(pageable)));
     }
 }

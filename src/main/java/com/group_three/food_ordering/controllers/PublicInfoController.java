@@ -3,13 +3,13 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import com.group_three.food_ordering.dto.response.MenuResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +35,7 @@ public interface PublicInfoController {
             }
     )
     @GetMapping("/food-venues")
-    ResponseEntity<Page<FoodVenuePublicResponseDto>> getPublicFoodVenues(@Parameter Pageable pageable);
+    ResponseEntity<PageResponse<FoodVenuePublicResponseDto>> getPublicFoodVenues(@Parameter Pageable pageable);
 
 
     @Operation(summary = "Muestra el menu del lugar si es público")

@@ -4,9 +4,9 @@ import com.group_three.food_ordering.controllers.FoodVenueController;
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.FoodVenueService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +29,14 @@ public class FoodVenueControllerImpl implements FoodVenueController {
 
     @Override
     @PreAuthorize("hasRole('ROOT')")
-    public ResponseEntity<Page<FoodVenueAdminResponseDto>> getFoodVenues(Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getAllAdmin(pageable));
+    public ResponseEntity<PageResponse<FoodVenueAdminResponseDto>> getFoodVenues(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(foodVenueService.getAllAdmin(pageable)));
     }
 
     @Override
     @PreAuthorize("hasRole('ROOT')")
-    public ResponseEntity<Page<FoodVenueAdminResponseDto>> getDeletedFoodVenues(Pageable pageable) {
-        return ResponseEntity.ok(foodVenueService.getDeleted(pageable));
+    public ResponseEntity<PageResponse<FoodVenueAdminResponseDto>> getDeletedFoodVenues(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(foodVenueService.getDeleted(pageable)));
     }
 
     @Override

@@ -24,20 +24,20 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagResponseDto create(TagRequestDto tagRequestDto) {
         Tag tag = tagMapper.toEntity(tagRequestDto);
-        return tagMapper.toDTO(tagRepository.save(tag));
+        return tagMapper.toDto(tagRepository.save(tag));
     }
 
     @Override
     public List<TagResponseDto> getAll() {
         return tagRepository.findAll().stream()
-                .map(tagMapper::toDTO)
+                .map(tagMapper::toDto)
                 .toList();
     }
 
     @Override
     public TagResponseDto getById(Long id) {
         Tag tag = getEntityById(id);
-        return tagMapper.toDTO(tag);
+        return tagMapper.toDto(tag);
     }
 
     @Override
@@ -54,6 +54,6 @@ public class TagServiceImpl implements TagService {
     public TagResponseDto update(Long id, TagRequestDto tagRequestDto) {
         Tag tag = getEntityById(id);
         tag.setLabel(tagRequestDto.getLabel());
-        return tagMapper.toDTO(tagRepository.save(tag));
+        return tagMapper.toDto(tagRepository.save(tag));
     }
 }

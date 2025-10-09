@@ -14,7 +14,7 @@ public interface OrderDetailMapper {
     @Mapping(source = "product.price", target = "unitPrice")
     @Mapping(target = "subtotal",
             expression = "java(orderDetail.getPrice() != null ? orderDetail.getPrice().multiply(java.math.BigDecimal.valueOf(orderDetail.getQuantity())) : java.math.BigDecimal.ZERO)")
-    OrderDetailResponseDto toDTO(OrderDetail orderDetail);
+    OrderDetailResponseDto toDto(OrderDetail orderDetail);
 
     OrderDetail toEntity(OrderDetailRequestDto orderDetailDTO);
 

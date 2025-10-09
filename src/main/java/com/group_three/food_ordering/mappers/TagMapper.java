@@ -10,6 +10,6 @@ public interface TagMapper {
 
     Tag toEntity(TagRequestDto tagDto);
 
-    TagResponseDto toDTO(Tag tag);
+    TagResponseDto toDto(Tag tag);
 
 }

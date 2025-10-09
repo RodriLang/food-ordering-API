@@ -3,10 +3,10 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.DiningTableController;
 import com.group_three.food_ordering.dto.request.DiningTableRequestDto;
 import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.services.DiningTableService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +31,8 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<Page<DiningTableResponseDto>> getTables(Pageable pageable) {
-        return ResponseEntity.ok(diningTableService.getAll(pageable));
+    public ResponseEntity<PageResponse<DiningTableResponseDto>> getTables(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(diningTableService.getAll(pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
@@ -51,11 +51,11 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
-    public ResponseEntity<Page<DiningTableResponseDto>> getFilteredTables(
+    public ResponseEntity<PageResponse<DiningTableResponseDto>> getFilteredTables(
             DiningTableStatus status,
             Integer capacity,
             Pageable pageable) {
-        return ResponseEntity.ok(diningTableService.getByFilters(status, capacity, pageable));
+        return ResponseEntity.ok(PageResponse.of(diningTableService.getByFilters(status, capacity, pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")

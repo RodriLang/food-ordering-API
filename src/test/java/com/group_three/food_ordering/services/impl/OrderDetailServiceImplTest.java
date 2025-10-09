@@ -19,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -87,7 +86,7 @@ class OrderDetailServiceImplTest {
     void create() {
         when(orderDetailMapper.toEntity(orderDetailRequestDto)).thenReturn(orderDetail);
         when(orderDetailRepository.save(orderDetail)).thenReturn(orderDetail);
-        when(orderDetailMapper.toDTO(orderDetail)).thenReturn(orderDetailResponseDto);
+        when(orderDetailMapper.toDto(orderDetail)).thenReturn(orderDetailResponseDto);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
         OrderDetailResponseDto response = orderDetailService.create(orderDetailRequestDto);
@@ -143,7 +142,7 @@ class OrderDetailServiceImplTest {
     void getOrderDetailById() {
 
         when(orderDetailRepository.findById(1L)).thenReturn(Optional.of(orderDetail));
-        when(orderDetailMapper.toDTO(orderDetail)).thenReturn(orderDetailResponseDto);
+        when(orderDetailMapper.toDto(orderDetail)).thenReturn(orderDetailResponseDto);
 
         OrderDetailResponseDto response = orderDetailService.getOrderDetailById(1L);
 
@@ -212,7 +211,7 @@ class OrderDetailServiceImplTest {
                 .thenReturn(Optional.of(orderDetail));
         when(orderDetailRepository.save(orderDetail))
                 .thenReturn(orderDetail);
-        when(orderDetailMapper.toDTO(any(OrderDetail.class)))
+        when(orderDetailMapper.toDto(any(OrderDetail.class)))
                 .thenAnswer(invocation -> {
                     OrderDetail od = invocation.getArgument(0);
                     OrderDetailResponseDto dto = new OrderDetailResponseDto();

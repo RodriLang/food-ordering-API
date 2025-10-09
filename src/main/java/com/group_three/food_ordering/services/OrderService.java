@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
@@ -29,9 +30,15 @@ public interface OrderService {
 
     Page<OrderResponseDto> getOrdersByFilters(LocalDate from, LocalDate to, OrderStatus orderStatus, Pageable pageable);
 
+    List<Order> getOrderEntitiesByFilters(LocalDate from, LocalDate to, OrderStatus orderStatus);
+
     Page<OrderResponseDto> getOrdersForToday(OrderStatus orderStatus, Pageable pageable);
 
+    List<Order> getOrderEntitiesForToday(OrderStatus orderStatus);
+
     Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus, Pageable pageable);
+
+    List<Order> getOrderEntitiesByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus);
 
     Page<OrderResponseDto> getOrdersByAuthenticatedClient(OrderStatus status, Pageable pageable);
 

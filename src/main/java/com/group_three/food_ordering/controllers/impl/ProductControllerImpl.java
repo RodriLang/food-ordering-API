@@ -3,10 +3,10 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.ProductController;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,14 +30,14 @@ public class ProductControllerImpl implements ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
-    public ResponseEntity<Page<ProductResponseDto>> getProducts(Pageable pageable) {
-        return ResponseEntity.ok(productService.getAll(pageable));
+    public ResponseEntity<PageResponse<ProductResponseDto>> getProducts(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(productService.getAll(pageable)));
     }
 
     @PreAuthorize("isAuthenticated()")
     @Override
-    public ResponseEntity<Page<ProductResponseDto>> getProductsAvailable(Pageable pageable) {
-        return ResponseEntity.ok(productService.getAllAvailable(pageable));
+    public ResponseEntity<PageResponse<ProductResponseDto>> getProductsAvailable(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(productService.getAllAvailable(pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ROOT', 'ADMIN', 'MANAGER')")
@@ -48,12 +48,12 @@ public class ProductControllerImpl implements ProductController {
 
     @PreAuthorize("hasAnyRole('ROOT', 'ADMIN', 'MANAGER')")
     @Override
-    public ResponseEntity<Page<ItemMenuResponseDto>> getTopSellingProducts(
+    public ResponseEntity<PageResponse<ItemMenuResponseDto>> getTopSellingProducts(
             Integer limit,
             Integer days,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(productService.getTopSellingProducts(limit, days, pageable));
+        return ResponseEntity.ok(PageResponse.of(productService.getTopSellingProducts(limit, days, pageable)));
     }
 
     @PreAuthorize("isAuthenticated()")

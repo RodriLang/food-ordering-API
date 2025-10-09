@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,8 +14,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -73,7 +72,7 @@ public interface EmployeeController {
             summary = "Listar empleos de un usuario",
             description = "Devuelve todos los empleos relacionados a un usuario."
     )
-    ResponseEntity<Page<EmploymentResponseDto>> getEmploymentsByUser(
+    ResponseEntity<PageResponse<EmploymentResponseDto>> getEmploymentsByUser(
             @PathVariable String email, @Parameter Pageable pageable);
 
 
@@ -94,7 +93,7 @@ public interface EmployeeController {
             summary = "Listar empleados activos",
             description = "Devuelve todos los empleados que no han sido eliminados."
     )
-    ResponseEntity<Page<EmploymentResponseDto>> getActiveEmployees(Pageable pageable);
+    ResponseEntity<PageResponse<EmploymentResponseDto>> getActiveEmployees(Pageable pageable);
 
 
     @GetMapping("/deleted")
@@ -102,6 +101,6 @@ public interface EmployeeController {
             summary = "Listar empleados eliminados",
             description = "Devuelve todos los empleados cuyo usuario fue eliminado."
     )
-    ResponseEntity<Page<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable);
+    ResponseEntity<PageResponse<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable);
 
 }

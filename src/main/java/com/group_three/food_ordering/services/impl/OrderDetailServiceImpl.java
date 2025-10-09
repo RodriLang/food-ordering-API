@@ -32,7 +32,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Transactional
     @Override
     public OrderDetailResponseDto create(OrderDetailRequestDto orderDetailRequestDto) {
-        return orderDetailMapper.toDTO(this.createInternal(orderDetailRequestDto));
+        return orderDetailMapper.toDto(this.createInternal(orderDetailRequestDto));
     }
 
     public OrderDetail createInternal(OrderDetailRequestDto orderDetailRequestDto) {
@@ -48,7 +48,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public OrderDetailResponseDto getOrderDetailById(Long orderDetailId) {
         OrderDetail orderDetail = getOrderDetailEntityById(orderDetailId);
-        return orderDetailMapper.toDTO(orderDetail);
+        return orderDetailMapper.toDto(orderDetail);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
         detail.setSpecialInstructions(instructions);
         OrderDetail saved = orderDetailRepository.save(detail);
-        return orderDetailMapper.toDTO(saved);
+        return orderDetailMapper.toDto(saved);
     }
 
     private void updateProductStock(Product product, Integer difference) {

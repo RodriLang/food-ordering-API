@@ -1,13 +1,12 @@
 package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.RootUserController;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +19,6 @@ import java.util.UUID;
 public class RootUserControllerImpl implements RootUserController {
 
     private final UserService userService;
-    private final PageableHandlerMethodArgumentResolverCustomizer pageableCustomizer;
 
     @Override
     public ResponseEntity<UserResponseDto> getById(UUID id) {
@@ -28,18 +26,18 @@ public class RootUserControllerImpl implements RootUserController {
     }
 
     @Override
-    public ResponseEntity<Page<UserResponseDto>> getAll(Pageable pageable) {
-        return ResponseEntity.ok(userService.getAll(pageable));
+    public ResponseEntity<PageResponse<UserResponseDto>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(userService.getAll(pageable)));
     }
 
     @Override
-    public ResponseEntity<Page<UserResponseDto>> getActives(Pageable pageable) {
-        return ResponseEntity.ok(userService.getActiveUsers(pageable));
+    public ResponseEntity<PageResponse<UserResponseDto>> getActives(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(userService.getActiveUsers(pageable)));
     }
 
     @Override
-    public ResponseEntity<Page<UserResponseDto>> getDeleted(Pageable pageable) {
-        return ResponseEntity.ok(userService.getDeletedUsers(pageable));
+    public ResponseEntity<PageResponse<UserResponseDto>> getDeleted(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(userService.getDeletedUsers(pageable)));
     }
 
     @Override

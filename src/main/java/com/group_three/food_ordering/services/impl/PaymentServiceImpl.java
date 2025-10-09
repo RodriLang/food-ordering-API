@@ -9,14 +9,19 @@ import com.group_three.food_ordering.mappers.PaymentMapper;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.Payment;
 import com.group_three.food_ordering.repositories.PaymentRepository;
+import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +33,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
     private final PaymentMapper paymentMapper;
+    private final AuthService authService;
 
     private static final String ENTITY_NAME = "Payment";
 
@@ -56,21 +62,52 @@ public class PaymentServiceImpl implements PaymentService {
             order.setPayment(payment);
         });
         Payment paymentSaved = paymentRepository.save(payment);
-        return paymentMapper.toDTO(paymentSaved);
+        return paymentMapper.toDto(paymentSaved);
     }
 
     @Override
-    public List<PaymentResponseDto> getAll() {
-        return paymentRepository.findAll()
-                .stream()
-                .map(paymentMapper::toDTO)
+    public Page<PaymentResponseDto> getAllByContextAndStatusAndDateBetween(PaymentStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        List<Order> orders = orderService.getOrderEntitiesByFilters(LocalDate.from(from), LocalDate.from(to), null);
+        Page<Payment> payments = paymentRepository.findByOrdersAndStatusAndCreationDateBetween(orders, status, from, to, pageable);
+        return payments.map(paymentMapper::toDto);
+    }
+
+    @Override
+    public Page<PaymentResponseDto> getAllByTableSessionAndStatus(UUID tableSession, PaymentStatus status, Pageable pageable) {
+        List<Order> orders = orderService.getOrderEntitiesByTableSessionAndStatus(tableSession, null);
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
+    }
+
+    @Override
+    public Page<PaymentResponseDto> getAllByCurrentTableSessionAndStatus(PaymentStatus status, Pageable pageable) {
+        UUID currentTableSessionId = authService.determineCurrentTableSession().getPublicId();
+        return getAllByTableSessionAndStatus(currentTableSessionId, status, pageable);
+    }
+
+    @Override
+    public Page<PaymentResponseDto> findByOrdersAndStatus(List<UUID> orderIds, PaymentStatus status, Pageable pageable) {
+
+        List<Order> orders = orderIds.stream()
+                .map(orderService::getEntityById)
                 .toList();
+
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
+    }
+
+    @Override
+    public Page<PaymentResponseDto> findAllPaymentsForToday(PaymentStatus status, Pageable pageable) {
+
+        List<Order> orders = orderService.getOrderEntitiesForToday(null);
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
     public PaymentResponseDto getById(UUID id) {
         Payment payment = getPaymentEntityById(id);
-        return paymentMapper.toDTO(payment);
+        return paymentMapper.toDto(payment);
     }
 
     @Transactional
@@ -113,7 +150,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         existingPayment.setAmount(calculateAmount(existingPayment.getOrders()));
 
-        return paymentMapper.toDTO(paymentRepository.save(existingPayment));
+        return paymentMapper.toDto(paymentRepository.save(existingPayment));
     }
 
     @Override
@@ -125,7 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
         if (paymentStatus != null) {
             existingPayment.setStatus(paymentStatus);
         }
-        return paymentMapper.toDTO(paymentRepository.save(existingPayment));
+        return paymentMapper.toDto(paymentRepository.save(existingPayment));
     }
 
     @Override

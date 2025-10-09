@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers.impl;
 import com.group_three.food_ordering.controllers.ParticipantController;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.ParticipantService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +26,8 @@ public class ParticipantControllerImpl implements ParticipantController {
 
     @PreAuthorize("hasAnyRole('CLIENT', 'GUEST')")
     @Override
-    public ResponseEntity<Page<OrderResponseDto>> getCurrentOrders(Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByCurrentParticipant(pageable));
+    public ResponseEntity<PageResponse<OrderResponseDto>> getCurrentOrders(Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(orderService.getOrdersByCurrentParticipant(pageable)));
     }
 
     @PreAuthorize("hasAnyRole('CLIENT', 'GUEST')")

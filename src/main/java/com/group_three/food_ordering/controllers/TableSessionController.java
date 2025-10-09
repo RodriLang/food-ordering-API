@@ -2,10 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
-import com.group_three.food_ordering.dto.response.InitSessionResponseDto;
-import com.group_three.food_ordering.dto.response.OrderResponseDto;
-import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.*;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +11,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +47,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping()
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContext(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByContext(@Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -63,7 +59,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/root")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByFoodVenueId(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByFoodVenueId(@Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -90,7 +86,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByContextAndTable(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByContextAndTable(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(hidden = true) Pageable pageable);
@@ -105,7 +101,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/table/{tableNumber}/time-range")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
@@ -124,7 +120,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/active")
-    ResponseEntity<Page<TableSessionResponseDto>> getActiveSessions(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getActiveSessions(@Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -136,7 +132,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/host/{clientId}")
-    ResponseEntity<Page<TableSessionResponseDto>> getTableSessionsByHostClient(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByHostClient(
             @Parameter(description = "UUID del cliente anfitrión", required = true)
             @PathVariable UUID clientId,
             @Parameter(hidden = true) Pageable pageable);
@@ -151,7 +147,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/participant/{clientId}")
-    ResponseEntity<Page<TableSessionResponseDto>> getPastTableSessionsByParticipant(
+    ResponseEntity<PageResponse<TableSessionResponseDto>> getPastTableSessionsByParticipant(
             @Parameter(description = "UUID del cliente participante", required = true)
             @PathVariable UUID clientId,
             @Parameter(hidden = true) Pageable pageable);
@@ -198,7 +194,7 @@ public interface TableSessionController {
             }
     )
     @GetMapping("/{id}/orders")
-    ResponseEntity<Page<OrderResponseDto>> getOrdersByTableSession(
+    ResponseEntity<PageResponse<OrderResponseDto>> getOrdersByTableSession(
             @Parameter(description = "UUID de la table session", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id,
             @RequestParam(required = false) OrderStatus status,

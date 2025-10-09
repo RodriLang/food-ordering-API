@@ -2,6 +2,7 @@ package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.UserResponseDto;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,21 +39,21 @@ public interface RootUserController {
             summary = "Listar todos los usuarios",
             description = "Devuelve todos los usuarios registrados, incluyendo los eliminados."
     )
-    ResponseEntity<Page<UserResponseDto>> getAll(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserResponseDto>> getAll(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/actives")
     @Operation(
             summary = "Listar usuarios activos",
             description = "Devuelve todos los usuarios que no han sido eliminados (removedAt es null)."
     )
-    ResponseEntity<Page<UserResponseDto>> getActives(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserResponseDto>> getActives(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar usuarios eliminados",
             description = "Devuelve todos los usuarios que han sido marcados como eliminados (removedAt no es null)."
     )
-    ResponseEntity<Page<UserResponseDto>> getDeleted(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserResponseDto>> getDeleted(@Parameter(hidden = true) Pageable pageable);
 
     @PutMapping("/{id}")
     @Operation(

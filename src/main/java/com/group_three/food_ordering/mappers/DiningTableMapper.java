@@ -11,7 +11,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring")
 public interface DiningTableMapper {
 
-    DiningTableResponseDto toDTO(DiningTable diningTable);
+    DiningTableResponseDto toDto(DiningTable diningTable);
 
     DiningTable toEntity(DiningTableRequestDto tableDTO);
 

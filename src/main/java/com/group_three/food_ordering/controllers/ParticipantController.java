@@ -3,11 +3,11 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.response.LoginResponse;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ public interface ParticipantController {
             }
     )
     @GetMapping("/orders")
-    ResponseEntity<Page<OrderResponseDto>> getCurrentOrders(@Parameter Pageable pageable);
+    ResponseEntity<PageResponse<OrderResponseDto>> getCurrentOrders(@Parameter Pageable pageable);
 
 
     @Operation(

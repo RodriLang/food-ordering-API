@@ -36,20 +36,20 @@ public class DiningTableServiceImpl implements DiningTableService {
         diningTable.setStatus(DiningTableStatus.AVAILABLE);
         diningTable.setPublicId(UUID.randomUUID());
         DiningTable savedDiningTable = diningTableRepository.save(diningTable);
-        return diningTableMapper.toDTO(savedDiningTable);
+        return diningTableMapper.toDto(savedDiningTable);
     }
 
     @Override
     public Page<DiningTableResponseDto> getAll(Pageable pageable) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return diningTableRepository.findByFoodVenuePublicId(foodVenueId, pageable)
-                .map(diningTableMapper::toDTO);
+                .map(diningTableMapper::toDto);
     }
 
     @Override
     public DiningTableResponseDto getById(UUID id) {
         DiningTable diningTable = this.getEntityById(id);
-        return diningTableMapper.toDTO(diningTable);
+        return diningTableMapper.toDto(diningTable);
     }
 
     @Override
@@ -63,14 +63,14 @@ public class DiningTableServiceImpl implements DiningTableService {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         DiningTable diningTable = diningTableRepository.findByFoodVenuePublicIdAndNumber(foodVenueId, number)
                 .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
-        return diningTableMapper.toDTO(diningTable);
+        return diningTableMapper.toDto(diningTable);
     }
 
     @Override
     public Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return diningTableRepository.findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
-                foodVenueId, status, capacity, pageable).map(diningTableMapper::toDTO);
+                foodVenueId, status, capacity, pageable).map(diningTableMapper::toDto);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class DiningTableServiceImpl implements DiningTableService {
         }
 
         DiningTable updatedDiningTable = diningTableRepository.save(diningTable);
-        return diningTableMapper.toDTO(updatedDiningTable);
+        return diningTableMapper.toDto(updatedDiningTable);
     }
 
     @Override

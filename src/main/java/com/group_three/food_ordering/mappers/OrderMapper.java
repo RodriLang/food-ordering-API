@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 public interface OrderMapper {
 
     @Mapping(source = "participant.nickname", target = "clientAlias")
-    OrderResponseDto toDTO(Order order);
+    OrderResponseDto toDto(Order order);
 
     Order toEntity(OrderRequestDto orderDTO);
 

@@ -4,6 +4,7 @@ import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -48,7 +48,7 @@ public interface FoodVenueController {
             }
     )
     @GetMapping("/root")
-    ResponseEntity<Page<FoodVenueAdminResponseDto>> getFoodVenues(@Parameter Pageable pageable);
+    ResponseEntity<PageResponse<FoodVenueAdminResponseDto>> getFoodVenues(@Parameter Pageable pageable);
 
     @Operation(
             summary = "Obtener los lugares de comida eliminados",
@@ -60,7 +60,7 @@ public interface FoodVenueController {
             }
     )
     @GetMapping("/root/deleted")
-    ResponseEntity<Page<FoodVenueAdminResponseDto>> getDeletedFoodVenues(@Parameter Pageable pageable);
+    ResponseEntity<PageResponse<FoodVenueAdminResponseDto>> getDeletedFoodVenues(@Parameter Pageable pageable);
 
     @Operation(
             summary = "Obtener un lugar de comida por ID",

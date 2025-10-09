@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.FeaturedProductRequestDto;
 import com.group_three.food_ordering.dto.response.FeaturedProductResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,8 +11,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +29,7 @@ public interface FeaturedProductController {
             }
     )
     @GetMapping("/all")
-    ResponseEntity<Page<FeaturedProductResponseDto>> getAllFeatProducts(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<FeaturedProductResponseDto>> getAllFeatProducts(@Parameter(hidden = true) Pageable pageable);
 
     @Operation(
             summary = "Obtener todos los Productos destacados activos",
@@ -39,7 +38,7 @@ public interface FeaturedProductController {
             }
     )
     @GetMapping("/actives")
-    ResponseEntity<Page<FeaturedProductResponseDto>> getActivesFeatProducts(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<FeaturedProductResponseDto>> getActivesFeatProducts(@Parameter(hidden = true) Pageable pageable);
 
     @Operation(
             summary = "Registrar un nuevo Producto destacado",

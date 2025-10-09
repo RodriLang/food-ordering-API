@@ -3,6 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.DiningTableRequestDto;
 import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
@@ -13,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -48,7 +48,7 @@ public interface DiningTableController {
             }
     )
     @GetMapping
-    ResponseEntity<Page<DiningTableResponseDto>> getTables(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<DiningTableResponseDto>> getTables(@Parameter(hidden = true) Pageable pageable);
 
 
     @Operation(
@@ -90,7 +90,7 @@ public interface DiningTableController {
             }
     )
     @GetMapping("/filter")
-    ResponseEntity<Page<DiningTableResponseDto>> getFilteredTables(
+    ResponseEntity<PageResponse<DiningTableResponseDto>> getFilteredTables(
             @Parameter(description = "Estado de la mesa (opcional)")
             @RequestParam(required = false) DiningTableStatus status,
             @Parameter(description = "Capacidad de la mesa (opcional)")

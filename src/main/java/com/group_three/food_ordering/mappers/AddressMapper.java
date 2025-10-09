@@ -11,7 +11,7 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
 
-    AddressResponseDto toDTO(Address address);
+    AddressResponseDto toDto(Address address);
 
     Address toEntity(AddressRequestDto addressDTO);
 
