@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.repositories;
 
 import com.group_three.food_ordering.enums.DiningTableStatus;
+import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +19,8 @@ import java.util.UUID;
 public interface TableSessionRepository extends JpaRepository<TableSession, Long> {
 
     Optional<TableSession> findByPublicId(UUID publicId);
+
+    Optional<TableSession> findByParticipantsContains(List<Participant> participants);
 
     Page<TableSession> findByFoodVenuePublicId(UUID foodVenueId, Pageable pageable);
 

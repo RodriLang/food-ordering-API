@@ -18,6 +18,8 @@ public interface TableSessionService {
 
     TableSessionResponseDto getById(UUID sessionId);
 
+    TableSessionResponseDto getByCurrentParticipant();
+
     TableSession getEntityById(UUID sessionId);
 
     Page<TableSessionResponseDto> getByFoodVenueAndTable(UUID foodVenueId, Integer tableNumber, Pageable pageable);

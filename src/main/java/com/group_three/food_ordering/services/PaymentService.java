@@ -20,6 +20,8 @@ public interface PaymentService {
 
     Page<PaymentResponseDto> getAllByCurrentTableSessionAndStatus(PaymentStatus status, Pageable pageable);
 
+    Page<PaymentResponseDto> getAllOwnPaymentsAndStatus(PaymentStatus status, Pageable pageable);
+
     Page<PaymentResponseDto> findByOrdersAndStatus(List<UUID> orderIds, PaymentStatus status, Pageable pageable);
 
     Page<PaymentResponseDto> findAllPaymentsForToday(PaymentStatus status, Pageable pageable);

@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.DINING_TABLE;
+
 @Service
 @RequiredArgsConstructor
 public class DiningTableServiceImpl implements DiningTableService {
@@ -25,8 +27,6 @@ public class DiningTableServiceImpl implements DiningTableService {
     private final DiningTableRepository diningTableRepository;
     private final DiningTableMapper diningTableMapper;
     private final TenantContext tenantContext;
-
-    private static final String ENTITY_NAME = "Table";
 
     @Override
     public DiningTableResponseDto create(DiningTableRequestDto diningTableRequestDto) {
@@ -55,14 +55,14 @@ public class DiningTableServiceImpl implements DiningTableService {
     @Override
     public DiningTable getEntityById(UUID tableId) {
         return diningTableRepository.findByPublicId(tableId)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, tableId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(DINING_TABLE, tableId.toString()));
     }
 
     @Override
     public DiningTableResponseDto getByNumber(Integer number) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         DiningTable diningTable = diningTableRepository.findByFoodVenuePublicIdAndNumber(foodVenueId, number)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(DINING_TABLE));
         return diningTableMapper.toDto(diningTable);
     }
 

@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.ADMIN_EMPLOYMENT;
+import static com.group_three.food_ordering.utils.EntityName.USER;
+
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -28,14 +31,11 @@ public class AdminServiceImpl implements AdminService {
     private final EmploymentMapper employmentMapper;
     private final TenantContext tenantContext;
 
-    private static final String USER_ENTITY_NAME = "User";
-    private static final String EMPLOYMENT_ENTITY_NAME = "Employment Admin";
-
     @Override
     public EmploymentResponseDto createAdminUser(EmploymentRequestDto dto) {
 
         User user = userRepository.findByEmail(dto.getUserEmail())
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(USER));
 
         FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
 
@@ -53,7 +53,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public EmploymentResponseDto findByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME, email));
+                .orElseThrow(() -> new EntityNotFoundException(USER, email));
         Employment employment = employmentRepository.findByUser_PublicId(user.getPublicId()).getFirst();
         return employmentMapper.toResponseDto(employment);
     }
@@ -99,6 +99,6 @@ public class AdminServiceImpl implements AdminService {
     private Employment getEmploymentByPublicId(UUID publicId) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
         return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
-                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME, publicId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ADMIN_EMPLOYMENT, publicId.toString()));
     }
 }

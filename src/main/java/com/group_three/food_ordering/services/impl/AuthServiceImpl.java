@@ -30,6 +30,8 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,11 +46,6 @@ public class AuthServiceImpl implements AuthService {
     private final RoleSelectionService roleSelectionService;
     private final RefreshTokenService refreshTokenService;
 
-    private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
-    private static final String PARTICIPANT_ENTITY_NAME = "Participant";
-    private static final String USER_ENTITY_NAME = "User";
-    private static final String AUDITOR_USER_ENTITY_NAME = "Auditor User";
-
     @Override
     public AuditorUser getAuditorUser() {
         log.debug("[AuthService] Getting current auditor user");
@@ -59,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
                     log.debug("[AuthService] Current auditor user id={}, email={}", userId, email);
                     return new AuditorUser(userId, email);
                 })
-                .orElseThrow(() -> new EntityNotFoundException(AUDITOR_USER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(AUDITOR_USER));
     }
 
     @Override
@@ -87,7 +84,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException(USER_ENTITY_NAME));
+                .orElseThrow(() -> new UsernameNotFoundException(USER));
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
 
@@ -139,17 +136,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public User determineAuthUser() {
-        return getAuthUser().orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+        return getAuthUser().orElseThrow(() -> new EntityNotFoundException(USER));
     }
 
     @Override
     public Participant determineCurrentParticipant() {
-        return getCurrentParticipant().orElseThrow(() -> new EntityNotFoundException(PARTICIPANT_ENTITY_NAME));
+        return getCurrentParticipant().orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
     }
 
     @Override
     public TableSession determineCurrentTableSession() {
-        return getCurrentTableSession().orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION_ENTITY_NAME));
+        return getCurrentTableSession().orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
     }
 
     @Override
@@ -336,7 +333,7 @@ public class AuthServiceImpl implements AuthService {
 
     private Participant updateParticipant(UUID participantIdUser, User user) {
         Participant participant = participantRepository.findByPublicId(participantIdUser)
-                .orElseThrow(()-> new EntityNotFoundException(PARTICIPANT_ENTITY_NAME));
+                .orElseThrow(()-> new EntityNotFoundException(PARTICIPANT));
 
             participant.setUser(user);
             participant.setRole(RoleType.ROLE_CLIENT);

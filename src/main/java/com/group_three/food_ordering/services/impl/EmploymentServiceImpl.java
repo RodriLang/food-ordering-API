@@ -22,6 +22,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
+import static com.group_three.food_ordering.utils.EntityName.USER;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,15 +36,11 @@ public class EmploymentServiceImpl implements EmploymentService {
     private final TenantContext tenantContext;
     private final UserRepository userRepository;
 
-    private static final String USER_ENTITY_NAME = "User";
-    private static final String EMPLOYMENT_ENTITY_NAME = "Employment";
-
-
     @Override
     public EmploymentResponseDto createEmployment(EmploymentRequestDto dto) {
         FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
         User employeeUser = userRepository.findByEmail(dto.getUserEmail())
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(USER));
 
         Employment employment = Employment.builder()
                 .publicId(UUID.randomUUID())
@@ -80,7 +79,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     public Page<EmploymentResponseDto> getByUserAndActiveTrue(String email, Pageable pageable) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(USER));
 
         return employmentRepository.findByUser_PublicId(user.getPublicId(), pageable).map(employmentMapper::toResponseDto);
     }
@@ -105,6 +104,6 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public Employment getEntityByIdAndActiveTrue(UUID id) {
         return employmentRepository.findByPublicIdAndActive(id, Boolean.TRUE)
-                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT));
     }
 }

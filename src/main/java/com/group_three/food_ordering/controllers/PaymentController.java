@@ -40,12 +40,6 @@ public interface PaymentController {
             @RequestParam PaymentStatus status,
             @Parameter Pageable pageable);
 
-    @Operation(summary = "Obtener pagos por sesión de mesa actual y estado")
-    @GetMapping("/current-session")
-    ResponseEntity<PageResponse<PaymentResponseDto>> getAllByCurrentTableSessionAndStatus(
-            @RequestParam PaymentStatus status,
-            @Parameter Pageable pageable);
-
     @Operation(summary = "Obtener pagos por lista de órdenes y estado")
     @GetMapping("/orders")
     ResponseEntity<PageResponse<PaymentResponseDto>> findByOrdersAndStatus(

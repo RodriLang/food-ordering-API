@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.CATEGORY;
+
 @Service
 @RequiredArgsConstructor
 
@@ -50,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category getEntityById(UUID publicId) {
         UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
         return categoryRepository.findByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId)
-                .orElseThrow(() -> new EntityNotFoundException("Category"));
+                .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
 
     }
 
@@ -85,17 +87,6 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> findParentCategories(UUID foodVenuePublicId) {
         return categoryRepository.findAllByFoodVenue_PublicIdAndParentCategoryIsNull(foodVenuePublicId)
                 .stream()
-                .toList();
-    }
-
-    @Override
-    public List<CategoryResponseDto> getParentCategoriesByPublicId(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
-        List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicId(
-                publicId, currentFoodVenueId);
-
-        return children.stream()
-                .map(categoryMapper::toDto)
                 .toList();
     }
 }

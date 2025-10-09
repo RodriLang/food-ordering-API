@@ -202,19 +202,6 @@ public interface TableSessionController {
 
 
     @Operation(
-            summary = "Finalizar la sesión de mesa propia (Host)",
-            description = "Actualiza el endTime de la sesión y coloca la mesa en estado WAITING_RESET hasta que sea limpiada y colocada en AVAILABLE por un STAFF.)",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Sesión creada exitosamente",
-                            content = @Content(schema = @Schema(implementation = TableSessionResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos"),
-                    @ApiResponse(responseCode = "404", description = "Session de mesa no encontrada")
-            }
-    )
-    @PatchMapping("/end")
-    ResponseEntity<Void> endYourOwnTableSession();
-
-    @Operation(
             summary = "Finalizar la sesión de una mesa (Staff)",
             description = "Actualiza el endTime de la sesión y coloca la mesa en estado WAITING_RESET hasta que sea limpiada y colocada en AVAILABLE por un STAFF.)",
             responses = {

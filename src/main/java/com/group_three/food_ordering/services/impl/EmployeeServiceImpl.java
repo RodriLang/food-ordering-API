@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -29,7 +31,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final TenantContext tenantContext;
 
     private static final String USER_ENTITY_NAME = "User";
-    private static final String EMPLOYMENT_ENTITY_NAME = "Employment";
 
     @Override
     public EmploymentResponseDto createEmployeeUser(EmploymentRequestDto dto) {
@@ -88,13 +89,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     private Employment getEmploymentByPublicId(UUID publicId) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
-                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME, publicId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT, publicId.toString()));
     }
 
     private void validateContext(Employment employment) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
         if (!foodVenueId.equals(employment.getFoodVenue().getPublicId())) {
-            throw new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME);
+            throw new EntityNotFoundException(EMPLOYMENT);
         }
     }
 

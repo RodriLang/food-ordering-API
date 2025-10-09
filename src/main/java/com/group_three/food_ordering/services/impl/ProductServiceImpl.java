@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
+import static com.group_three.food_ordering.utils.EntityName.TAG;
+import static com.group_three.food_ordering.utils.EntityName.CATEGORY;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -36,10 +40,6 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
-
-    private static final String CATEGORY_ENTITY_NAME = "Category";
-    private static final String PRODUCT_ENTITY_NAME = "Product";
-    private static final String TAG_ENTITY_NAME = "Tag";
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequestDto) {
@@ -65,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getEntityById(UUID publicId) {
         return productRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ProductServiceImpl implements ProductService {
         UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
         Product product = productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
 
         return productMapper.toItemMenuDto(product);
     }
@@ -83,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
         UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
         return productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
 
     }
 
@@ -147,7 +147,7 @@ public class ProductServiceImpl implements ProductService {
         if (tagsId != null && !tagsId.isEmpty()) {
             return tagsId.stream()
                     .map(tagId -> tagRepository.findById(tagId)
-                            .orElseThrow(() -> new EntityNotFoundException(TAG_ENTITY_NAME)))
+                            .orElseThrow(() -> new EntityNotFoundException(TAG)))
                     .toList();
         } else {
             return new ArrayList<>();
@@ -157,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
     private Category findCategory(Long categoryId) {
         if (categoryId != null) {
             return categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new EntityNotFoundException(CATEGORY_ENTITY_NAME));
+                    .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
         } else {
             return null;
         }

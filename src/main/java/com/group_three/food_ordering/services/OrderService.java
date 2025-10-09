@@ -50,6 +50,8 @@ public interface OrderService {
 
     Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable);
 
+    List<Order> getOrderEntitiesByCurrentParticipant();
+
     void delete(UUID id);
 
     void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail);

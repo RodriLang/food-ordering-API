@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -61,7 +63,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public FoodVenue findEntityById(UUID id) {
         return foodVenueRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException("Food Venue", id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE, id.toString()));
     }
 
     @Override

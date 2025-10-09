@@ -118,12 +118,6 @@ public class TableSessionControllerImpl implements TableSessionController {
                 orderService.getOrdersByTableSessionAndStatus(id, status, pageable)));
     }
 
-    @PreAuthorize("hasAnyRole('CLIENT', 'GUEST')")
-    @Override
-    public ResponseEntity<Void> endYourOwnTableSession() {
-        tableSessionService.closeCurrentSession();
-        return ResponseEntity.ok().build();
-    }
 
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'ROOT')")
     @Override

@@ -27,14 +27,14 @@ public class PaymentControllerImpl implements PaymentController {
 
     private final PaymentService paymentService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'GUEST', 'MANAGER','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CLIENT', 'GUEST', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<PaymentResponseDto> createPayment(PaymentRequestDto dto) {
         PaymentResponseDto createdPayment = paymentService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<PageResponse<PaymentResponseDto>> getAllByContextAndStatusAndDateBetween(
             PaymentStatus status,
@@ -47,7 +47,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(PageResponse.of(payments));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<PageResponse<PaymentResponseDto>> getAllByTableSessionAndStatus(
             UUID tableSession, PaymentStatus status, Pageable pageable) {
@@ -57,17 +57,7 @@ public class PaymentControllerImpl implements PaymentController {
         return ResponseEntity.ok(PageResponse.of(payments));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
-    @Override
-    public ResponseEntity<PageResponse<PaymentResponseDto>> getAllByCurrentTableSessionAndStatus(
-            PaymentStatus status, Pageable pageable) {
-
-        Page<PaymentResponseDto> payments =
-                paymentService.getAllByCurrentTableSessionAndStatus(status, pageable);
-        return ResponseEntity.ok(PageResponse.of(payments));
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<PageResponse<PaymentResponseDto>> findByOrdersAndStatus(
             List<UUID> orderIds, PaymentStatus status, Pageable pageable) {

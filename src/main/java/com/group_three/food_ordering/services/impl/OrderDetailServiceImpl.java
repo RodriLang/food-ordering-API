@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.OrderDetailRequestDto;
 import com.group_three.food_ordering.dto.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -16,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.group_three.food_ordering.utils.EntityName.ORDER_DETAIL;
+
 @Service
 @RequiredArgsConstructor
 public class OrderDetailServiceImpl implements OrderDetailService {
@@ -24,10 +25,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final OrderDetailMapper orderDetailMapper;
     private final ProductService productService;
     private final ProductRepository productRepository;
-    private final TenantContext tenantContext;
-
-    private static final String ORDER_DETAIL_ENTITY_NAME = "Order Detail";
-    private static final String PRODUCT_ENTITY_NAME = "Product";
 
     @Transactional
     @Override
@@ -91,6 +88,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     private OrderDetail getOrderDetailEntityById(Long id) {
         return orderDetailRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(ORDER_DETAIL_ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ORDER_DETAIL, id.toString()));
     }
 }

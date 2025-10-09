@@ -1,6 +1,5 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -26,6 +25,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.USER;
+import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
+import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -37,18 +40,13 @@ public class RootServiceImpl implements RootService {
     private final EmploymentMapper employmentMapper;
     private final AuthService authService;
     private final JwtService jwtService;
-    private final TenantContext tenantContext;
-
-    private static final String USER_ENTITY_NAME = "User";
-    private static final String FOOD_VENUE_ENTITY_NAME = "FoodVenue";
-    private static final String EMPLOYMENT_ENTITY_NAME = "Employment";
 
 
     @Override
     public EmploymentResponseDto createRootUser(EmploymentRequestDto dto) {
 
         User user = userRepository.findByEmail(dto.getUserEmail())
-                .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(USER));
 
         FoodVenue foodVenue = getFoodVenue(dto.getFoodVenueId());
 
@@ -81,7 +79,7 @@ public class RootServiceImpl implements RootService {
                 authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
 
         if (employment == null) {
-            throw new EntityNotFoundException(EMPLOYMENT_ENTITY_NAME);
+            throw new EntityNotFoundException(EMPLOYMENT);
         }
         employment.setFoodVenue(selectedFoodVenue);
         log.debug("[RootService] Context Selected foodVenueId={} role={}", employment.getFoodVenue().getPublicId(), employment.getRole());
@@ -99,6 +97,6 @@ public class RootServiceImpl implements RootService {
 
     private FoodVenue getFoodVenue(UUID foodVenueId) {
         return foodVenueRepository.findByPublicId(foodVenueId)
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
     }
 }

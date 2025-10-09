@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.PARTICIPANT;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,8 +28,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     private final ParticipantRepository participantRepository;
     private final ParticipantMapper participantMapper;
     private final AuthService authService;
-
-    private static final String ENTITY_NAME = "Participant";
 
     @Override
     public Participant create(User user, TableSession tableSession) {
@@ -63,14 +63,14 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public ParticipantResponseDto getById(UUID id) {
         Participant participant = participantRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT, id.toString()));
         return participantMapper.toResponseDto(participant);
     }
 
     @Override
     public Participant getEntityById(UUID id) {
         return participantRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT, id.toString()));
     }
 
     @Override

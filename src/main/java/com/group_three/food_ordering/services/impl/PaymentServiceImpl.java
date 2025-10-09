@@ -25,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.PAYMENT;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,8 +36,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final PaymentMapper paymentMapper;
     private final AuthService authService;
-
-    private static final String ENTITY_NAME = "Payment";
 
     // Revisar muy muy MUY bien lo que se hace aca porque es muy importante
     @Transactional
@@ -83,6 +83,13 @@ public class PaymentServiceImpl implements PaymentService {
     public Page<PaymentResponseDto> getAllByCurrentTableSessionAndStatus(PaymentStatus status, Pageable pageable) {
         UUID currentTableSessionId = authService.determineCurrentTableSession().getPublicId();
         return getAllByTableSessionAndStatus(currentTableSessionId, status, pageable);
+    }
+
+    @Override
+    public Page<PaymentResponseDto> getAllOwnPaymentsAndStatus(PaymentStatus status, Pageable pageable) {
+        List<Order> orders = orderService.getOrderEntitiesByCurrentParticipant();
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
@@ -168,7 +175,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void delete(UUID id) {
         if (!paymentRepository.existsByPublicId(id)) {
-            throw new EntityNotFoundException(ENTITY_NAME, id.toString());
+            throw new EntityNotFoundException(PAYMENT, id.toString());
         }
         paymentRepository.deleteByPublicId(id);
     }
@@ -183,7 +190,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private Payment getPaymentEntityById(UUID id) {
         return paymentRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(PAYMENT, id.toString()));
     }
 
     private List<Order> findAndVerifyOrders(List<UUID> orderIds) {

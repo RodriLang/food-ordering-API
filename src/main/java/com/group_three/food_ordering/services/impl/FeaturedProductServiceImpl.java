@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.FEAT_PRODUCT;
+import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
+
 @Service
 @RequiredArgsConstructor
 public class FeaturedProductServiceImpl implements FeaturedProductService {
@@ -24,9 +27,6 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     private final FeaturedProductRepository featuredProductRepository;
     private final FeaturedProductMapper featuredProductMapper;
     private final ProductRepository productRepository;
-
-    private static final String PRODUCT_ENTITY_NAME = "Product";
-    private static final String FEAT_PRODUCT_ENTITY_NAME = "Featured Product";
 
     @Override
     public FeaturedProductResponseDto create(FeaturedProductRequestDto dto) {
@@ -85,16 +85,16 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
 
     private FeaturedProduct getFeaturedProductById(UUID id) {
         return featuredProductRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
     private FeaturedProduct getActiveFeaturedProductByProductId(UUID productId) {
         return featuredProductRepository.findActiveByProduct_PublicId(productId)
-                .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
     private Product getProductById(UUID id) {
         return productRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }
 }

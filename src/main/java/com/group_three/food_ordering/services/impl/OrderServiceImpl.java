@@ -28,6 +28,9 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
+import static com.group_three.food_ordering.utils.EntityName.ORDER;
+import static com.group_three.food_ordering.utils.EntityName.TABLE_SESSION;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,9 +44,6 @@ public class OrderServiceImpl implements OrderService {
     private final AuthService authService;
     private final TableSessionRepository tableSessionRepository;
     private final OrderServiceHelper orderServiceHelper;
-
-    private static final String ORDER_ENTITY_NAME = "Order";
-    private static final String TABLE_SESSION_ENTITY_NAME = "TableSession";
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -121,7 +121,7 @@ public class OrderServiceImpl implements OrderService {
         Participant currentParticipant = authService.determineCurrentParticipant();
 
         TableSession session = tableSessionRepository.findByPublicId(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION_ENTITY_NAME, tableSessionId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, tableSessionId.toString()));
 
         RoleType role = authService.getCurrentParticipantRole();
 
@@ -143,7 +143,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> getOrderEntitiesByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus) {
         TableSession session = tableSessionRepository.findByPublicId(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION_ENTITY_NAME, tableSessionId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, tableSessionId.toString()));
 
         List<Order> orders;
         if (orderStatus != null) {
@@ -208,6 +208,13 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, pageable).map(orderMapper::toDto);
     }
 
+    @Override
+    public List<Order> getOrderEntitiesByCurrentParticipant() {
+        log.debug("[OrderService] Get order entities by current participant");
+        UUID currentClientId = authService.determineCurrentParticipant().getPublicId();
+        return orderRepository.findOrdersByParticipant_PublicId(currentClientId, Pageable.unpaged()).toList();
+    }
+
     // permite recibir parámetros opcionalmente
 // omitiendo el filtro que no fue especificado en la consulta
     private Page<Order> fetchOrders(
@@ -259,12 +266,12 @@ public class OrderServiceImpl implements OrderService {
         UUID currentContext = tenantContext.getCurrentFoodVenueId();
 
         if (!existingOrder.getFoodVenue().getPublicId().equals(currentContext)) {
-            throw new EntityNotFoundException(ORDER_ENTITY_NAME);
+            throw new EntityNotFoundException(ORDER);
         }
 
         if ((participant.getRole().equals(RoleType.ROLE_CLIENT) || participant.getRole().equals(RoleType.ROLE_GUEST)) &&
                 !existingOrder.getParticipant().getPublicId().equals(participant.getPublicId())) {
-            throw new EntityNotFoundException(ORDER_ENTITY_NAME);
+            throw new EntityNotFoundException(ORDER);
         }
 
         existingOrder.setStatus(orderStatus);
@@ -282,7 +289,7 @@ public class OrderServiceImpl implements OrderService {
         Order foundOrder = orderRepository
                 .findByFoodVenue_PublicIdAndOrderNumberAndOrderDateBetween(
                         tenantContext.getCurrentFoodVenue().getPublicId(), orderNumber, start, end)
-                .orElseThrow(() -> new EntityNotFoundException(ORDER_ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(ORDER));
 
         return orderMapper.toDto(foundOrder);
     }
@@ -312,7 +319,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getEntityById(UUID id) {
         return orderRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(ORDER_ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ORDER, id.toString()));
     }
 
     private void setDefaultValues(OrderDetail orderDetail) {

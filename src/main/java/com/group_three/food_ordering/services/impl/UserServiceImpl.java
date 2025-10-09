@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import static com.group_three.food_ordering.utils.EntityName.USER;
+import static com.group_three.food_ordering.utils.EntityName.AUTH_USER;
+
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +30,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
     private final AuthService authService;
-
-    private static final String ENTITY_NAME = "User";
-    private static final String AUTH_ENTITY_NAME = "Authenticated User";
 
     @Override
     public UserResponseDto create(UserRequestDto dto) {
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto getAuthenticatedUser() {
         User authUser = authService.getAuthUser().orElseThrow(() ->
-                new EntityNotFoundException(AUTH_ENTITY_NAME));
+                new EntityNotFoundException(AUTH_USER));
         return userMapper.toResponseDto(authUser);
     }
 
@@ -115,6 +115,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getEntityById(UUID id) {
         return userRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(USER, id.toString()));
     }
 }

@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.group_three.food_ordering.utils.EntityName.TAG;
+
 @Service
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
-
-    private static final String ENTITY_NAME = "Tag";
 
     @Override
     public TagResponseDto create(TagRequestDto tagRequestDto) {
@@ -42,7 +42,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Tag getEntityById(Long id) {
-        return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
+        return tagRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(TAG));
     }
 
     @Override

@@ -21,7 +21,6 @@ import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.DiningTableService;
 import com.group_three.food_ordering.services.TableSessionService;
-import jakarta.persistence.Table;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.group_three.food_ordering.utils.EntityName.TABLE_SESSION;
+import static com.group_three.food_ordering.utils.EntityName.PARTICIPANT;
 
 @Slf4j
 @Service
@@ -47,8 +49,6 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final DiningTableService diningTableService;
     private final AuthService authService;
     private final ParticipantMapper participantMapper;
-
-    private static final String ENTITY_NAME = "TableSession";
 
     @Override
     public InitSessionResponseDto enter(TableSessionRequestDto tableSessionRequestDto) {
@@ -106,9 +106,17 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     @Override
+    public TableSessionResponseDto getByCurrentParticipant() {
+        Participant currentParticipant = authService.determineCurrentParticipant();
+        TableSession tableSession = tableSessionRepository.findByParticipantsContains(List.of(currentParticipant))
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
+        return tableSessionMapper.toDto(tableSession);
+    }
+
+    @Override
     public TableSession getEntityById(UUID sessionId) {
         return tableSessionRepository.findByPublicId(sessionId)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, sessionId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, sessionId.toString()));
     }
 
     @Override
@@ -189,7 +197,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
         TableSession tableSession = tableSessionRepository.findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(
                         tenantContext.getCurrentFoodVenueId(), tableId)
-                .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
         return tableSessionMapper.toDto(tableSession);
     }
 
@@ -218,7 +226,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto closeSessionById(UUID tableId) {
 
         TableSession tableSession = tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(
-                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME));
+                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
 
         return closeSession(tableSession);
     }
@@ -251,7 +259,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
 
         Participant currentParticipant = authService.getCurrentParticipant()
-                .orElseThrow(() -> new EntityNotFoundException("Participant"));
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
 
         participantService.update(currentParticipant.getPublicId(), authUser);
 
@@ -269,7 +277,7 @@ public class TableSessionServiceImpl implements TableSessionService {
             case AVAILABLE -> initSession(diningTable);
             case IN_SESSION ->
                     tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(diningTable.getPublicId(), DiningTableStatus.IN_SESSION)
-                            .orElseThrow(() -> new EntityNotFoundException(ENTITY_NAME, diningTable.getPublicId().toString()));
+                            .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, diningTable.getPublicId().toString()));
             case OUT_OF_SERVICE -> throw new IllegalStateException(
                     "Table is out of service, cannot start or join a session.");
             case COMPLETE -> throw new IllegalStateException(
