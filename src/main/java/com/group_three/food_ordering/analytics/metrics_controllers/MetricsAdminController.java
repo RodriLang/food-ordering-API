@@ -4,53 +4,27 @@ import com.group_three.food_ordering.analytics.metrics_dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
 @RequestMapping("/api/v1/metrics")
-@Tag(name = "Metrics", description = "Endpoints para métricas generales y por local")
-public interface MetricsController {
+@Tag(name = "Métricas de análisis para administración", description = "Endpoints para métricas del local propio")
+public interface MetricsAdminController {
 
-    // ---- MÉTRICAS GENERALES (ROOT / ADMIN) ----
-
-    @GetMapping("/general/overview")
-    @Operation(summary = "Resumen general de métricas", description = "Obtiene métricas generales entre fechas")
-    GeneralMetricsResponseDto getGeneralOverview(
-            @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
-            @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to
-    );
-
-    @GetMapping("/general/orders")
-    @Operation(summary = "Pedidos por local", description = "Cantidad de pedidos por local entre fechas")
-    List<OrdersByVenueDto> getOrdersByVenue(
-            @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
-            @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to
-    );
-
-    @GetMapping("/general/revenue")
-    @Operation(summary = "Ingresos por local", description = "Suma y promedio de ingresos por local entre fechas")
-    List<RevenueByVenueDto> getRevenueByVenue(
-            @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
-            @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to
-    );
-
-    @GetMapping("/general/top-venues")
-    @Operation(summary = "Top locales por ingresos", description = "Obtiene los locales con mayor ingreso en el rango de fechas")
-    List<RevenueByVenueDto> getTopVenuesByRevenue(
-            @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
-            @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to,
-            @Parameter(description = "Cantidad máxima de locales a devolver", example = "5") @RequestParam(defaultValue = "5") int limit
-    );
-
-
-    // ---- MÉTRICAS POR LOCAL (CONTEXTUALES) ----
+    // ---- MÉTRICAS POR LOCAL (ADMIN) ----
 
     @GetMapping("/venue/{venueId}/overview")
     @Operation(summary = "Resumen por local", description = "Obtiene métricas específicas de un local entre fechas")
-    VenueMetricsResponseDto getVenueOverview(
+    ResponseEntity<VenueMetricsResponseDto> getVenueOverview(
             @Parameter(description = "ID del local") @PathVariable UUID venueId,
             @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
             @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to
@@ -58,7 +32,7 @@ public interface MetricsController {
 
     @GetMapping("/venue/{venueId}/sales")
     @Operation(summary = "Evolución de ventas por local", description = "Obtiene la evolución de ventas por día, semana o mes")
-    List<TemporalSalesDto> getSalesEvolution(
+    ResponseEntity<List<TemporalSalesDto>> getSalesEvolution(
             @Parameter(description = "ID del local") @PathVariable UUID venueId,
             @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
             @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to,
@@ -67,7 +41,7 @@ public interface MetricsController {
 
     @GetMapping("/venue/{venueId}/top-products")
     @Operation(summary = "Top productos por local", description = "Obtiene los productos más vendidos de un local")
-    List<ProductSalesDto> getTopProducts(
+    ResponseEntity<List<ProductSalesDto>> getTopProducts(
             @Parameter(description = "ID del local") @PathVariable UUID venueId,
             @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
             @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to,
@@ -76,7 +50,7 @@ public interface MetricsController {
 
     @GetMapping("/venue/{venueId}/employees")
     @Operation(summary = "Rendimiento de empleados por local", description = "Obtiene métricas de desempeño de los empleados de un local")
-    List<EmployeePerformanceDto> getEmployeePerformance(
+    ResponseEntity<List<EmployeePerformanceDto>> getEmployeePerformance(
             @Parameter(description = "ID del local") @PathVariable UUID venueId,
             @Parameter(description = "Fecha inicial", example = "2025-01-01T00:00:00") @RequestParam LocalDateTime from,
             @Parameter(description = "Fecha final", example = "2025-01-31T23:59:59") @RequestParam LocalDateTime to
