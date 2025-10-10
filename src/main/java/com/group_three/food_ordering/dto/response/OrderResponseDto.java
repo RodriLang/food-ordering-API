@@ -18,7 +18,7 @@ public class OrderResponseDto {
 
     private UUID publicId;
 
-    private String formattedOrderNumber;
+    private String orderNumber;
 
     private String specialRequirements;
 

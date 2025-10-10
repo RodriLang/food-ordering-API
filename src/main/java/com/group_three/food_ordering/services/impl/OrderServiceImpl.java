@@ -61,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         order.setPublicId(UUID.randomUUID());
         order.setTableSession(tableSession);
+        order.setOrderDate(LocalDateTime.now());
 
         // Revisar porque no permite cantidad de productos mayor a 1 como regla de negocio pero se puede evaluar
         order.setFoodVenue(currentFoodVenue);

@@ -50,7 +50,6 @@ public class OrderServiceHelper {
         LocalDateTime end = start.plusDays(1);
         int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(
                 tenantContext.getCurrentFoodVenueId(), start, end));
-
         return ordersCount + 1;
     }
 }
