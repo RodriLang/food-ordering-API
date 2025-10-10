@@ -23,6 +23,8 @@ public class TableSessionResponseDto {
 
     private Integer tableNumber;
 
+    private Integer numberOfParticipants;
+
     private ParticipantResponseDto hostClient;
 
     private List<ParticipantResponseDto> participants;

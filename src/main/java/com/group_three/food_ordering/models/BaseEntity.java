@@ -21,6 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class BaseEntity {
 
     @Id

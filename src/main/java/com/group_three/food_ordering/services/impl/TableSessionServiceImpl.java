@@ -77,8 +77,7 @@ public class TableSessionServiceImpl implements TableSessionService {
             TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
             if (activeSession != null) {
                 log.debug("[TableSession] Found active session {} for {}", activeSession.getPublicId(), authUser.getEmail());
-                return generateInitSessionResponseDto(activeSession, authService.getCurrentParticipant()
-                        .orElseThrow(() -> new EntityNotFoundException("Participant")));
+                return generateInitSessionResponseDto(activeSession, authService.determineCurrentParticipant());
             }
 
             // El usuario autenticado no tiene sesión previa
@@ -224,8 +223,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     @Override
     public TableSessionResponseDto closeSessionById(UUID tableId) {
 
-        TableSession tableSession = tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(
-                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
+        TableSession tableSession = findTableSessionByAvailableDiningTable(tableId);
 
         return closeSession(tableSession);
     }
@@ -257,8 +255,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
 
-        Participant currentParticipant = authService.getCurrentParticipant()
-                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
+        Participant currentParticipant = authService.determineCurrentParticipant();
 
         participantService.update(currentParticipant.getPublicId(), authUser);
 
@@ -274,9 +271,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         TableSession tableSession = switch (status) {
             case AVAILABLE -> initSession(diningTable);
-            case IN_SESSION ->
-                    tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatus(diningTable.getPublicId(), DiningTableStatus.IN_SESSION)
-                            .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, diningTable.getPublicId().toString()));
+            case IN_SESSION -> findTableSessionByAvailableDiningTable(diningTable.getPublicId());
             case OUT_OF_SERVICE -> throw new IllegalStateException(
                     "Table is out of service, cannot start or join a session.");
             case COMPLETE -> throw new IllegalStateException(
@@ -293,14 +288,14 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getPublicId());
 
         Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant joined session {} with role={}", tableSession.getPublicId(), participant.getRole());
+        log.debug("[TableSession] Participant created with role={}", participant.getRole());
 
 
         tableSession.getParticipants().add(participant);
         if (tableSession.getSessionHost() != null) {
             tableSession.setSessionHost(participant);
         }
-
+        log.debug("[TableSession] Participant joined to session {}", tableSession.getPublicId());
         TableSession savedTableSession = tableSessionRepository.save(tableSession);
 
         AuthResponse response = generateInitSessionResponseDto(savedTableSession, participant);
@@ -343,10 +338,11 @@ public class TableSessionServiceImpl implements TableSessionService {
     }
 
     private AuthResponse generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
+        log.debug("[TableSession] Generating Init Session Response Dto");
 
         String token = jwtService.generateAccessToken(SessionInfo.builder()
                 .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
-                .userId(participant.getUser().getPublicId())
+                .userId((participant.getUser() != null) ? participant.getUser().getPublicId() : null)
                 .foodVenueId(tableSession.getFoodVenue().getPublicId())
                 .participantId(participant.getPublicId())
                 .tableSessionId(tableSession.getPublicId())
@@ -355,6 +351,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
 
+        log.debug("[TableSession] Generating Auth response");
         return AuthResponse.builder()
                 .tableNumber(tableSession.getDiningTable().getNumber())
                 .startTime(tableSession.getStartTime())
@@ -364,7 +361,12 @@ public class TableSessionServiceImpl implements TableSessionService {
                         .toList())
                 .hostClient(participantDto)
                 .accessToken(token)
+                .numberOfParticipants(tableSession.getParticipants().size())
                 .build();
     }
 
+    private TableSession findTableSessionByAvailableDiningTable(UUID tableId) {
+        return tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(
+                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
+    }
 }

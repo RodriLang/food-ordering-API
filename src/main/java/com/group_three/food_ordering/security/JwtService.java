@@ -35,6 +35,8 @@ public class JwtService {
     private long jwtAccessExpirationMs;
 
     public String generateAccessToken(SessionInfo sessionInfo) {
+        log.debug("[JwtService] Generating access token");
+
         Date expiration = Date.from(Instant.now().plusMillis(jwtAccessExpirationMs));
 
         Map<String, Object> claims = getStringObjectMap(sessionInfo);

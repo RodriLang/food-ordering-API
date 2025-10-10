@@ -41,7 +41,7 @@ public interface TableSessionRepository extends JpaRepository<TableSession, Long
 
     Optional<TableSession> findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
 
-    Optional<TableSession> findTableSessionByDiningTable_PublicIdAndDiningTableStatus(UUID tableId, DiningTableStatus status);
+    Optional<TableSession> findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(UUID tableId, DiningTableStatus status);
 
     @Query("SELECT ts FROM TableSession ts " +
             "JOIN ts.participants p " +
