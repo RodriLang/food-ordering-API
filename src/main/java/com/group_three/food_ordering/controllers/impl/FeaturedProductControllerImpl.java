@@ -40,23 +40,29 @@ public class FeaturedProductControllerImpl implements FeaturedProductController 
     }
 
     @Override
-    public ResponseEntity<FeaturedProductResponseDto> getActiveByProductId(UUID productId) {
-        return ResponseEntity.ok(featuredProductService.findActiveByProductId(productId));
+    public ResponseEntity<FeaturedProductResponseDto> getActiveByProductId(String productName) {
+        return ResponseEntity.ok(featuredProductService.findActiveByProductId(productName));
     }
 
     @Override
-    public ResponseEntity<FeaturedProductResponseDto> update(UUID productId, FeaturedProductRequestDto dto) {
-        return ResponseEntity.ok(featuredProductService.update(productId, dto));
+    public ResponseEntity<FeaturedProductResponseDto> update(UUID id, FeaturedProductRequestDto dto) {
+        return ResponseEntity.ok(featuredProductService.update(id, dto));
     }
 
     @Override
-    public ResponseEntity<Void> disable(Pageable pageable, UUID productId) {
-        featuredProductService.disableByProductId(productId);
+    public ResponseEntity<Void> enable(String productName) {
+        featuredProductService.enableByProduct(productName);
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<FeaturedProductResponseDto> delete(Pageable pageable, UUID id) {
+    public ResponseEntity<Void> disable(String productName) {
+        featuredProductService.disableByProduct(productName);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<FeaturedProductResponseDto> delete(UUID id) {
         featuredProductService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -38,4 +38,7 @@ public class FeaturedProduct extends BaseEntity {
     @Builder.Default
     private Integer priority = 0;
 
+    @Column
+    private Boolean active;
+
 }

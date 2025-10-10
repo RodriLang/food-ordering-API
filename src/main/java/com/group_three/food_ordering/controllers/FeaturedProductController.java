@@ -22,6 +22,7 @@ import java.util.UUID;
 @Tag(name = "Productos destacados", description = "Gestión de los productos destacados para mostrar en apartados")
 public interface FeaturedProductController {
 
+
     @Operation(
             summary = "Obtener todos los Productos destacados. Activos o inactivos",
             responses = {
@@ -31,6 +32,7 @@ public interface FeaturedProductController {
     @GetMapping("/all")
     ResponseEntity<PageResponse<FeaturedProductResponseDto>> getAllFeatProducts(@Parameter(hidden = true) Pageable pageable);
 
+
     @Operation(
             summary = "Obtener todos los Productos destacados activos",
             responses = {
@@ -39,6 +41,7 @@ public interface FeaturedProductController {
     )
     @GetMapping("/actives")
     ResponseEntity<PageResponse<FeaturedProductResponseDto>> getActivesFeatProducts(@Parameter(hidden = true) Pageable pageable);
+
 
     @Operation(
             summary = "Registrar un nuevo Producto destacado",
@@ -52,6 +55,7 @@ public interface FeaturedProductController {
     ResponseEntity<FeaturedProductResponseDto> createFeatProduct(
             @Validated(OnCreate.class) @RequestBody FeaturedProductRequestDto dto);
 
+
     @Operation(
             summary = "Obtener un Producto destacado por identificador único",
             responses = {
@@ -61,14 +65,16 @@ public interface FeaturedProductController {
     @GetMapping("/id/{id}")
     ResponseEntity<FeaturedProductResponseDto> getById(@Parameter(hidden = true) Pageable pageable, @PathVariable UUID id);
 
+
     @Operation(
             summary = "Obtener el Producto destacado activo relacionado a un producto",
             responses = {
                     @ApiResponse(responseCode = "200")
             }
     )
-    @GetMapping("/productId/{productId}")
-    ResponseEntity<FeaturedProductResponseDto> getActiveByProductId(@PathVariable UUID productId);
+    @GetMapping("/products/{productName}")
+    ResponseEntity<FeaturedProductResponseDto> getActiveByProductId(@PathVariable String productName);
+
 
     @Operation(
             summary = "Modificar un producto destacado",
@@ -76,28 +82,44 @@ public interface FeaturedProductController {
                     @ApiResponse(responseCode = "200")
             }
     )
-    @PatchMapping("/productId/{productId}")
+    @PatchMapping("/products/{id}")
     ResponseEntity<FeaturedProductResponseDto> update(
-            @PathVariable UUID productId,
+            @PathVariable UUID id,
             @RequestParam @Validated(OnUpdate.class) FeaturedProductRequestDto dto);
+
+
+    @Operation(
+            summary = "Habilitar un producto destacado",
+            responses = {
+                    @ApiResponse(responseCode = "200"),
+                    @ApiResponse(responseCode = "404")
+            }
+    )
+    @PatchMapping("/products/{productName}/on")
+    ResponseEntity<Void> enable(
+            @PathVariable String productName);
+
 
     @Operation(
             summary = "Deshabilitar un producto destacado a partir de un producto",
             description = "Modifica la fecha de fin al momento de la consulta",
             responses = {
-                    @ApiResponse(responseCode = "200")
+                    @ApiResponse(responseCode = "200"),
+                    @ApiResponse(responseCode = "404")
             }
     )
-    @GetMapping("/productId/{productId}")
-    ResponseEntity<Void> disable(@Parameter(hidden = true) Pageable pageable, @PathVariable UUID productId);
+    @PatchMapping("/products/{productName}/off")
+    ResponseEntity<Void> disable(@PathVariable String productName);
+
 
     @Operation(
             summary = "Eliminar un producto destacado",
             responses = {
-                    @ApiResponse(responseCode = "200")
+                    @ApiResponse(responseCode = "204"),
+                    @ApiResponse(responseCode = "404")
             }
     )
-    @GetMapping("/id/{id}")
-    ResponseEntity<FeaturedProductResponseDto> delete(@Parameter(hidden = true) Pageable pageable, @PathVariable UUID id);
+    @DeleteMapping("/id/{id}")
+    ResponseEntity<FeaturedProductResponseDto> delete(@PathVariable UUID id);
 
 }

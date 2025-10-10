@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.FeaturedProductRequestDto;
 import com.group_three.food_ordering.dto.response.FeaturedProductResponseDto;
 import com.group_three.food_ordering.mappers.FeaturedProductMapper;
@@ -14,7 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.FEAT_PRODUCT;
@@ -27,10 +28,11 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     private final FeaturedProductRepository featuredProductRepository;
     private final FeaturedProductMapper featuredProductMapper;
     private final ProductRepository productRepository;
+    private final TenantContext tenantContext;
 
     @Override
     public FeaturedProductResponseDto create(FeaturedProductRequestDto dto) {
-        Product product = getProductById(dto.getProductId());
+        Product product = getProductByNameAndContext(dto.getProductName());
         FeaturedProduct featuredProduct = featuredProductMapper.toEntity(dto);
         featuredProduct.setProduct(product);
         featuredProduct.setPublicId(UUID.randomUUID());
@@ -45,8 +47,8 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     }
 
     @Override
-    public FeaturedProductResponseDto findActiveByProductId(UUID productId) {
-        FeaturedProduct featuredProduct = getActiveFeaturedProductByProductId(productId);
+    public FeaturedProductResponseDto findActiveByProductId(String productName) {
+        FeaturedProduct featuredProduct = getActiveFeaturedProductByProductNameAndContext(productName);
         return featuredProductMapper.toDto(featuredProduct);
     }
 
@@ -71,9 +73,16 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     }
 
     @Override
-    public void disableByProductId(UUID productId) {
-        FeaturedProduct featuredProduct = getActiveFeaturedProductByProductId(productId);
-        featuredProduct.setFeaturedUntil(LocalDateTime.now());
+    public void enableByProduct(String productName) {
+        FeaturedProduct featuredProduct = getActiveFeaturedProductByProductNameAndContext(productName);
+        featuredProduct.setActive(Boolean.TRUE);
+        featuredProductRepository.save(featuredProduct);
+    }
+
+    @Override
+    public void disableByProduct(String productName) {
+        FeaturedProduct featuredProduct = getActiveFeaturedProductByProductNameAndContext(productName);
+        featuredProduct.setActive(Boolean.FALSE);
         featuredProductRepository.save(featuredProduct);
     }
 
@@ -88,13 +97,18 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
                 .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
-    private FeaturedProduct getActiveFeaturedProductByProductId(UUID productId) {
-        return featuredProductRepository.findActiveByProduct_PublicId(productId)
+    private FeaturedProduct getActiveFeaturedProductByProductNameAndContext(String productName) {
+        UUID currentContextId = tenantContext.getCurrentFoodVenueId();
+        return featuredProductRepository.findActiveByProduct(productName, currentContextId)
                 .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
-    private Product getProductById(UUID id) {
-        return productRepository.findByPublicId(id)
-                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
+    private Product getProductByNameAndContext(String productName) {
+        UUID currentContextId = tenantContext.getCurrentFoodVenueId();
+        List<Product> products = productRepository.findByNameAndFoodVenue_PublicId(productName, currentContextId);
+        if (products.isEmpty()) {
+            throw new EntityNotFoundException(PRODUCT);
+        }
+        return products.getFirst();
     }
 }

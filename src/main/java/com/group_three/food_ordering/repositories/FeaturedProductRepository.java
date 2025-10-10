@@ -16,24 +16,27 @@ public interface FeaturedProductRepository extends JpaRepository<FeaturedProduct
     Optional<FeaturedProduct> findByPublicId(UUID publicId);
 
 
-    boolean existsByProduct_PublicId(UUID productPublicId);
+    boolean existsByProduct_NameAndProduct_FoodVenue_PublicId(String productName, UUID foodVenuePublicId);
 
-    void deleteByProduct_PublicId(UUID productPublicId);
+    void deleteByProduct_NameAndProduct_FoodVenue_PublicId(String productName, UUID foodVenuePublicId);
 
     @Query("""
                 SELECT fp
                 FROM FeaturedProduct fp
                 WHERE (fp.featuredFrom IS NULL OR fp.featuredFrom <= CURRENT_TIMESTAMP)
                 AND (fp.featuredUntil IS NULL OR fp.featuredUntil >= CURRENT_TIMESTAMP)
-                AND fp.product.id = :productPublicId
+                AND fp.active = true
+                AND fp.product.name = :productName
+                AND fp.product.foodVenue.publicId = :foodVenuePublicId
             """)
-    Optional<FeaturedProduct> findActiveByProduct_PublicId(UUID productPublicId);
+    Optional<FeaturedProduct> findActiveByProduct(String productName, UUID foodVenuePublicId);
 
     @Query("""
                 SELECT fp
                 FROM FeaturedProduct fp
                 WHERE (fp.featuredFrom IS NULL OR fp.featuredFrom <= CURRENT_TIMESTAMP)
                 AND (fp.featuredUntil IS NULL OR fp.featuredUntil >= CURRENT_TIMESTAMP)
+                AND fp.active = true
                 ORDER BY fp.priority ASC NULLS LAST, fp.lastUpdateDate DESC
             """)
     Page<FeaturedProduct> findActiveFeaturedProducts(Pageable pageable);

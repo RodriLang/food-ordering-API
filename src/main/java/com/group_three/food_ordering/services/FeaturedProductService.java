@@ -13,7 +13,7 @@ public interface FeaturedProductService {
 
     FeaturedProductResponseDto getById(UUID id);
 
-    FeaturedProductResponseDto findActiveByProductId(UUID productId);
+    FeaturedProductResponseDto findActiveByProductId(String productname);
 
     Page<FeaturedProductResponseDto> getAll(Pageable pageable);
 
@@ -21,7 +21,9 @@ public interface FeaturedProductService {
 
     FeaturedProductResponseDto update(UUID id, FeaturedProductRequestDto dto);
 
-    void disableByProductId(UUID productId);
+    void enableByProduct(String productName);
+
+    void disableByProduct(String productName);
 
     void deleteById(UUID id);
 }
