@@ -1,8 +1,8 @@
-package com.group_three.food_ordering.metrics.controllers.impl;
+package com.group_three.food_ordering.analytics.metrics_controllers.impl;
 
-import com.group_three.food_ordering.metrics.controllers.MetricsController;
-import com.group_three.food_ordering.metrics.dto.*;
-import com.group_three.food_ordering.metrics.services.MetricsService;
+import com.group_three.food_ordering.analytics.metrics_controllers.MetricsController;
+import com.group_three.food_ordering.analytics.metrics_dto.*;
+import com.group_three.food_ordering.analytics.metrics_services.MetricsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 

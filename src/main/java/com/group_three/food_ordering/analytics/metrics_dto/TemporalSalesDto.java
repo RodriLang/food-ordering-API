@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.metrics.dto;
+package com.group_three.food_ordering.analytics.metrics_dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,10 +9,12 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GeneralMetricsResponseDto {
+public class TemporalSalesDto {
+
+    private String label;// día, semana o mes
+
     private long totalOrders;
-    private long totalVenues;
+
     private BigDecimal totalRevenue;
-    private double averageTicket;
-    private double averageSessionDurationMinutes;
+
 }
