@@ -93,7 +93,8 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public void delete(UUID id) {
         Employment employment = getEntityByIdAndActiveTrue(id);
-        employmentRepository.delete(employment);
+        employment.setDeleted(Boolean.TRUE);
+        employmentRepository.save(employment);
     }
 
     @Override

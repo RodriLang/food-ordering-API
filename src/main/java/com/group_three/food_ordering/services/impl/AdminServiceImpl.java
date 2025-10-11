@@ -93,7 +93,8 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void deleteAdminUser(UUID publicId) {
         Employment employment = getEmploymentByPublicId(publicId);
-        employmentRepository.delete(employment);
+        employment.setDeleted(Boolean.TRUE);
+        employmentRepository.save(employment);
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {

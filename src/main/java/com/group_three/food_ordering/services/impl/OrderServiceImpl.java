@@ -257,7 +257,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void delete(UUID id) {
-        orderRepository.deleteByPublicId(id);
+        Order order = this.getEntityById(id);
+        order.setDeleted(Boolean.TRUE);
+        orderRepository.save(order);
     }
 
     @Override

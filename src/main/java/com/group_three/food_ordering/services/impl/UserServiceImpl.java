@@ -7,6 +7,7 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
 import com.group_three.food_ordering.mappers.UserMapper;
 import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
     private final AuthService authService;
+    private final EmploymentRepository employmentRepository;
 
     @Override
     public UserDetailResponseDto create(UserRequestDto dto) {
@@ -103,6 +105,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(UUID id) {
         User userEntity = this.getEntityById(id);
+        userEntity.setDeleted(Boolean.TRUE);
+        userEntity.getEmployments().forEach(employment -> employment.setDeleted(Boolean.TRUE));
+        employmentRepository.saveAll(userEntity.getEmployments());
         userRepository.save(userEntity);
     }
 

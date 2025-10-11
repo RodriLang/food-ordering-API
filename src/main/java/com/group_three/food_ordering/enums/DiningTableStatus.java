@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.enums;
 
 public enum DiningTableStatus {
+
     AVAILABLE,
     IN_SESSION,
     COMPLETE,

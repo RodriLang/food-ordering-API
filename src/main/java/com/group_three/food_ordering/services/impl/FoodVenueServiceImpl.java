@@ -95,6 +95,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public void softDelete(UUID id) {
         FoodVenue foodVenue = findEntityById(id);
-        foodVenueRepository.delete(foodVenue);
+        foodVenue.setDeleted(Boolean.TRUE);
+        foodVenueRepository.save(foodVenue);
     }
 }

@@ -1,0 +1,191 @@
+@startuml
+
+
+' === Main entities ===
+
+class User {
+    - name : String
+    - lastName : String
+    - email : String
+    - password : String
+    - birthDate : LocalDate
+    - phone: String
+}
+
+class Address {
+    - street : String
+    - number : String
+    - city : String
+    - province : String
+    - country : String
+    - postalCode: String
+}
+
+class Participant {
+    - nickname : String
+}
+
+class Employment {
+    - role : RoleType
+}
+
+class FoodVenue {
+    - name : String
+    - address : String
+    - email : String
+    - phone : String
+    - imageUrl : String
+}
+
+class VenueStyle {
+    - String : String
+    - bannerUrl : String
+    - primaryColor : String
+    - secondaryColor : String
+    - accentColor : String
+    - backgroundColor : String
+    - textColor : String
+    - colorsComplete : Boolean
+    - slogan : String
+    - description : String
+    - publicMenu : Boolean
+    - instagramUrl : String
+    - facebookUrl : String
+    - whatsappNumber : String
+}
+
+class DiningTable {
+    - number : Integer
+    - capacity : Integer
+    - status : DiningTableStatus
+}
+
+class TableSession {
+    - startTime : LocalDateTime
+    - endTime : LocalDateTime
+}
+
+class Product {
+    - name : String
+    - description : String
+    - price : BigDecimal
+    - imageUrl : String
+    - available : Boolean
+    - stock : Integer
+}
+
+class FeaturedProduct {
+    - featuredFrom : LocalDateTime
+    - featuredUntil : LocalDateTime
+    - priority : Integer
+    - active : Boolean
+}
+
+class Category {
+    - name : String
+}
+
+class Tag {
+    - label : String
+}
+
+class Order {
+    - orderNumber : String
+    - status : OrderStatus
+    - totalPrice : BigDecimal
+    - orderDate : LocalDateTime
+    - specialRequirements : String
+}
+
+class OrderDetail {
+    -quantity : Integer
+    -price : BigDecimal
+    -specialInstructions : String
+}
+
+class Payment {
+    - amount : BigDecimal
+    - paymentDate : LocalDateTime
+    - status : PaymentStatus
+    - paymentMethod : PaymentMethod
+}
+
+
+' === Enums ===
+package enums {
+    enum DiningTableStatus {
+        AVAILABLE
+        IN_SESSION
+        COMPLETE
+        WAITING_RESET
+        OUT_OF_SERVICE
+    }
+
+    enum RoleType {
+        ROLE_GUEST
+        ROLE_CLIENT
+        ROLE_STAFF
+        ROLE_MANAGER
+        ROLE_ADMIN
+        ROLE_ROOT
+    }
+
+    enum OrderStatus {
+        PENDING
+        APPROVED
+        IN_PROGRESS
+        COMPLETED
+        SERVED
+        CANCELLED
+    }
+
+    enum PaymentStatus {
+        PENDING
+        COMPLETED
+        FAILED
+    }
+
+    enum PaymentMethod {
+      CASH
+      CREDIT_CARD
+      DEBIT_CARD
+      MOBILE_PAYMENT
+      OTHER
+    }
+}
+
+' === Relations ===
+FoodVenue "1" <-up-> "1..*" DiningTable : has
+FoodVenue "1" <-up-> "0..*" TableSession : has
+FoodVenue "1" <-left-> "1..*" Product : has
+FoodVenue "1" <-left- "0..*" Order : has
+FoodVenue "1" <-up-> "1..*" Employment : has
+FoodVenue "1" <-right-> "1*" Address : has
+FoodVenue "1" <--> "1*" VenueStyle : has
+Product "1..*" -down-> "0..*" Category : has
+FeaturedProduct "1" -down-> "1..*" Product : has
+Product "1" -left-> "0..*" Tag : has
+TableSession "1" <-left-> "0..*" Order : has
+TableSession "1" <-up-> "1..*" Participant : has
+TableSession "1" --> "1" Participant : hostClient
+TableSession "1" -down-> "1" DiningTable : has
+Payment "1" <-right-> "1..*" Order : has
+Participant "1" <-left-> "0..* " Order : has
+Order "1" -down-> "1..*" OrderDetail : has
+OrderDetail "0..*" -down-> "1" Product : has
+Participant "1" -down-> "0..1" User : has
+Employment "1" -up-> "1" User : has
+Category "0..1" <--> "0..*" Category : subcategories
+User "1" <--> "1*" Address : has
+
+
+
+
+
+DiningTableStatus -right[hidden]- PaymentMethod
+DiningTableStatus -left[hidden]- OrderStatus
+PaymentMethod -right[hidden]- RoleType
+RoleType -right[hidden]- PaymentStatus
+OrderStatus -up[hidden]- Category
+
+@enduml

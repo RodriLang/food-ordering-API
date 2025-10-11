@@ -58,8 +58,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
-        categoryRepository.deleteByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId);
+        Category category = getEntityById(publicId);
+        category.setDeleted(Boolean.TRUE);
+        categoryRepository.save(category);
     }
 
     @Override

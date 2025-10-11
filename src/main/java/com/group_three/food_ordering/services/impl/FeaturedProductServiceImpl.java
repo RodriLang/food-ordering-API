@@ -89,7 +89,8 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     @Override
     public void deleteById(UUID id) {
         FeaturedProduct featuredProduct = getFeaturedProductById(id);
-        featuredProductRepository.delete(featuredProduct);
+        featuredProduct.setDeleted(Boolean.TRUE);
+        featuredProductRepository.save(featuredProduct);
     }
 
     private FeaturedProduct getFeaturedProductById(UUID id) {

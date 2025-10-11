@@ -100,7 +100,10 @@ public class DiningTableServiceImpl implements DiningTableService {
     @Override
     public void delete(UUID id) {
         DiningTable diningTable = this.getEntityById(id);
-
-        diningTable.getFoodVenue().getDiningTables().remove(diningTable);
+        if (diningTable.getStatus() != DiningTableStatus.AVAILABLE && diningTable.getStatus() != DiningTableStatus.OUT_OF_SERVICE ) {
+            throw new IllegalStateException("Only tables with status AVAILABLE or OUT_OF_SERVICE can be deleted.");
+        }
+        diningTable.setDeleted(Boolean.TRUE);
+        diningTableRepository.save(diningTable);
     }
 }

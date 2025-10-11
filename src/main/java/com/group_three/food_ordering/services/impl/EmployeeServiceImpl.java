@@ -83,7 +83,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void deleteEmployeeUser(UUID publicId) {
         Employment employment = getEmploymentByPublicId(publicId);
         validateContext(employment);
-        employmentRepository.delete(employment);
+        employment.setDeleted(Boolean.TRUE);
+        employmentRepository.save(employment);
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {

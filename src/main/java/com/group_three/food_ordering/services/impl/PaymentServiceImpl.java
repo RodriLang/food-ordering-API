@@ -174,10 +174,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void delete(UUID id) {
-        if (!paymentRepository.existsByPublicId(id)) {
-            throw new EntityNotFoundException(PAYMENT, id.toString());
-        }
-        paymentRepository.deleteByPublicId(id);
+        Payment payment = getPaymentEntityById(id);
+        verifyUpdatablePayment(payment);
+        payment.setDeleted(Boolean.TRUE);
+        paymentRepository.save(payment);
     }
 
     private void verifyUpdatablePayment(Payment payment) {

@@ -5,18 +5,19 @@ import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
+import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
 import com.group_three.food_ordering.dto.AuditorUser;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
+import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.security.RefreshTokenService;
-import com.group_three.food_ordering.services.RoleSelectionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final HttpServletRequest request;
-    private final RoleSelectionService roleSelectionService;
+    private final RoleEmploymentMapper roleEmploymentMapper;
     private final RefreshTokenService refreshTokenService;
 
     @Override
@@ -162,13 +163,12 @@ public class AuthServiceImpl implements AuthService {
     private User authenticateUser(LoginRequest loginRequest) {
         log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
         Optional<User> loggedUser = userRepository.findByEmail(loginRequest.getEmail());
-        log.debug("[AuthService] Logged in user=");
         if (loggedUser.isEmpty()) {
             log.warn("[AuthController] User not found for email={}", loginRequest.getEmail());
             throw new UsernameNotFoundException("Usuario o contraseña incorrectos");
         }
         User user = loggedUser.get();
-        log.debug("[AuthService] Authenticating user={}", user.getEmail());
+        log.debug("[AuthService] Authenticating user={}", user.getPublicId());
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             log.warn("[AuthController] User authentication failed for email={}", loginRequest.getEmail());
             throw new BadCredentialsException("Usuario o contraseña incorrectos");
@@ -356,12 +356,23 @@ public class AuthServiceImpl implements AuthService {
     private AuthResponse createLoginResponse(User loggedUser, String accessToken, String refreshToken, SessionInfo sessionInfo) {
         log.debug("[AuthService] Generating login response");
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
-        log.debug("[AuthService] Auth response generated");
-        return AuthResponse.builder()
+
+        List<RoleEmploymentResponseDto> employments;
+        if(!loggedUser.getEmployments().isEmpty()) {
+            employments = loggedUser.getEmployments().stream()
+                    .filter(employment -> employment.getActive().equals(Boolean.TRUE))
+                    .map(roleEmploymentMapper::toResponseDto)
+                    .toList();
+            log.debug("[AuthService] Active employments found for user={}", loggedUser.getEmail());
+        } else {
+            employments = null;
+            log.debug("[AuthService] No active employments for user={}", loggedUser.getEmail());
+        }
+        AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expirationDate(expiration)
-                .employments(roleSelectionService.generateRoleSelection(loggedUser))
+                .employments(employments)
                 .endTime(sessionInfo.endTime())
                 .startTime(sessionInfo.startTime())
                 .hostClient(sessionInfo.hostClient())
@@ -369,6 +380,9 @@ public class AuthServiceImpl implements AuthService {
                 .tableNumber(sessionInfo.tableNumber())
                 .numberOfParticipants((sessionInfo.participants() != null) ? sessionInfo.participants().size() : null)
                 .build();
+
+        log.debug("[AuthService] Auth response generated");
+        return authResponse;
     }
 
     public Optional<CustomUserPrincipal> getCurrentPrincipal() {
