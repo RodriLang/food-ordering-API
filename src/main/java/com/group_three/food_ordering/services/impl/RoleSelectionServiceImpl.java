@@ -69,7 +69,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
         List<RoleEmploymentResponseDto> roleSelection = generateRoleSelection(user);
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
-        Instant expiration = jwtService.getExpirationDateFromToken(refreshToken);
+        Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

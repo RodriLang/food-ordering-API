@@ -12,16 +12,17 @@ import java.util.UUID;
 public interface PaymentMetricsRepository extends JpaRepository<Payment, Long> {
 
     @Query("""
-        SELECT AVG(p.amount)
-        FROM Payment p
-        JOIN p.orders o
-        JOIN o.tableSession ts
-        JOIN ts.diningTable dt
-        JOIN dt.foodVenue v
-        WHERE v.publicId = :venueId
-          AND p.status = 'SUCCESS'
-          AND p.paymentDate BETWEEN :from AND :to
-    """)
+    SELECT COALESCE(AVG(CAST(p.amount as double)), 0.0)
+    FROM Payment p
+    JOIN p.orders o
+    JOIN o.tableSession ts
+    JOIN ts.diningTable dt
+    JOIN dt.foodVenue v
+    WHERE v.publicId = :venueId
+      AND p.status = 'SUCCESS'
+      AND p.paymentDate BETWEEN :from AND :to
+""")
     Double findAverageSpending(UUID venueId, LocalDateTime from, LocalDateTime to);
+
 
 }

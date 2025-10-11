@@ -5,13 +5,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@PreAuthorize("hasRole('ROOT')")
 @RequestMapping("/api/v1/metrics")
 @Tag(name = "Métricas de análisis generales para usuarios root", description = "Endpoints para métricas por local")
 public interface MetricsRootController {

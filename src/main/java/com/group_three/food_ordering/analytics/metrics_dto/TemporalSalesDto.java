@@ -11,10 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class TemporalSalesDto {
 
-    private String label;// día, semana o mes
+    private String bucket;
 
-    private long totalOrders;
+    private long ordersCount;
 
-    private BigDecimal totalRevenue;
+    private BigDecimal revenue;
 
 }
