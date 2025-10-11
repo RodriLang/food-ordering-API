@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.CategoryRequestDto;
 import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.CATEGORY;
+import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public CategoryResponseDto create(CategoryRequestDto categoryRequestDto) {
@@ -50,7 +51,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getEntityById(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID currentFoodVenueId = requestContext.foodVenueIdOpt()
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+
         return categoryRepository.findByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId)
                 .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
 
@@ -65,7 +68,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID currentFoodVenueId = requestContext.foodVenueIdOpt()
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+
         List<Category> roots = categoryRepository.findByParentCategoryIsNullAndFoodVenue_PublicId(currentFoodVenueId);
 
         return roots.stream()
@@ -75,7 +80,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesByParentCategoryId(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID currentFoodVenueId = requestContext.foodVenueIdOpt()
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+
         List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicId(
                 publicId, currentFoodVenueId);
 

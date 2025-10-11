@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -14,7 +15,6 @@ import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class RootServiceImpl implements RootService {
     private final UserRepository userRepository;
     private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
-    private final AuthService authService;
+    private final RequestContext requestContext;
     private final JwtService jwtService;
 
 
@@ -72,8 +72,10 @@ public class RootServiceImpl implements RootService {
         log.debug("[RootService] Select context");
         FoodVenue selectedFoodVenue = getFoodVenue(foodVenuePublicId);
         log.debug("[RootService] Selected FoodVenue foodVenueId={}", selectedFoodVenue.getPublicId());
-        User authenticatedUser = authService.determineAuthUser();
-        log.debug("[RootService] Authenticated user email={} publicId={}", authenticatedUser.getEmail(), authenticatedUser.getPublicId());
+        User authenticatedUser = requestContext.requireUser();
+        log.debug("[RootService] Authenticated user email={} publicId={}",
+                authenticatedUser.getEmail(), authenticatedUser.getPublicId());
+
         Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrue(
                 authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
 
@@ -81,7 +83,9 @@ public class RootServiceImpl implements RootService {
             throw new EntityNotFoundException(EMPLOYMENT);
         }
         employment.setFoodVenue(selectedFoodVenue);
-        log.debug("[RootService] Context Selected foodVenueId={} role={}", employment.getFoodVenue().getPublicId(), employment.getRole());
+        log.debug("[RootService] Context Selected foodVenueId={} role={}",
+                employment.getFoodVenue().getPublicId(), employment.getRole());
+
         SessionInfo sessionInfo = SessionInfo.builder()
                 .foodVenueId(selectedFoodVenue.getPublicId())
                 .subject(authenticatedUser.getEmail())

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
@@ -28,7 +28,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmploymentRepository employmentRepository;
     private final UserRepository userRepository;
     private final EmploymentMapper employmentMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     private static final String USER_ENTITY_NAME = "User";
 
@@ -38,7 +38,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         User user = userRepository.findByEmail(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
 
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue foodVenue = requestContext.requireFoodVenue();
         RoleType role = dto.getRole();
         validateAllowedRole(role);
 
@@ -54,7 +54,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Page<EmploymentResponseDto> getEmployeeUsers(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
 
         return employmentRepository.getAllByActiveAndFoodVenue_PublicId(pageable, Boolean.TRUE, foodVenueId)
                 .map(employmentMapper::toResponseDto);
@@ -62,7 +62,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Page<EmploymentResponseDto> getEmployeeUsers(Pageable pageable, RoleType role) {
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue foodVenue = requestContext.requireFoodVenue();
         validateAllowedRole(role);
         return employmentRepository.getAllByActiveAndRoleAndFoodVenue_PublicId(
                         pageable, Boolean.TRUE, role, foodVenue.getPublicId())
@@ -88,13 +88,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
                 .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT, publicId.toString()));
     }
 
     private void validateContext(Employment employment) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         if (!foodVenueId.equals(employment.getFoodVenue().getPublicId())) {
             throw new EntityNotFoundException(EMPLOYMENT);
         }

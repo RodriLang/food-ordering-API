@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
@@ -39,12 +39,12 @@ public class ProductServiceImpl implements ProductService {
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequestDto) {
         Product product = productMapper.toEntity(productRequestDto);
-        FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
         product.setFoodVenue(currentFoodVenue);
         return applyProductRulesAndSave(product, productRequestDto);
     }
@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ItemMenuResponseDto getByNameAndContext(String name) {
-        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         Product product = productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
@@ -80,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getEntityByNameAndContext(String name) {
-        UUID foodVenueId = tenantContext.determineCurrentFoodVenue().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
@@ -97,14 +97,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return productRepository.findAllByFoodVenue_PublicId(foodVenueId, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
     public Page<ProductResponseDto> getAllAvailable(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return productRepository.findAllByFoodVenue_PublicIdAndAvailable(foodVenueId, true, pageable)
                 .map(productMapper::toDto);
     }

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.FeaturedProductRequestDto;
 import com.group_three.food_ordering.dto.response.FeaturedProductResponseDto;
 import com.group_three.food_ordering.mappers.FeaturedProductMapper;
@@ -28,7 +28,7 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     private final FeaturedProductRepository featuredProductRepository;
     private final FeaturedProductMapper featuredProductMapper;
     private final ProductRepository productRepository;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public FeaturedProductResponseDto create(FeaturedProductRequestDto dto) {
@@ -99,13 +99,13 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     }
 
     private FeaturedProduct getActiveFeaturedProductByProductNameAndContext(String productName) {
-        UUID currentContextId = tenantContext.getCurrentFoodVenueId();
+        UUID currentContextId = requestContext.requireFoodVenue().getPublicId();
         return featuredProductRepository.findActiveByProduct(productName, currentContextId)
                 .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
     private Product getProductByNameAndContext(String productName) {
-        UUID currentContextId = tenantContext.getCurrentFoodVenueId();
+        UUID currentContextId = requestContext.requireFoodVenue().getPublicId();
         List<Product> products = productRepository.findByNameAndFoodVenue_PublicId(productName, currentContextId);
         if (products.isEmpty()) {
             throw new EntityNotFoundException(PRODUCT);

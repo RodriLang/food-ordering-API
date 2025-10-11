@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.PaymentRequestDto;
 import com.group_three.food_ordering.dto.response.PaymentResponseDto;
 import com.group_three.food_ordering.enums.PaymentStatus;
@@ -9,7 +10,6 @@ import com.group_three.food_ordering.mappers.PaymentMapper;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.Payment;
 import com.group_three.food_ordering.repositories.PaymentRepository;
-import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
     private final PaymentMapper paymentMapper;
-    private final AuthService authService;
+    private final RequestContext requestContext;
 
     // Revisar muy muy MUY bien lo que se hace aca porque es muy importante
     @Transactional
@@ -81,7 +81,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Page<PaymentResponseDto> getAllByCurrentTableSessionAndStatus(PaymentStatus status, Pageable pageable) {
-        UUID currentTableSessionId = authService.determineCurrentTableSession().getPublicId();
+        UUID currentTableSessionId = requestContext.requireTableSession().getPublicId();
         return getAllByTableSessionAndStatus(currentTableSessionId, status, pageable);
     }
 

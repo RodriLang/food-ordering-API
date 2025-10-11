@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.configs;
 
-import com.group_three.food_ordering.context.TenantContextFilter;
+import com.group_three.food_ordering.context.ContextInitializationFilter;
 import com.group_three.food_ordering.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +27,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final TenantContextFilter tenantContextFilter;
+    private final ContextInitializationFilter contextInitializationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(tenantContextFilter, JwtAuthenticationFilter.class)
+                .addFilterAfter(contextInitializationFilter, JwtAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }

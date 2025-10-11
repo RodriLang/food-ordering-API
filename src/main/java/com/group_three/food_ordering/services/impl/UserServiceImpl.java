@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
@@ -9,7 +10,6 @@ import com.group_three.food_ordering.mappers.UserMapper;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
-import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 import static com.group_three.food_ordering.utils.EntityName.USER;
-import static com.group_three.food_ordering.utils.EntityName.AUTH_USER;
-
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
-    private final AuthService authService;
+    private final RequestContext requestContext;
     private final EmploymentRepository employmentRepository;
 
     @Override
@@ -46,8 +44,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailResponseDto getAuthenticatedUser() {
-        User authUser = authService.getAuthUser().orElseThrow(() ->
-                new EntityNotFoundException(AUTH_USER));
+        User authUser = requestContext.requireUser();
         return userMapper.toDetailResponseDto(authUser);
     }
 
@@ -98,7 +95,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailResponseDto updateAuthUser(UserRequestDto dto) {
-        UUID authUserId = authService.determineAuthUser().getPublicId();
+        UUID authUserId = requestContext.requireUser().getPublicId();
         return updateUser(authUserId, dto);
     }
 
@@ -113,7 +110,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteAuthUser() {
-        UUID authUserId = authService.determineAuthUser().getPublicId();
+        UUID authUserId = requestContext.requireUser().getPublicId();
         deleteUser(authUserId);
     }
 

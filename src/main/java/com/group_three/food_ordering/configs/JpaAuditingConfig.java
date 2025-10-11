@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.configs;
 
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.AuditorUser;
-import com.group_three.food_ordering.services.AuthService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -15,10 +15,10 @@ import java.util.UUID;
 public class JpaAuditingConfig {
 
     @Bean
-    public AuditorAware<UUID> auditorProvider(AuthService authService) {
+    public AuditorAware<UUID> auditorProvider(RequestContext requestContext) {
         return () -> {
             try {
-                AuditorUser currentUser = authService.getAuditorUser();
+                AuditorUser currentUser = requestContext.requireAuditorUser();
                 return Optional.ofNullable(currentUser).map(AuditorUser::publicId);
             } catch (Exception e) {
                 return Optional.empty();

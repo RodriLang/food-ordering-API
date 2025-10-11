@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.DiningTableRequestDto;
 import com.group_three.food_ordering.dto.response.DiningTableResponseDto;
 import com.group_three.food_ordering.enums.DiningTableStatus;
@@ -26,12 +26,12 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     private final DiningTableRepository diningTableRepository;
     private final DiningTableMapper diningTableMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public DiningTableResponseDto create(DiningTableRequestDto diningTableRequestDto) {
         DiningTable diningTable = diningTableMapper.toEntity(diningTableRequestDto);
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue foodVenue = requestContext.requireFoodVenue();
         diningTable.setFoodVenue(foodVenue);
         diningTable.setStatus(DiningTableStatus.AVAILABLE);
         diningTable.setPublicId(UUID.randomUUID());
@@ -41,7 +41,7 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public Page<DiningTableResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return diningTableRepository.findByFoodVenue_PublicIdAndDeletedFalse(foodVenueId, pageable)
                 .map(diningTableMapper::toDto);
     }
@@ -60,7 +60,7 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public DiningTableResponseDto getByNumber(Integer number) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         DiningTable diningTable = diningTableRepository.findByFoodVenuePublicIdAndNumber(foodVenueId, number)
                 .orElseThrow(() -> new EntityNotFoundException(DINING_TABLE));
         return diningTableMapper.toDto(diningTable);
@@ -68,7 +68,7 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return diningTableRepository.findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
                 foodVenueId, status, capacity, pageable).map(diningTableMapper::toDto);
     }

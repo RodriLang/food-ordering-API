@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
@@ -29,7 +29,7 @@ public class AdminServiceImpl implements AdminService {
     private final EmploymentRepository employmentRepository;
     private final UserRepository userRepository;
     private final EmploymentMapper employmentMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public EmploymentResponseDto createAdminUser(EmploymentRequestDto dto) {
@@ -37,7 +37,7 @@ public class AdminServiceImpl implements AdminService {
         User user = userRepository.findByEmail(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue foodVenue = requestContext.requireFoodVenue();
 
         Employment employment = Employment.builder()
                 .publicId(UUID.randomUUID())
@@ -98,7 +98,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
                 .orElseThrow(() -> new EntityNotFoundException(ADMIN_EMPLOYMENT, publicId.toString()));
     }

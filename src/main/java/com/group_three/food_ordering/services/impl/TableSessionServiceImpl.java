@@ -1,14 +1,14 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
+import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
@@ -16,9 +16,8 @@ import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.services.AuthService;
-import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.DiningTableService;
+import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.TableSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +27,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static com.group_three.food_ordering.utils.EntityName.TABLE_SESSION;
 import static com.group_three.food_ordering.utils.EntityName.PARTICIPANT;
+import static com.group_three.food_ordering.utils.EntityName.TABLE_SESSION;
 
 @Slf4j
 @Service
@@ -43,72 +44,92 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final TableSessionRepository tableSessionRepository;
     private final TableSessionMapper tableSessionMapper;
     private final ParticipantService participantService;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
     private final JwtService jwtService;
     private final DiningTableService diningTableService;
-    private final AuthService authService;
     private final ParticipantMapper participantMapper;
 
+    // ===========================
+    // Entrar / Asociarse a mesa
+    // ===========================
     @Override
-    public AuthResponse enter(TableSessionRequestDto tableSessionRequestDto) {
-        log.debug("[TableSession] Processing table session entry for tableId={}", tableSessionRequestDto.getTableId());
+    public AuthResponse enter(TableSessionRequestDto dto) {
+        log.debug("[TableSession] Processing table session entry for tableId={}", dto.getTableId());
 
-        DiningTable diningTable = diningTableService.getEntityById(tableSessionRequestDto.getTableId());
-        configureTenantContext(diningTable.getFoodVenue());
+        // 1) Mesa y venue (entrada siempre confiable, sin mutar "contextos" globales)
+        DiningTable diningTable = diningTableService.getEntityById(dto.getTableId());
+        FoodVenue venue = diningTable.getFoodVenue();
 
-        Optional<User> optionalUser = authService.getAuthUser();
+        // 2) Snapshot del estado actual del request
+        Optional<User> userOpt         = requestContext.userOpt();
+        Optional<Participant> partOpt  = requestContext.participantOpt();
+        Optional<RoleType> roleOpt     = requestContext.roleOpt();
+        Optional<TableSession> tsOpt   = requestContext.tableSessionOpt();
 
-        if (optionalUser.isPresent()) {
-            User authUser = optionalUser.get();
-            log.debug("[TableSession] Authenticated user with email={}", authUser.getEmail());
-
-            // El usuario inicia sesión luego de haber accedido como invitado
-            // Se asume que tiene un token con el rol de invitado
-            Optional<RoleType> role = authService.getCurrentParticipant()
-                    .map(Participant::getRole);
-            log.debug("[TableSession] Participant role={}", role);
-            if (role.isPresent() && role.get() == RoleType.ROLE_GUEST) {
-                log.debug("[TableSession] Auth user {} came with guest token, migrating participant", authUser.getEmail());
-                return handleGuestToClientMigration(authUser);
-            }
-
-            // El usuario autenticado tiene una sesión activa, se asigna esa sesión.
-            // No puede iniciar otra hasta cerrar la actual
-            TableSession activeSession = verifyActiveTableSessionForAuthUser(authUser);
-            if (activeSession != null) {
-                log.debug("[TableSession] Found active session {} for {}", activeSession.getPublicId(), authUser.getEmail());
-                return generateInitSessionResponseDto(activeSession, authService.determineCurrentParticipant());
-            }
-
-            // El usuario autenticado no tiene sesión previa
-            log.debug("[TableSession] No active session found. Creating new one for {}", authUser.getEmail());
-            return handleNewTableSession(diningTable, authUser);
+        // 3) Idempotencia: si es CLIENTE con sesión activa en su token → devolver esa sesión
+        if (roleOpt.map(r -> r == RoleType.ROLE_CLIENT).orElse(false)
+                && tsOpt.isPresent()
+                && tsOpt.get().getEndTime() == null) {
+            log.debug("[TableSession] Idempotent enter: existing active session {}", tsOpt.get().getPublicId());
+            return signForParticipant(tsOpt.get(), Objects.requireNonNull(findOrCreateParticipantForUser(tsOpt.get(), userOpt.orElse(null))));
         }
 
-        // Invitado sin autenticar
-        log.debug("[TableSession] Anonymous guest detected. Creating new guest session");
-        return handleNewTableSession(diningTable, null);
+        // 4) Buscar si la mesa ya tiene sesión activa
+        TableSession activeForTable = tableSessionRepository
+                .findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(
+                        diningTable.getPublicId(), DiningTableStatus.IN_SESSION)
+                .orElse(null);
+
+        // 5) CLIENTE: priorizar una sesión activa propia; si no, unirse/crear en esta mesa
+        if (roleOpt.map(r -> r == RoleType.ROLE_CLIENT).orElse(false) && userOpt.isPresent()) {
+            User user = userOpt.get();
+
+            // 5a) ¿Usuario ya tiene sesión activa (aunque su token no la traiga)?
+            TableSession userActive = findActiveSessionForUser(user);
+            if (userActive != null) {
+                log.debug("[TableSession] User {} already has an active session {}", user.getEmail(), userActive.getPublicId());
+                return signForParticipant(userActive, findOrCreateParticipantForUser(userActive, user));
+            }
+
+            // 5b) Vincular al cliente a la sesión de la mesa (reusar o crear)
+            TableSession ts = (activeForTable != null) ? activeForTable : createNewSession(diningTable, venue);
+            Participant client = findOrCreateParticipantForUser(ts, user);
+
+            // Si venía con participant guest de ESTA sesión, migrar órdenes y remover guest
+            partOpt.filter(p -> p.getRole() == RoleType.ROLE_GUEST)
+                    .filter(g -> g.getTableSession() != null && ts.getId().equals(g.getTableSession().getId()))
+                    .ifPresent(guest -> migrateGuestToClient(ts, guest, client));
+
+            return signForParticipant(ts, client);
+        }
+
+        // 6) Invitado o anónimo → reusar/crear sesión y participant guest
+        TableSession ts = (activeForTable != null) ? activeForTable : createNewSession(diningTable, venue);
+        Participant guest = findOrCreateGuestParticipant(ts, partOpt.orElse(null));
+        return signForParticipant(ts, guest);
     }
 
+    // ===========================
+    // Queries
+    // ===========================
     @Override
     public Page<TableSessionResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return tableSessionRepository.findByFoodVenuePublicId(foodVenueId, pageable)
                 .map(tableSessionMapper::toDto);
     }
 
     @Override
     public TableSessionResponseDto getById(UUID id) {
-        TableSession tableSession = getEntityById(id);
-        return tableSessionMapper.toDto(tableSession);
+        return tableSessionMapper.toDto(getEntityById(id));
     }
 
     @Override
     public TableSessionResponseDto getByCurrentParticipant() {
-        Participant currentParticipant = authService.determineCurrentParticipant();
-        TableSession tableSession = tableSessionRepository.findByParticipantsContains(List.of(currentParticipant))
+        Participant current = requestContext.requireParticipant();
+        TableSession ts = tableSessionRepository.findByParticipantsContains(List.of(current))
                 .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
-        return tableSessionMapper.toDto(tableSession);
+        return tableSessionMapper.toDto(ts);
     }
 
     @Override
@@ -125,23 +146,18 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public Page<TableSessionResponseDto> getByContextAndTable(Integer tableNumber, Pageable pageable) {
-
-        UUID foodVenueId = tenantContext.getCurrentFoodVenue().getPublicId();
-
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber, pageable)
                 .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public Page<TableSessionResponseDto> getByTableAndTimeRange(
-            Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable) {
+    public Page<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable) {
         LocalDateTime effectiveEnd = (end == null) ? LocalDateTime.now() : end;
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-
         if (start.isAfter(effectiveEnd)) {
             throw new IllegalArgumentException("Start date must be before or equal to end date");
         }
-
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
         return tableSessionRepository
                 .findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
                         foodVenueId, tableNumber, start, effectiveEnd, pageable)
@@ -150,223 +166,208 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     @Override
     public Page<TableSessionResponseDto> getActiveSessions(Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-
-        return tableSessionRepository
-                .findByFoodVenuePublicIdAndEndTimeIsNull(foodVenueId, pageable)
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        return tableSessionRepository.findByFoodVenuePublicIdAndEndTimeIsNull(foodVenueId, pageable)
                 .map(tableSessionMapper::toDto);
     }
 
     @Override
     public Page<TableSessionResponseDto> getByHostClient(UUID clientId, Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-        return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
-                foodVenueId, clientId, pageable).map(tableSessionMapper::toDto);
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(foodVenueId, clientId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
     public Page<TableSessionResponseDto> getByAuthUserHostClient(Pageable pageable) {
-
-        UUID authClientId = authService.determineCurrentTableSession().getPublicId();
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-
-        return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(
-                foodVenueId, authClientId, pageable).map(tableSessionMapper::toDto);
+        // FIX: antes se usaba tableSessionId como "host"; debería ser el Participant host actual
+        UUID hostParticipantId = requestContext.requireParticipant().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(foodVenueId, hostParticipantId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
-    public Page<TableSessionResponseDto> getPastByParticipant(UUID clientId, Pageable pageable) {
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
-                foodVenueId, clientId, pageable).map(tableSessionMapper::toDto);
+    public Page<TableSessionResponseDto> getPastByParticipant(UUID participantId, Pageable pageable) {
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(foodVenueId, participantId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
     public Page<TableSessionResponseDto> getPastByAuthUserParticipant(Pageable pageable) {
-
-        UUID authClientId = authService.determineAuthUser().getPublicId();
-        UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-
-        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(
-                foodVenueId, authClientId, pageable).map(tableSessionMapper::toDto);
+        // FIX: usar el participant actual, no el user
+        UUID participantId = requestContext.requireParticipant().getPublicId();
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(foodVenueId, participantId, pageable)
+                .map(tableSessionMapper::toDto);
     }
 
     @Override
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
-        TableSession tableSession = tableSessionRepository.findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(
-                        tenantContext.getCurrentFoodVenueId(), tableId)
+        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        TableSession ts = tableSessionRepository
+                .findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(foodVenueId, tableId)
                 .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
-        return tableSessionMapper.toDto(tableSession);
+        return tableSessionMapper.toDto(ts);
     }
 
     @Override
     public TableSessionResponseDto addClient(UUID sessionId, UUID clientId) {
-        TableSession tableSession = getEntityById(sessionId);
-        Participant participant = participantService.getEntityById(clientId);
-        tableSession.getParticipants().add(participant);
-        TableSession updatedTableSession = tableSessionRepository.save(tableSession);
-        return tableSessionMapper.toDto(updatedTableSession);
+        TableSession ts = getEntityById(sessionId);
+        Participant p = participantService.getEntityById(clientId);
+        ts.getParticipants().add(p);
+        return tableSessionMapper.toDto(tableSessionRepository.save(ts));
     }
 
+    // ===========================
+    // Cierre de sesión
+    // ===========================
     @Override
     public TableSessionResponseDto closeCurrentSession() {
-
-        Participant currentHost = authService.determineCurrentParticipant();
-        TableSession currentTableSession = authService.determineCurrentTableSession();
-
-        if (!currentTableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
+        Participant currentHost = requestContext.requireParticipant();
+        TableSession currentTs = requestContext.requireTableSession();
+        if (!currentTs.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
             throw new AccessDeniedException("Only the current host can end the session");
         }
-        return closeSession(currentTableSession);
+        return closeSession(currentTs);
     }
 
     @Override
     public TableSessionResponseDto closeSessionById(UUID tableId) {
-
-        TableSession tableSession = findTableSessionByAvailableDiningTable(tableId);
-
-        return closeSession(tableSession);
+        TableSession ts = findActiveSessionByDiningTable(tableId);
+        return closeSession(ts);
     }
 
-    private TableSessionResponseDto closeSession(TableSession tableSession) {
-
-        List<Order> orders = tableSession.getOrders();
-
+    private TableSessionResponseDto closeSession(TableSession ts) {
+        List<Order> orders = ts.getOrders();
         boolean completedPayments = orders.stream()
-                .map(order -> order.getPayment().getStatus())
-                .allMatch(paymentStatus -> paymentStatus.equals(PaymentStatus.COMPLETED));
+                .map(o -> o.getPayment().getStatus())
+                .allMatch(PaymentStatus.COMPLETED::equals);
         if (!completedPayments) {
             throw new InvalidPaymentStatusException("All payments must be paid to finish table session");
         }
-
-        tableSession.setEndTime(LocalDateTime.now());
-        diningTableService.updateStatus(DiningTableStatus.WAITING_RESET, tableSession.getDiningTable().getPublicId());
-        tableSessionRepository.save(tableSession);
-
-        return tableSessionMapper.toDto(tableSession);
-
+        ts.setEndTime(LocalDateTime.now());
+        diningTableService.updateStatus(DiningTableStatus.WAITING_RESET, ts.getDiningTable().getPublicId());
+        tableSessionRepository.save(ts);
+        return tableSessionMapper.toDto(ts);
     }
 
-    private AuthResponse handleGuestToClientMigration(User authUser) {
-        log.debug("[TableSession] Getting table session of guest participant");
-        TableSession guestSession = authService.getCurrentParticipant()
-                .map(Participant::getTableSession)
-                .orElseThrow(() -> new EntityNotFoundException("Active guest session not found"));
-
-        log.debug("[TableSession] Migrating guest participant to client for session {}", guestSession.getPublicId());
-
-        Participant currentParticipant = authService.determineCurrentParticipant();
-
-        participantService.update(currentParticipant.getPublicId(), authUser);
-
-        return generateInitSessionResponseDto(guestSession, currentParticipant);
-    }
-
-    private AuthResponse handleNewTableSession(DiningTable diningTable, User authUser) {
-        log.debug("[TableSession] Handling new table session for tableId={}", diningTable.getPublicId());
-
-        DiningTableStatus status = diningTable.getStatus();
-        log.debug("[TableSession] Creating session for table={} with status={}", diningTable.getPublicId(), status);
-
-
-        TableSession tableSession = switch (status) {
-            case AVAILABLE -> initSession(diningTable);
-            case IN_SESSION -> findTableSessionByAvailableDiningTable(diningTable.getPublicId());
-            case OUT_OF_SERVICE -> throw new IllegalStateException(
-                    "Table is out of service, cannot start or join a session.");
-            case COMPLETE -> throw new IllegalStateException(
-                    "Table is complete, cannot start or join a session.");
-            default -> throw new IllegalStateException("Unhandled table status: " + status);
-        };
-
-
-        //verificar que la session se guarda 2 veces porque se necesita id para crear el participante
-
-        tableSession.setStartTime(LocalDateTime.now());
-        tableSession.setPublicId(UUID.randomUUID());
-        TableSession createdTableSession = tableSessionRepository.save(tableSession);
-        log.debug("[TableSession] TableSession created with tableSessionId={}", createdTableSession.getPublicId());
-
-        Participant participant = participantService.create(authUser, tableSession);
-        log.debug("[TableSession] Participant created with role={}", participant.getRole());
-
-
-        tableSession.getParticipants().add(participant);
-        if (tableSession.getSessionHost() != null) {
-            tableSession.setSessionHost(participant);
-        }
-        log.debug("[TableSession] Participant joined to session {}", tableSession.getPublicId());
-        TableSession savedTableSession = tableSessionRepository.save(tableSession);
-
-        AuthResponse response = generateInitSessionResponseDto(savedTableSession, participant);
-        determineTableStatusPostSessionCreation(diningTable, tableSession);
-
-        log.info("[TableSession] Successfully initialized session. SessionId={}, User={}",
-                tableSession.getPublicId(), authUser != null ? authUser.getEmail() : "anonymous");
-
-        return response;
-    }
-
-    private void determineTableStatusPostSessionCreation(DiningTable diningTable, TableSession tableSession) {
-
-        if (diningTable.getCapacity().equals(tableSession.getParticipants().size())) {
-            diningTableService.updateStatus(DiningTableStatus.COMPLETE, diningTable.getPublicId());
-        } else {
-            diningTableService.updateStatus(DiningTableStatus.IN_SESSION, diningTable.getPublicId());
-        }
-    }
-
-    private void configureTenantContext(FoodVenue foodVenue) {
-        log.debug("[TableSession] Configuring tenant context for foodVenue={}", foodVenue.getPublicId());
-        tenantContext.setCurrentFoodVenueId(foodVenue.getPublicId().toString());
-    }
-
-    private TableSession verifyActiveTableSessionForAuthUser(User authUser) {
-        log.debug("[AuthService] Verifying active table session.");
-        return tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(authUser.getEmail()).orElse(null);
-    }
-
-
-    private TableSession initSession(DiningTable diningTable) {
-        log.debug("[TableSession] Initializing table session tableId={}", diningTable.getPublicId());
-
-        return TableSession.builder()
-                .diningTable(diningTable)
-                .foodVenue(diningTable.getFoodVenue())
+    // ===========================
+    // Helpers internos
+    // ===========================
+    private TableSession createNewSession(DiningTable table, FoodVenue venue) {
+        log.debug("[TableSession] Creating new session for table={}", table.getPublicId());
+        TableSession ts = TableSession.builder()
+                .diningTable(table)
+                .foodVenue(venue)
                 .startTime(LocalDateTime.now())
+                .diningTable(table)
                 .build();
+        ts = tableSessionRepository.save(ts);
+
+        // Primer participante define host si corresponde (se setea al unir participante)
+        return ts;
     }
 
-    private AuthResponse generateInitSessionResponseDto(TableSession tableSession, Participant participant) {
-        log.debug("[TableSession] Generating Init Session Response Dto");
+    private Participant findOrCreateParticipantForUser(TableSession ts, User user) {
+        if (user == null) return null;
+        Optional<Participant> existing = ts.getParticipants().stream()
+                .filter(p -> p.getUser() != null && Objects.equals(p.getUser().getId(), user.getId()))
+                .findFirst();
 
-        String token = jwtService.generateAccessToken(SessionInfo.builder()
-                .subject((participant.getUser() != null) ? participant.getUser().getEmail() : participant.getNickname())
-                .userId((participant.getUser() != null) ? participant.getUser().getPublicId() : null)
-                .foodVenueId(tableSession.getFoodVenue().getPublicId())
+        if (existing.isPresent()) return existing.get();
+
+        Participant p = participantService.create(user, ts); // respeta tus reglas (ROLE_CLIENT, nickname, etc.)
+        // Si no hay host aún, el primero en entrar es host
+        if (ts.getSessionHost() == null) {
+            ts.setSessionHost(p);
+        }
+        ts.getParticipants().add(p);
+        tableSessionRepository.save(ts);
+        return p;
+    }
+
+    private Participant findOrCreateGuestParticipant(TableSession ts, Participant currentGuestFromCtx) {
+        // Reusar si el token ya trae participant guest de esta sesión
+        if (currentGuestFromCtx != null
+                && currentGuestFromCtx.getRole() == RoleType.ROLE_GUEST
+                && currentGuestFromCtx.getTableSession() != null
+                && Objects.equals(currentGuestFromCtx.getTableSession().getId(), ts.getId())) {
+            return currentGuestFromCtx;
+        }
+        Participant p = participantService.create(null, ts); // crea invitado (ROLE_GUEST)
+        if (ts.getSessionHost() == null) {
+            ts.setSessionHost(p); // si es el primero, queda como host
+        }
+        ts.getParticipants().add(p);
+        tableSessionRepository.save(ts);
+        return p;
+    }
+
+    private void migrateGuestToClient(TableSession ts, Participant guest, Participant client) {
+        log.debug("[TableSession] Migrating guest {} to client {}", guest.getPublicId(), client.getPublicId());
+        // Reasignar órdenes del guest al client
+        ts.getOrders().stream()
+                .filter(o -> o.getParticipant() != null && Objects.equals(o.getParticipant().getId(), guest.getId()))
+                .forEach(o -> o.setParticipant(client));
+
+        // Remover guest de la sesión
+        ts.getParticipants().remove(guest);
+        participantService.softDelete(guest.getPublicId());
+        tableSessionRepository.save(ts);
+    }
+
+    private TableSession findActiveSessionByDiningTable(UUID tableId) {
+        return tableSessionRepository
+                .findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(tableId, DiningTableStatus.IN_SESSION)
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
+    }
+
+    /**
+     * Devuelve la sesión activa del usuario (si existe), usando primero el contexto y luego la DB.
+     */
+    private TableSession findActiveSessionForUser(User user) {
+        // 1) Si el token ya trae sesión activa
+        if (requestContext.tableSessionOpt().filter(ts -> ts.getEndTime() == null).isPresent()) {
+            return requestContext.tableSessionOpt().orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
+        }
+        // 2) Query por email (tu repo ya la tiene)
+        return tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(user.getEmail()).orElse(null);
+    }
+
+    private AuthResponse signForParticipant(TableSession ts, Participant participant) {
+        // Armamos SessionInfo completa para el token
+        List<ParticipantResponseDto> participantsDto = ts.getParticipants().stream()
+                .map(participantMapper::toResponseDto)
+                .collect(Collectors.toList());
+
+        SessionInfo si = SessionInfo.builder()
+                .userId(participant.getUser() != null ? participant.getUser().getPublicId() : null)
+                .subject(participant.getUser() != null ? participant.getUser().getEmail() : participant.getNickname())
+                .foodVenueId(ts.getFoodVenue().getPublicId())
                 .participantId(participant.getPublicId())
-                .tableSessionId(tableSession.getPublicId())
-                .role(participant.getRole().name())
-                .build());
-
-        ParticipantResponseDto participantDto = participantMapper.toResponseDto(participant);
-
-        log.debug("[TableSession] Generating Auth response");
-        return AuthResponse.builder()
-                .tableNumber(tableSession.getDiningTable().getNumber())
-                .startTime(tableSession.getStartTime())
-                .endTime(tableSession.getEndTime())
-                .participants(tableSession.getParticipants().stream()
-                        .map(participantMapper::toResponseDto)
-                        .toList())
-                .hostClient(participantDto)
-                .accessToken(token)
-                .numberOfParticipants(tableSession.getParticipants().size())
+                .tableSessionId(ts.getPublicId())
+                .role(RoleType.ROLE_CLIENT.name())
+                .startTime(ts.getStartTime())
+                .endTime(ts.getEndTime())
+                .hostClient(participantMapper.toResponseDto(ts.getSessionHost()))
+                .participants(participantsDto)
+                .tableNumber(ts.getDiningTable().getNumber())
                 .build();
-    }
 
-    private TableSession findTableSessionByAvailableDiningTable(UUID tableId) {
-        return tableSessionRepository.findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(
-                tableId, DiningTableStatus.IN_SESSION).orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
+        String access = jwtService.generateAccessToken(si);
+        Instant exp = jwtService.getExpirationDateFromToken(access);
+
+        return AuthResponse.builder()
+                .accessToken(access)
+                .expirationDate(exp)
+                .tableNumber(si.tableNumber())
+                .startTime(si.startTime())
+                .endTime(si.endTime())
+                .participants(si.participants())
+                .hostClient(si.hostClient())
+                .numberOfParticipants(si.participants() != null ? si.participants().size() : null)
+                .build();
     }
 }

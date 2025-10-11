@@ -31,6 +31,12 @@ public class JwtService {
     @Value("${jwt.access-expiration}")
     private long jwtAccessExpirationMs;
 
+    private static final String USER_ID_CLAIM = "userId";
+    private static  final String FOOD_VENUE_ID_CLAIM = "foodVenueId";
+    private static final String TABLE_SESSION_ID_CLAIM = "tableSessionId";
+    private static final String PARTICIPANT_ID_CLAIM = "participantId";
+    private static final String ROLE_CLAIM = "role";
+
     public String generateAccessToken(SessionInfo sessionInfo) {
         log.debug("[JwtService] Generating access token");
 
@@ -52,11 +58,11 @@ public class JwtService {
 
     private static Map<String, Object> getStringObjectMap(SessionInfo sessionInfo) {
         Map<String, Object> claims = new HashMap<>();
-        if (sessionInfo.userId() != null) claims.put("userId", sessionInfo.userId().toString());
-        if (sessionInfo.foodVenueId() != null) claims.put("foodVenueId", sessionInfo.foodVenueId().toString());
-        if (sessionInfo.tableSessionId() != null) claims.put("tableSessionId", sessionInfo.tableSessionId().toString());
-        if (sessionInfo.participantId() != null) claims.put("participantId", sessionInfo.participantId().toString());
-        if (sessionInfo.role() != null) claims.put("role", sessionInfo.role());
+        if (sessionInfo.userId() != null) claims.put(USER_ID_CLAIM, sessionInfo.userId().toString());
+        if (sessionInfo.foodVenueId() != null) claims.put(FOOD_VENUE_ID_CLAIM, sessionInfo.foodVenueId().toString());
+        if (sessionInfo.tableSessionId() != null) claims.put(TABLE_SESSION_ID_CLAIM, sessionInfo.tableSessionId().toString());
+        if (sessionInfo.participantId() != null) claims.put(PARTICIPANT_ID_CLAIM, sessionInfo.participantId().toString());
+        if (sessionInfo.role() != null) claims.put(ROLE_CLAIM, sessionInfo.role());
         return claims;
     }
 
@@ -119,12 +125,12 @@ public class JwtService {
     public SessionInfo getSessionInfoFromToken(String token) {
         log.debug("[JwtService] Getting session from token");
 
-        String userIdStr = getClaim(token, claims -> claims.get("userId", String.class));
+        String userIdStr = getClaim(token, claims -> claims.get(USER_ID_CLAIM, String.class));
         String subject = getUsernameFromToken(token);
-        String role = getClaim(token, claims -> claims.get("role", String.class));
-        String participantIdStr = getClaim(token, claims -> claims.get("participantId", String.class));
-        String tableSessionIdStr = getClaim(token, claims -> claims.get("tableSessionId", String.class));
-        String foodVenueIdStr = getClaim(token, claims -> claims.get("foodVenueId", String.class));
+        String role = getClaim(token, claims -> claims.get(ROLE_CLAIM, String.class));
+        String participantIdStr = getClaim(token, claims -> claims.get(PARTICIPANT_ID_CLAIM, String.class));
+        String tableSessionIdStr = getClaim(token, claims -> claims.get(TABLE_SESSION_ID_CLAIM, String.class));
+        String foodVenueIdStr = getClaim(token, claims -> claims.get(FOOD_VENUE_ID_CLAIM, String.class));
         log.info("[JwtService] User: {}, Role: {}, FoodVenueId: {}",
                 subject, role, foodVenueIdStr != null ? foodVenueIdStr : "NULL");
         UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
@@ -161,5 +167,39 @@ public class JwtService {
         Date d = getClaim(token, Claims::getExpiration);
         log.warn("[JwtService] Token Expiration Date={}", d);
         return d == null ? null : d.toInstant();
+    }
+
+    public SessionInfo getSessionInfoFromClaims(Claims claims) {
+        if (claims == null) return null;
+
+        String userIdStr = claims.get(USER_ID_CLAIM, String.class);
+        String subject = claims.getSubject();
+        String role = claims.get(ROLE_CLAIM, String.class);
+        String participantIdStr = claims.get(PARTICIPANT_ID_CLAIM, String.class);
+        String tableSessionIdStr = claims.get(TABLE_SESSION_ID_CLAIM, String.class);
+        String foodVenueIdStr = claims.get(FOOD_VENUE_ID_CLAIM, String.class);
+        log.info("[JwtService] User: {}, Role: {}, FoodVenueId: {}",
+                subject, role, foodVenueIdStr != null ? foodVenueIdStr : "NULL");
+        UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
+        UUID participantId = participantIdStr != null ? UUID.fromString(participantIdStr) : null;
+        UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
+        UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
+
+        return SessionInfo.builder()
+                .userId(userId)
+                .subject(subject)
+                .foodVenueId(foodVenueId)
+                .tableSessionId(tableSessionId)
+                .role(role)
+                .participantId(participantId)
+                .build();
+    }
+
+    public Claims extractAllClaims(String token) throws JwtException {
+        return Jwts.parser()
+                .verifyWith(getSignatureKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

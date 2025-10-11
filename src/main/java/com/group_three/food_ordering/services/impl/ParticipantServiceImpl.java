@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
@@ -9,7 +10,6 @@ import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.repositories.ParticipantRepository;
-import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     private final ParticipantRepository participantRepository;
     private final ParticipantMapper participantMapper;
-    private final AuthService authService;
+    private final RequestContext requestContext;
 
     @Override
     public Participant create(User user, TableSession tableSession) {
@@ -76,14 +76,20 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     public AuthResponse delegateHostingDuties(UUID participantId) {
         Participant hostDesigned = getEntityById(participantId);
-        Participant currentHost = authService.determineCurrentParticipant();
-        TableSession currentTableSession = authService.determineCurrentTableSession();
-
+        Participant currentHost = requestContext.requireParticipant();
+        TableSession currentTableSession = requestContext.requireTableSession();
         if (!currentTableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
             throw new AccessDeniedException("Only the current host can delegate hosting duties");
         }
         //implementar una forma de capturar este evento para avisar al nuevo hot
         currentTableSession.setSessionHost(hostDesigned);
         return null;
+    }
+
+    @Override
+    public void softDelete(UUID participantId) {
+        Participant participant = getEntityById(participantId);
+        participant.setDeleted(false);
+        participantRepository.save(participant);
     }
 }

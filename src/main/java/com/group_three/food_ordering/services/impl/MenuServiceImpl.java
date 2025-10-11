@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.response.*;
 import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
@@ -25,12 +25,12 @@ public class MenuServiceImpl implements MenuService {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
     private final FoodVenueRepository foodVenueRepository;
 
     @Override
     public MenuResponseDto getCurrentContextHierarchicalMenu(String category) {
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue foodVenue = requestContext.requireFoodVenue();
         if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }

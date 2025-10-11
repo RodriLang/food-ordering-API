@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
@@ -33,12 +33,12 @@ public class EmploymentServiceImpl implements EmploymentService {
     private final EmploymentRepository employmentRepository;
     private final EmploymentMapper employmentMapper;
     private final RoleEmploymentMapper roleEmploymentMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
     private final UserRepository userRepository;
 
     @Override
     public EmploymentResponseDto createEmployment(EmploymentRequestDto dto) {
-        FoodVenue currentFoodVenue = tenantContext.getCurrentFoodVenue();
+        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
         User employeeUser = userRepository.findByEmail(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.context.RequestContext;
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
@@ -26,7 +26,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     private final FoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;
-    private final TenantContext tenantContext;
+    private final RequestContext requestContext;
 
     @Override
     public FoodVenueAdminResponseDto create(FoodVenueRequestDto foodVenueRequestDto) {
@@ -69,7 +69,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public FoodVenuePublicResponseDto getMyCurrentFoodVenue() {
 
-        FoodVenue currentFoodVenue = tenantContext.determineCurrentFoodVenue();
+        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
 
         return foodVenueMapper.toPublicDto(currentFoodVenue);
     }
@@ -86,10 +86,10 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
 
-        FoodVenue foodVenue = tenantContext.getCurrentFoodVenue();
-        foodVenueMapper.updateEntity(foodVenueRequestDto, foodVenue);
+        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
+        foodVenueMapper.updateEntity(foodVenueRequestDto, currentFoodVenue);
 
-        return foodVenueMapper.toPublicDto(foodVenueRepository.save(foodVenue));
+        return foodVenueMapper.toPublicDto(foodVenueRepository.save(currentFoodVenue));
     }
 
     @Override

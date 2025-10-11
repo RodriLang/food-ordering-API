@@ -19,4 +19,6 @@ public interface ParticipantService {
     Participant getEntityById(UUID id);
 
     AuthResponse delegateHostingDuties(UUID participantId);
+
+    void softDelete(UUID participantId);
 }
