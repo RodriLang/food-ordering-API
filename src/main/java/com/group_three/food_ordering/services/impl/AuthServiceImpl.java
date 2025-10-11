@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException(USER));
+                .orElseThrow(() -> new EntityNotFoundException(USER));
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
 

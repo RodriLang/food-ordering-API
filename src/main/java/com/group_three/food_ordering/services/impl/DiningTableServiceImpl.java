@@ -42,7 +42,7 @@ public class DiningTableServiceImpl implements DiningTableService {
     @Override
     public Page<DiningTableResponseDto> getAll(Pageable pageable) {
         UUID foodVenueId = tenantContext.getCurrentFoodVenueId();
-        return diningTableRepository.findByFoodVenuePublicId(foodVenueId, pageable)
+        return diningTableRepository.findByFoodVenue_PublicIdAndDeletedFalse(foodVenueId, pageable)
                 .map(diningTableMapper::toDto);
     }
 

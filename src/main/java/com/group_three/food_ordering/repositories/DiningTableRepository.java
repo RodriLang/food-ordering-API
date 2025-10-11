@@ -18,6 +18,7 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
     Optional<DiningTable> findByPublicId(UUID publicId);
 
     Page<DiningTable> findByFoodVenuePublicId(UUID foodVenueId, Pageable pageable);
+    Page<DiningTable> findByFoodVenue_PublicIdAndDeletedFalse(UUID foodVenueId, Pageable pageable);
 
     Optional<DiningTable> findByFoodVenuePublicIdAndNumber(UUID foodVenueId, Integer number);
 
