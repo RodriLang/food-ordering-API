@@ -1,10 +1,7 @@
 package com.group_three.food_ordering.security;
 
 import com.group_three.food_ordering.dto.SessionInfo;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -62,13 +59,19 @@ public class JwtService {
     }
 
     public Claims parseTokenClaimsSafe(String token) throws JwtException {
+
+        log.warn("[JwtService] Token={}", token);
+
         try {
-            return Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(getSignatureKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+            log.warn("[JwtService] Parsed claims: {}", claims);
+            return claims;
         } catch (ExpiredJwtException e) {
+            log.warn("[JwtService] Token is expired: {}", e.getMessage());
             return e.getClaims(); // Devuelve claims aunque el token esté expirado
         }
     }
@@ -92,6 +95,9 @@ public class JwtService {
                 log.debug("[JwtService] Token is expired at {} current time={}", expiration, now());
             }
             return expired;
+        } catch (MalformedJwtException e) {
+            log.warn("[JwtService] Cannot check expiration, token malformed: {}", e.getMessage());
+            return true;
         } catch (JwtException e) {
             log.warn("[JwtService] Cannot check expiration, token invalid: {}", e.getMessage());
             return true;
@@ -103,12 +109,13 @@ public class JwtService {
     }
 
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
+        log.debug("[JwtService] Extracting claims from token");
         Claims claims = parseTokenClaimsSafe(token);
         return claimsTFunction.apply(claims);
     }
 
     public SessionInfo getSessionInfoFromToken(String token) {
-        log.debug("[JwtService] Extracting claims from token");
+        log.debug("[JwtService] Getting session from token");
 
         String userIdStr = getClaim(token, claims -> claims.get("userId", String.class));
         String subject = getUsernameFromToken(token);
@@ -148,7 +155,9 @@ public class JwtService {
     }
 
     public Instant getExpirationDateFromToken(String token) {
+        log.warn("[JwtService] getting Expiration Date From Token");
         Date d = getClaim(token, Claims::getExpiration);
+        log.warn("[JwtService] Token Expiration Date={}", d);
         return d == null ? null : d.toInstant();
     }
 }

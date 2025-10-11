@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +27,7 @@ public class RefreshTokenService {
 
     public String generateRefreshToken(String userEmail) {
         // Revocar tokens existentes del usuario
+        log.debug("[RefreshTokenService] Revoke existing token for user={}", userEmail);
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -38,9 +38,8 @@ public class RefreshTokenService {
                 .createdAt(Instant.now())
                 .revoked(false)
                 .build();
-
         refreshTokenRepository.save(refreshToken);
-        log.debug("[RefreshTokenService] Generated refresh token for user={} expiresAt={}", refreshToken.getUserEmail(), Date.from(refreshToken.getExpiresAt()));
+        log.debug("[RefreshTokenService] Generated refresh token for user={}", userEmail);
         return refreshToken.getToken();
     }
 

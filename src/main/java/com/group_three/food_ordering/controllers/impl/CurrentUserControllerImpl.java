@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-@PreAuthorize("hasAnyRole('CLIENT')")
+@PreAuthorize("isAuthenticated()")
 @RestController
 @RequiredArgsConstructor
 public class CurrentUserControllerImpl implements CurrentUserController {

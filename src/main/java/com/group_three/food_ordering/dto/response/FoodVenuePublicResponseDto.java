@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FoodVenuePublicResponseDto {
 
     private UUID publicId;
@@ -19,7 +21,7 @@ public class FoodVenuePublicResponseDto {
 
     private String phone;
 
-    private AddressResponseDto address;
+    private String address;
 
     private VenueStyleResponseDto styles;
 
