@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.dto.request.UserRequestDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.AddressMapper;
@@ -32,49 +32,49 @@ public class UserServiceImpl implements UserService {
     private final AuthService authService;
 
     @Override
-    public UserResponseDto create(UserRequestDto dto) {
+    public UserDetailResponseDto create(UserRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
         User userEntity = userMapper.toEntity(dto);
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.setPublicId(UUID.randomUUID());
-        return userMapper.toResponseDto(userRepository.save(userEntity));
+        return userMapper.toDetailResponseDto(userRepository.save(userEntity));
     }
 
     @Override
-    public UserResponseDto getAuthenticatedUser() {
+    public UserDetailResponseDto getAuthenticatedUser() {
         User authUser = authService.getAuthUser().orElseThrow(() ->
                 new EntityNotFoundException(AUTH_USER));
-        return userMapper.toResponseDto(authUser);
+        return userMapper.toDetailResponseDto(authUser);
     }
 
     @Override
-    public UserResponseDto getById(UUID id) {
+    public UserDetailResponseDto getById(UUID id) {
         User userEntity = this.getEntityById(id);
-        return userMapper.toResponseDto(userEntity);
+        return userMapper.toDetailResponseDto(userEntity);
     }
 
     @Override
-    public Page<UserResponseDto> getAll(Pageable pageable) {
+    public Page<UserDetailResponseDto> getAll(Pageable pageable) {
         return userRepository.findAll(pageable)
-                .map(userMapper::toResponseDto);
+                .map(userMapper::toDetailResponseDto);
     }
 
     @Override
-    public Page<UserResponseDto> getActiveUsers(Pageable pageable) {
+    public Page<UserDetailResponseDto> getActiveUsers(Pageable pageable) {
         return userRepository.findAll(pageable)
-                .map(userMapper::toResponseDto);
+                .map(userMapper::toDetailResponseDto);
     }
 
     @Override
-    public Page<UserResponseDto> getDeletedUsers(Pageable pageable) {
+    public Page<UserDetailResponseDto> getDeletedUsers(Pageable pageable) {
         return userRepository.findAllDeleted(pageable)
-                .map(userMapper::toResponseDto);
+                .map(userMapper::toDetailResponseDto);
     }
 
     @Override
-    public UserResponseDto updateUser(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
+    public UserDetailResponseDto updateUser(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
         User userEntity = this.getEntityById(id);
 
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
@@ -91,11 +91,11 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        return userMapper.toResponseDto(userRepository.save(userEntity));
+        return userMapper.toDetailResponseDto(userRepository.save(userEntity));
     }
 
     @Override
-    public UserResponseDto updateAuthUser(UserRequestDto dto) {
+    public UserDetailResponseDto updateAuthUser(UserRequestDto dto) {
         UUID authUserId = authService.determineAuthUser().getPublicId();
         return updateUser(authUserId, dto);
     }

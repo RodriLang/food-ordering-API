@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLDelete;
 @SQLDelete(sql = "UPDATE participants SET deleted = true WHERE id = ?")
 @Getter
 @Setter
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 @ToString(exclude = {"tableSession", "user"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

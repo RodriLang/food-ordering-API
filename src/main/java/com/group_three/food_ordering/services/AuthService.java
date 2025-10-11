@@ -8,7 +8,6 @@ import com.group_three.food_ordering.dto.AuditorUser;
 import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
-import com.group_three.food_ordering.dto.response.AuthResponse;
 
 import java.util.Optional;
 

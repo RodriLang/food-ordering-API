@@ -5,7 +5,7 @@ import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.TableSessionService;
@@ -26,18 +26,18 @@ public class CurrentUserControllerImpl implements CurrentUserController {
     private final TableSessionService tableSessionService;
 
     @Override
-    public ResponseEntity<UserResponseDto> getAuthenticatedUser() {
+    public ResponseEntity<UserDetailResponseDto> getAuthenticatedUser() {
 
         return ResponseEntity.ok(userService.getAuthenticatedUser());
     }
 
     @Override
-    public ResponseEntity<UserResponseDto> updateUser(UserRequestDto dto) {
+    public ResponseEntity<UserDetailResponseDto> updateUser(UserRequestDto dto) {
         return ResponseEntity.ok(userService.updateAuthUser(dto));
     }
 
     @Override
-    public ResponseEntity<UserResponseDto> deleteUser() {
+    public ResponseEntity<UserDetailResponseDto> deleteUser() {
         userService.deleteAuthUser();
         return ResponseEntity.noContent().build();
     }

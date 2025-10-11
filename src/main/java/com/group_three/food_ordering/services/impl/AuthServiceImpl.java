@@ -181,18 +181,31 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Resolving session info for user={}", loggedUser.getEmail());
 
         // 1. Usuario registrado con sesión activa en DB
-        Optional<TableSession> previousActiveSession =
+        Optional<TableSession> previousActiveSessionOptional =
                 tableSessionRepository.findActiveSessionByUserEmailAndDeletedFalse(loggedUser.getEmail());
-        if (previousActiveSession.isPresent()) {
-            log.debug("[AuthService] Found active session={} for user={}",
-                    previousActiveSession.get().getPublicId(), loggedUser.getEmail());
-            return createSessionInfoFromActiveSession(previousActiveSession.get(), loggedUser);
-        }
 
         // 2. Usuario que viene de invitado → promover invitado a cliente
         Optional<SessionInfo> guestSessionInfo = extractGuestSessionFromRequest();
         log.debug("[AuthService] Verifying guest session in request");
 
+        // Flujo del caso 1
+        if (previousActiveSessionOptional.isPresent()) {
+
+            TableSession previousActiveSession = previousActiveSessionOptional.get();
+            log.debug("[AuthService] Found active session={} for user={}",
+                    previousActiveSession.getPublicId(), loggedUser.getEmail());
+
+            //Se contempla el caso de un usuario logueado que teniendo una sesión de mesa activa
+            //ingresa a la misma sesión escaneando el QR sin estar logueado usando el rol de invitado
+            //y luego inicia sesión con la ambigüedad de recuperar su sesión previa y migrar su sesión de invitado.
+            //Se resuelve agregando las órdenes de la sesión de invitado a la sesión de cliente
+            // y removiendo al invitado de la sessión
+            guestSessionInfo.ifPresent(sessionInfo -> resolveAmbiguousSession(previousActiveSession, sessionInfo));
+
+            return createSessionInfoFromActiveSession(previousActiveSession, loggedUser);
+        }
+
+        // Flujo del caso 2
         if (guestSessionInfo.isPresent()) {
             SessionInfo guestInfo = guestSessionInfo.get();
             log.debug("[AuthService] Promoting guest session to client for user={}, tableSessionId={}",
@@ -205,6 +218,24 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] No active or guest session for user={}. Creating clean session.",
                 loggedUser.getEmail());
         return createSessionInfoForLoggedUser(loggedUser);
+    }
+
+    private void resolveAmbiguousSession(TableSession tableSession, SessionInfo guestSession) {
+        log.debug("[AuthService] Resolving ambiguous session for tableSessionId={}", tableSession.getPublicId());
+        Participant guestParticipant = participantRepository.findByPublicId(guestSession.participantId())
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
+
+        log.debug("[AuthService] Guest participant found with publicId={}", guestParticipant.getPublicId());
+        List<Order> guestSessionOrders = tableSession.getOrders().stream()
+                .filter(order -> order.getParticipant().getPublicId().equals(guestParticipant.getPublicId()))
+                .toList();
+
+        log.debug("[AuthService] Merging sessions. Adding guest orders to the session.");
+        guestSessionOrders.forEach(order -> tableSession.getOrders().add(order));
+        log.debug("[AuthService] Merged sessions. {} orders added to client session.", guestSessionOrders.size());
+
+        tableSession.getParticipants().remove(guestParticipant);
+        log.debug("[AuthService] Guest participant removed from session");
     }
 
     private Optional<SessionInfo> extractGuestSessionFromRequest() {
@@ -244,9 +275,10 @@ public class AuthServiceImpl implements AuthService {
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         log.debug("[AuthService] Creating session info from active TableSession id={} for user={}",
-                tableSession.getPublicId(), loggedUser.getPublicId());
+                tableSession.getPublicId(), loggedUser.getEmail());
 
         ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());
+
         List<ParticipantResponseDto> participants = tableSession.getParticipants().stream()
                 .map(participantMapper::toResponseDto).toList();
 
@@ -269,6 +301,7 @@ public class AuthServiceImpl implements AuthService {
 
     private UUID findParticipantIdForUser(TableSession tableSession, User loggedUser) {
         return tableSession.getParticipants().stream()
+                .filter(p -> p.getUser() != null)
                 .filter(participant -> loggedUser.getEmail().equals(participant.getUser().getEmail()))
                 .map(Participant::getPublicId)
                 .findFirst()
@@ -334,6 +367,7 @@ public class AuthServiceImpl implements AuthService {
                 .hostClient(sessionInfo.hostClient())
                 .participants(sessionInfo.participants())
                 .tableNumber(sessionInfo.tableNumber())
+                .numberOfParticipants((sessionInfo.participants() != null) ? sessionInfo.participants().size() : null)
                 .build();
     }
 
@@ -351,11 +385,11 @@ public class AuthServiceImpl implements AuthService {
 
     private Participant updateParticipant(UUID participantIdUser, User user) {
         Participant participant = participantRepository.findByPublicId(participantIdUser)
-                .orElseThrow(()-> new EntityNotFoundException(PARTICIPANT));
+                .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
 
-            participant.setUser(user);
-            participant.setRole(RoleType.ROLE_CLIENT);
-            participant.setNickname(user.getName());
+        participant.setUser(user);
+        participant.setRole(RoleType.ROLE_CLIENT);
+        participant.setNickname(user.getName());
 
         participantRepository.save(participant);
         log.debug("[ParticipantService] Participant updated. Nickname={}. Role={}. User={}",

@@ -14,7 +14,7 @@ public class EmploymentResponseDto {
 
     private UUID publicId;
 
-    private UserResponseDto user;
+    private UserDetailResponseDto user;
 
     private String role;
 

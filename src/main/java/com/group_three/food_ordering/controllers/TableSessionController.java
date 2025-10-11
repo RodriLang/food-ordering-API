@@ -190,7 +190,7 @@ public interface TableSessionController {
             description = "devuelve todas las ordenes asociadas a una sesión de mesa",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+                            content = @Content(schema = @Schema(implementation = UserDetailResponseDto.class)))
             }
     )
     @GetMapping("/{id}/orders")

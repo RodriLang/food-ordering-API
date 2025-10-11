@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.UUID;
@@ -9,11 +10,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ParticipantResponseDto {
 
     private UUID publicId;
 
-    private UserResponseDto user;
+    private UserCardResponseDto user;
 
     private String nickname;
 

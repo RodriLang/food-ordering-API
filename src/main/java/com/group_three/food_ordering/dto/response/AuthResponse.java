@@ -22,6 +22,8 @@ public class AuthResponse {
 
     private LocalDateTime endTime;
 
+    private Integer numberOfParticipants;
+
     private ParticipantResponseDto hostClient;
 
     private List<ParticipantResponseDto> participants;

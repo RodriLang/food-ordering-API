@@ -3,7 +3,7 @@ package com.group_three.food_ordering.controllers;
 import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,28 +32,28 @@ public interface RootUserController {
                     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
             }
     )
-    ResponseEntity<UserResponseDto> getById(@PathVariable UUID id);
+    ResponseEntity<UserDetailResponseDto> getById(@PathVariable UUID id);
 
     @GetMapping("/all")
     @Operation(
             summary = "Listar todos los usuarios",
             description = "Devuelve todos los usuarios registrados, incluyendo los eliminados."
     )
-    ResponseEntity<PageResponse<UserResponseDto>> getAll(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserDetailResponseDto>> getAll(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/actives")
     @Operation(
             summary = "Listar usuarios activos",
             description = "Devuelve todos los usuarios que no han sido eliminados (removedAt es null)."
     )
-    ResponseEntity<PageResponse<UserResponseDto>> getActives(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserDetailResponseDto>> getActives(@Parameter(hidden = true) Pageable pageable);
 
     @GetMapping("/deleted")
     @Operation(
             summary = "Listar usuarios eliminados",
             description = "Devuelve todos los usuarios que han sido marcados como eliminados (removedAt no es null)."
     )
-    ResponseEntity<PageResponse<UserResponseDto>> getDeleted(@Parameter(hidden = true) Pageable pageable);
+    ResponseEntity<PageResponse<UserDetailResponseDto>> getDeleted(@Parameter(hidden = true) Pageable pageable);
 
     @PutMapping("/{id}")
     @Operation(
@@ -64,7 +64,7 @@ public interface RootUserController {
                     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
             }
     )
-    ResponseEntity<UserResponseDto> updateById(
+    ResponseEntity<UserDetailResponseDto> updateById(
             @PathVariable UUID id,
             @Validated(OnUpdate.class) @RequestBody UserRequestDto dto);
 
@@ -77,7 +77,7 @@ public interface RootUserController {
                     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
             }
     )
-    ResponseEntity<UserResponseDto> patchUserById(
+    ResponseEntity<UserDetailResponseDto> patchUserById(
             @PathVariable UUID id,
             @Valid @org.springframework.web.bind.annotation.RequestBody UserRequestDto dto);
 

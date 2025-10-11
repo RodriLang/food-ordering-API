@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.UserRequestDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,19 +10,19 @@ import java.util.UUID;
 
 public interface UserService {
 
-    UserResponseDto create(UserRequestDto dto);
+    UserDetailResponseDto create(UserRequestDto dto);
 
-    UserResponseDto getById(UUID id);
+    UserDetailResponseDto getById(UUID id);
 
-    Page<UserResponseDto> getAll(Pageable pageable);
+    Page<UserDetailResponseDto> getAll(Pageable pageable);
 
-    Page<UserResponseDto> getActiveUsers(Pageable pageable);
+    Page<UserDetailResponseDto> getActiveUsers(Pageable pageable);
 
-    Page<UserResponseDto> getDeletedUsers(Pageable pageable);
+    Page<UserDetailResponseDto> getDeletedUsers(Pageable pageable);
 
-    UserResponseDto updateUser(UUID id, UserRequestDto dto);
+    UserDetailResponseDto updateUser(UUID id, UserRequestDto dto);
 
-    UserResponseDto updateAuthUser(UserRequestDto dto);
+    UserDetailResponseDto updateAuthUser(UserRequestDto dto);
 
     void deleteUser(UUID id);
 
@@ -30,5 +30,5 @@ public interface UserService {
 
     User getEntityById(UUID id);
 
-    UserResponseDto getAuthenticatedUser();
+    UserDetailResponseDto getAuthenticatedUser();
 }

@@ -5,7 +5,7 @@ import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
-import com.group_three.food_ordering.dto.response.UserResponseDto;
+import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,22 +27,22 @@ public interface CurrentUserController {
             summary = "Obtener los datos del usuario autenticado",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+                            content = @Content(schema = @Schema(implementation = UserDetailResponseDto.class)))
             }
     )
     @GetMapping("/profile")
-    ResponseEntity<UserResponseDto> getAuthenticatedUser();
+    ResponseEntity<UserDetailResponseDto> getAuthenticatedUser();
 
 
     @Operation(
             summary = "Modificar datos personales",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Usuario modificado con éxito",
-                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+                            content = @Content(schema = @Schema(implementation = UserDetailResponseDto.class)))
             }
     )
     @PatchMapping("/profile")
-    ResponseEntity<UserResponseDto> updateUser(@RequestBody @Validated(OnUpdate.class) UserRequestDto dto);
+    ResponseEntity<UserDetailResponseDto> updateUser(@RequestBody @Validated(OnUpdate.class) UserRequestDto dto);
 
 
     @Operation(
@@ -51,14 +51,14 @@ public interface CurrentUserController {
             }
     )
     @DeleteMapping("/profile")
-    ResponseEntity<UserResponseDto> deleteUser();
+    ResponseEntity<UserDetailResponseDto> deleteUser();
 
     @Operation(
             summary = "Obtener todos los pedidos realizados",
             description = "devuelve todas las ordenes del usuario autenticado sin importar el lugar de comida actual",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+                            content = @Content(schema = @Schema(implementation = UserDetailResponseDto.class)))
             }
     )
     @GetMapping("/orders")
@@ -72,7 +72,7 @@ public interface CurrentUserController {
             description = "devuelve todas las ordenes del usuario autenticado en su sesión actualgit ",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-                            content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
+                            content = @Content(schema = @Schema(implementation = UserDetailResponseDto.class)))
             }
     )
     @GetMapping("/table-sessions")
