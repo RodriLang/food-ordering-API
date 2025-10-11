@@ -27,7 +27,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ContextInitializationFilter contextInitializationFilter;
+    private final ContextInitializationFilter contextInitializationFilter
+
+
+
+            ;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
