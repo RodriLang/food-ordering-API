@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.FoodVenueRequestDto;
 import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
@@ -26,30 +26,34 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     private final FoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
 
     @Override
     public FoodVenueAdminResponseDto create(FoodVenueRequestDto foodVenueRequestDto) {
-        log.debug("[AuthService] Creating new foodVenue");
+        log.debug("[FoodVenueService] Creating new foodVenue");
         FoodVenue foodVenue = foodVenueMapper.toEntity(foodVenueRequestDto);
         foodVenue.setPublicId(UUID.randomUUID());
+        log.debug("[FoodVenueRepository] Calling save to create new food venue");
         return foodVenueMapper.toAdminDto(foodVenueRepository.save(foodVenue));
     }
 
     @Override
     public Page<FoodVenueAdminResponseDto> getAllAdmin(Pageable pageable) {
+        log.debug("[FoodVenueRepository] Calling findAll for all food venues (Admin)");
         return foodVenueRepository.findAll(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
 
     @Override
     public Page<FoodVenueAdminResponseDto> getDeleted(Pageable pageable) {
+        log.debug("[FoodVenueRepository] Calling findAllDeleted for deleted food venues");
         return foodVenueRepository.findAllDeleted(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
 
     @Override
     public Page<FoodVenuePublicResponseDto> getAllPublic(Pageable pageable) {
+        log.debug("[FoodVenueRepository] Calling findAll for all food venues (Public)");
         return foodVenueRepository.findAll(pageable)
                 .map(foodVenueMapper::toPublicDto);
     }
@@ -62,6 +66,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public FoodVenue findEntityById(UUID id) {
+        log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", id);
         return foodVenueRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE, id.toString()));
     }
@@ -69,7 +74,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public FoodVenuePublicResponseDto getMyCurrentFoodVenue() {
 
-        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
+        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
 
         return foodVenueMapper.toPublicDto(currentFoodVenue);
     }
@@ -80,15 +85,17 @@ public class FoodVenueServiceImpl implements FoodVenueService {
         FoodVenue foodVenue = findEntityById(foodVenueId);
         foodVenueMapper.updateEntity(foodVenueRequestDto, foodVenue);
 
+        log.debug("[FoodVenueRepository] Calling save to update food venue {}", foodVenueId);
         return foodVenueMapper.toAdminDto(foodVenueRepository.save(foodVenue));
     }
 
     @Override
     public FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
 
-        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
+        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         foodVenueMapper.updateEntity(foodVenueRequestDto, currentFoodVenue);
 
+        log.debug("[FoodVenueRepository] Calling save to update current food venue {}", currentFoodVenue.getPublicId());
         return foodVenueMapper.toPublicDto(foodVenueRepository.save(currentFoodVenue));
     }
 
@@ -96,6 +103,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     public void softDelete(UUID id) {
         FoodVenue foodVenue = findEntityById(id);
         foodVenue.setDeleted(Boolean.TRUE);
+        log.debug("[FoodVenueRepository] Calling save to soft delete food venue {}", id);
         foodVenueRepository.save(foodVenue);
     }
 }

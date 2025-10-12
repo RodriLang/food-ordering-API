@@ -30,5 +30,7 @@ public interface UserService {
 
     User getEntityById(UUID id);
 
+    User getEntityByEmail(String email);
+
     UserDetailResponseDto getAuthenticatedUser();
 }

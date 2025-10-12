@@ -28,6 +28,7 @@ public class RefreshTokenService {
     public String generateRefreshToken(String userEmail) {
         // Revocar tokens existentes del usuario
         log.debug("[RefreshTokenService] Revoke existing token for user={}", userEmail);
+        log.debug("[RefreshTokenRepository] Calling revokeAllByUserEmail for user={}", userEmail);
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -38,6 +39,8 @@ public class RefreshTokenService {
                 .createdAt(Instant.now())
                 .revoked(false)
                 .build();
+
+        log.debug("[RefreshTokenRepository] Calling save to create new refresh token for user={}", userEmail);
         refreshTokenRepository.save(refreshToken);
         log.debug("[RefreshTokenService] Generated refresh token for user={}", userEmail);
         return refreshToken.getToken();
@@ -45,38 +48,34 @@ public class RefreshTokenService {
 
     public Optional<String> validateAndGetUserEmail(String token) {
         log.debug("[RefreshTokenService] Validating refresh token");
+
+        log.debug("[RefreshTokenRepository] Calling findByTokenAndRevokedFalse");
         return refreshTokenRepository.findByTokenAndRevokedFalse(token)
                 .filter(refreshToken -> refreshToken.getExpiresAt().isAfter(Instant.now()))
                 .map(refreshToken -> {
                     // Marcar como usado
                     refreshToken.setUsedAt(Instant.now());
+                    log.debug("[RefreshTokenRepository] Calling save to mark token as used");
                     refreshTokenRepository.save(refreshToken);
                     return refreshToken.getUserEmail();
                 });
     }
 
     public void revokeToken(String token) {
+        log.debug("[RefreshTokenRepository] Calling findByTokenAndRevokedFalse to check token for revocation");
         refreshTokenRepository.findByTokenAndRevokedFalse(token)
-                .ifPresent(rt -> {
-                    rt.setRevoked(true);
-                    refreshTokenRepository.save(rt);
+                .ifPresent(refreshToken -> {
+                    refreshToken.setRevoked(true);
+                    log.debug("[RefreshTokenRepository] Calling save to revoke token");
+                    refreshTokenRepository.save(refreshToken);
                 });
         log.debug("[Refresh token Service] Revoked refresh token");
-    }
-
-    public Instant getExpirationDateFromToken(String token) {
-        return refreshTokenRepository.findByTokenAndRevokedFalse(token)
-                .map(RefreshToken::getExpiresAt)
-                .orElse(null);
-    }
-
-    public void revokeAllUserTokens(String userEmail) {
-        refreshTokenRepository.revokeAllByUserEmail(userEmail);
     }
 
     @Scheduled(cron = "0 0 2 * * ?") // Diario a las 2 AM
     public void cleanupExpiredTokens() {
         log.debug("[RefreshTokenService] Cleaning up expired tokens");
+        log.debug("[RefreshTokenRepository] Calling deleteByExpiresAtBefore");
         refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
     }
 }

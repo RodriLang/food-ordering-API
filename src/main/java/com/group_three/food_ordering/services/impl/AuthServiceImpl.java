@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.RefreshTokenRequest;
@@ -43,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final RoleEmploymentMapper roleEmploymentMapper;
     private final RefreshTokenService refreshTokenService;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
 
     // =====================================
     // Public API
@@ -58,7 +58,10 @@ public class AuthServiceImpl implements AuthService {
         // Construir SessionInfo acorde a la situación actual del usuario
         SessionInfo sessionInfo = resolveSessionInfo(loggedUser);
 
+        log.debug("[JwtService] Generating access token for user {}", loggedUser.getEmail());
         String accessToken = jwtService.generateAccessToken(sessionInfo);
+
+        log.debug("[RefreshTokenService] Generating refresh token for user {}", loggedUser.getEmail());
         String refreshToken = refreshTokenService.generateRefreshToken(loggedUser.getEmail());
 
         return createLoginResponse(loggedUser, accessToken, refreshToken, sessionInfo);
@@ -67,22 +70,28 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String refreshToken) {
         if (refreshToken != null) {
+            log.debug("[RefreshTokenService] Calling revokeToken for refresh token");
             refreshTokenService.revokeToken(refreshToken);
         }
     }
 
     @Override
     public AuthResponse refreshAccessToken(RefreshTokenRequest request) {
+        log.debug("[RefreshTokenService] Calling validateAndGetUserEmail");
         String userEmail = refreshTokenService.validateAndGetUserEmail(request.refreshToken())
                 .orElseThrow(() -> new InvalidTokenException("Invalid or expired refresh token"));
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
+        log.debug("[UserRepository] Calling findByEmail for user {}", userEmail);
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
 
+        log.debug("[JwtService] Generating new access token for user {}", userEmail);
         String newAccessToken = jwtService.generateAccessToken(sessionInfo);
+
+        log.debug("[RefreshTokenService] Generating new refresh token for user {}", userEmail);
         String newRefreshToken = refreshTokenService.generateRefreshToken(userEmail);
 
         return AuthResponse.builder()
@@ -97,6 +106,8 @@ public class AuthServiceImpl implements AuthService {
 
     private User authenticateUser(LoginRequest loginRequest) {
         log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
+
+        log.debug("[UserRepository] Calling findByEmail for authentication user {}", loginRequest.getEmail());
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> {
                     log.warn("[AuthService] User not found for email={}", loginRequest.getEmail());
@@ -120,6 +131,9 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Resolving session info for user={}", loggedUser.getEmail());
 
         // 1) ¿Usuario con sesión activa en DB?
+        log.debug("[TableSessionRepository] Calling findActiveSessionByUserEmailAndDeletedFalse for user {}",
+                loggedUser.getEmail());
+
         Optional<TableSession> activeOpt = tableSessionRepository
                 .findActiveSessionByUserEmailAndDeletedFalse(loggedUser.getEmail());
 
@@ -161,13 +175,13 @@ public class AuthServiceImpl implements AuthService {
      * NO hace consultoría de negocio (no crea ni migra nada).
      */
     private SessionInfo createSessionInfoForLoggedUser(User loggedUser) {
-        UUID venueId = requestContext.foodVenueIdOpt().orElse(null);
+        UUID venueId = tenantContext.foodVenueIdOpt().orElse(null);
 
-        UUID participantId = (requestContext.participantOpt().isPresent())
-                ? requestContext.requireParticipant().getPublicId() : null;
+        UUID participantId = (tenantContext.participantOpt().isPresent())
+                ? tenantContext.requireParticipant().getPublicId() : null;
 
-        UUID tableSessionId = (requestContext.tableSessionOpt().isPresent())
-                ? requestContext.requireTableSession().getPublicId() : null;
+        UUID tableSessionId = (tenantContext.tableSessionOpt().isPresent())
+                ? tenantContext.requireTableSession().getPublicId() : null;
 
         return SessionInfo.builder()
                 .userId(loggedUser.getPublicId())
@@ -218,4 +232,3 @@ public class AuthServiceImpl implements AuthService {
         return authResponse;
     }
 }
-

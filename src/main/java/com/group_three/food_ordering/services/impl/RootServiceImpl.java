@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -37,13 +37,13 @@ public class RootServiceImpl implements RootService {
     private final UserRepository userRepository;
     private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
     private final JwtService jwtService;
 
 
     @Override
     public EmploymentResponseDto createRootUser(EmploymentRequestDto dto) {
-
+        log.debug("[UserRepository] Calling findByEmail for user email={}", dto.getUserEmail());
         User user = userRepository.findByEmail(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
@@ -56,6 +56,8 @@ public class RootServiceImpl implements RootService {
                 .role(RoleType.ROLE_ROOT)
                 .build();
 
+        log.debug("[EmploymentRepository] Calling save to create new ROOT employment for user {} in venue {}",
+                user.getPublicId(), foodVenue.getPublicId());
         Employment savedEmployment = employmentRepository.save(employment);
 
         return employmentMapper.toResponseDto(savedEmployment);
@@ -63,19 +65,22 @@ public class RootServiceImpl implements RootService {
 
     @Override
     public Page<EmploymentResponseDto> getRootUsers(Pageable pageable) {
+        log.debug("[EmploymentRepository] Calling getAllByActiveAndRole to retrieve active ROOT users");
         return employmentRepository.getAllByActiveAndRole(pageable, Boolean.TRUE, RoleType.ROLE_ROOT)
                 .map(employmentMapper::toResponseDto);
     }
 
     @Override
     public AuthResponse selectContext(UUID foodVenuePublicId) {
-        log.debug("[RootService] Select context");
+        log.debug("[RootService] Select context process started");
         FoodVenue selectedFoodVenue = getFoodVenue(foodVenuePublicId);
         log.debug("[RootService] Selected FoodVenue foodVenueId={}", selectedFoodVenue.getPublicId());
-        User authenticatedUser = requestContext.requireUser();
+        User authenticatedUser = tenantContext.requireUser();
         log.debug("[RootService] Authenticated user email={} publicId={}",
                 authenticatedUser.getEmail(), authenticatedUser.getPublicId());
 
+        log.debug("[EmploymentRepository] Calling findByUser_PublicIdAndRoleAndActiveTrue for user {} and role ROOT",
+                authenticatedUser.getPublicId());
         Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrue(
                 authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
 
@@ -100,6 +105,7 @@ public class RootServiceImpl implements RootService {
     }
 
     private FoodVenue getFoodVenue(UUID foodVenueId) {
+        log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", foodVenueId);
         return foodVenueRepository.findByPublicId(foodVenueId)
                 .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
     }

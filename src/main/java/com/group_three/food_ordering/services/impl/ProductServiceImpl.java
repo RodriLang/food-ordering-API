@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
@@ -16,6 +16,7 @@ import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.repositories.TagRepository;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
 import static com.group_three.food_ordering.utils.EntityName.TAG;
 import static com.group_three.food_ordering.utils.EntityName.CATEGORY;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -39,13 +41,14 @@ public class ProductServiceImpl implements ProductService {
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequestDto) {
         Product product = productMapper.toEntity(productRequestDto);
-        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
+        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         product.setFoodVenue(currentFoodVenue);
+        log.debug("[ProductService] Applying rules and saving new product for venue {}", currentFoodVenue.getPublicId());
         return applyProductRulesAndSave(product, productRequestDto);
     }
 
@@ -53,6 +56,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto) {
         Product product = getEntityById(publicId);
         productMapper.updateEntity(product, productRequestDto);
+        log.debug("[ProductService] Applying rules and saving update for product {}", publicId);
         return applyProductRulesAndSave(product, productRequestDto);
     }
 
@@ -64,13 +68,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getEntityById(UUID publicId) {
+        log.debug("[ProductRepository] Calling findByPublicId for product publicId={}", publicId);
         return productRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }
 
     @Override
     public ItemMenuResponseDto getByNameAndContext(String name) {
-        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        log.debug("[ProductRepository] Calling findByName for ItemMenu for name={} and venueId={}", name, foodVenueId);
         Product product = productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
@@ -80,7 +86,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getEntityByNameAndContext(String name) {
-        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        log.debug("[ProductRepository] Calling findByNameAndFoodVenue_PublicId for name={} and venueId={}", name, foodVenueId);
         return productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
@@ -91,20 +98,23 @@ public class ProductServiceImpl implements ProductService {
     public void delete(UUID publicId) {
         Product product = getEntityById(publicId);
         product.setDeleted(Boolean.TRUE);
+        log.debug("[ProductRepository] Calling save to soft delete product {}", publicId);
         productRepository.save(product);
     }
 
 
     @Override
     public Page<ProductResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        log.debug("[ProductRepository] Calling findAllByFoodVenue_PublicId for venueId={}", foodVenueId);
         return productRepository.findAllByFoodVenue_PublicId(foodVenueId, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
     public Page<ProductResponseDto> getAllAvailable(Pageable pageable) {
-        UUID foodVenueId = requestContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        log.debug("[ProductRepository] Calling findAllByFoodVenue_PublicIdAndAvailable for venueId={}", foodVenueId);
         return productRepository.findAllByFoodVenue_PublicIdAndAvailable(foodVenueId, true, pageable)
                 .map(productMapper::toDto);
     }
@@ -112,6 +122,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable) {
         LocalDateTime fromDate = LocalDateTime.now().minusDays(days);
+        log.debug("[ProductRepository] Calling findTopSellingProducts from date {} with limit {}", fromDate, limit);
         return productRepository.findTopSellingProducts(fromDate, PageRequest.of(0, limit))
                 .map(productMapper::toItemMenuDto);
     }
@@ -122,18 +133,25 @@ public class ProductServiceImpl implements ProductService {
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
         product.setCategory(findCategory(productRequestDto.getCategoryId()));
         product.setTags(findTags(productRequestDto.getTagsId()));
+        log.debug("[ProductRepository] Calling save for product {}", product.getPublicId());
         Product savedProduct = productRepository.save(product);
         return productMapper.toDto(savedProduct);
     }
 
     public void validateStock(Product product, Integer quantity) throws InsufficientStockException {
         if (product.getStock() < quantity) {
+            log.warn("[ProductService] Insufficient stock validation failed for product {} ({} < {})",
+                    product.getPublicId(), product.getStock(), quantity);
+
             throw new InsufficientStockException("Insufficient stock for product: " + product.getName());
         }
+        log.debug("[ProductService] Stock validation successful for product {} ({} >= {})",
+                product.getPublicId(), product.getStock(), quantity);
     }
 
     public void incrementStockProduct(Product product, Integer quantity) {
         if (quantity != null && quantity > 0) {
+            log.debug("[ProductService] Incrementing stock for product {} by {}", product.getPublicId(), quantity);
             product.setStock(product.getStock() + quantity);
             product.setAvailable(product.getStock() + quantity > 0);
         }
@@ -141,12 +159,14 @@ public class ProductServiceImpl implements ProductService {
 
     public void decrementStockProduct(Product product, Integer quantity) {
         validateStock(product, quantity);
+        log.debug("[ProductService] Decrementing stock for product {} by {}", product.getPublicId(), quantity);
         product.setStock(product.getStock() - quantity);
         product.setAvailable(product.getStock() - quantity > 0);
     }
 
     private List<Tag> findTags(List<Long> tagsId) {
         if (tagsId != null && !tagsId.isEmpty()) {
+            log.debug("[TagRepository] Calling findById for multiple tags: {}", tagsId);
             return tagsId.stream()
                     .map(tagId -> tagRepository.findById(tagId)
                             .orElseThrow(() -> new EntityNotFoundException(TAG)))
@@ -158,6 +178,7 @@ public class ProductServiceImpl implements ProductService {
 
     private Category findCategory(Long categoryId) {
         if (categoryId != null) {
+            log.debug("[CategoryRepository] Calling findById for categoryId={}", categoryId);
             return categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
         } else {

@@ -68,7 +68,7 @@ public class JwtService {
 
     public Claims parseTokenClaimsSafe(String token) throws JwtException {
 
-        log.warn("[JwtService] Token={}", token);
+        log.warn("[JwtService] Parsing token claims safely");
 
         try {
             Claims claims = Jwts.parser()
@@ -76,7 +76,7 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            log.warn("[JwtService] Parsed claims: {}", claims);
+            log.warn("[JwtService] Parsed claims");
             return claims;
         } catch (ExpiredJwtException e) {
             log.warn("[JwtService] Token is expired: {}", e.getMessage());
@@ -112,10 +112,6 @@ public class JwtService {
         }
     }
 
-    public String getUsernameFromToken(String token) {
-        return getClaim(token, Claims::getSubject);
-    }
-
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
         log.debug("[JwtService] Extracting claims from token");
         Claims claims = parseTokenClaimsSafe(token);
@@ -124,28 +120,8 @@ public class JwtService {
 
     public SessionInfo getSessionInfoFromToken(String token) {
         log.debug("[JwtService] Getting session from token");
-
-        String userIdStr = getClaim(token, claims -> claims.get(USER_ID_CLAIM, String.class));
-        String subject = getUsernameFromToken(token);
-        String role = getClaim(token, claims -> claims.get(ROLE_CLAIM, String.class));
-        String participantIdStr = getClaim(token, claims -> claims.get(PARTICIPANT_ID_CLAIM, String.class));
-        String tableSessionIdStr = getClaim(token, claims -> claims.get(TABLE_SESSION_ID_CLAIM, String.class));
-        String foodVenueIdStr = getClaim(token, claims -> claims.get(FOOD_VENUE_ID_CLAIM, String.class));
-        log.info("[JwtService] User: {}, Role: {}, FoodVenueId: {}",
-                subject, role, foodVenueIdStr != null ? foodVenueIdStr : "NULL");
-        UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
-        UUID participantId = participantIdStr != null ? UUID.fromString(participantIdStr) : null;
-        UUID tableSessionId = tableSessionIdStr != null ? UUID.fromString(tableSessionIdStr) : null;
-        UUID foodVenueId = foodVenueIdStr != null ? UUID.fromString(foodVenueIdStr) : null;
-
-        return SessionInfo.builder()
-                .userId(userId)
-                .subject(subject)
-                .foodVenueId(foodVenueId)
-                .tableSessionId(tableSessionId)
-                .role(role)
-                .participantId(participantId)
-                .build();
+        Claims claims = extractAllClaims(token);
+        return getSessionInfoFromClaims(claims);
     }
 
     private SecretKey getSignatureKey() {

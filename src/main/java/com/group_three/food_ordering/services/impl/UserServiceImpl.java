@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.UserRequestDto;
 import com.group_three.food_ordering.dto.response.UserDetailResponseDto;
 import com.group_three.food_ordering.exceptions.EmailAlreadyUsedException;
@@ -12,6 +12,7 @@ import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 import static com.group_three.food_ordering.utils.EntityName.USER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -28,23 +30,25 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
     private final EmploymentRepository employmentRepository;
 
     @Override
     public UserDetailResponseDto create(UserRequestDto dto) {
+        log.info("[UserRepository] Reading Database existsByEmail: {}", dto.getEmail());
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
         User userEntity = userMapper.toEntity(dto);
         userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.setPublicId(UUID.randomUUID());
+        log.info("[UserRepository] Saving user: {}", userEntity.getEmail());
         return userMapper.toDetailResponseDto(userRepository.save(userEntity));
     }
 
     @Override
     public UserDetailResponseDto getAuthenticatedUser() {
-        User authUser = requestContext.requireUser();
+        User authUser = tenantContext.requireUser();
         return userMapper.toDetailResponseDto(authUser);
     }
 
@@ -56,18 +60,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserDetailResponseDto> getAll(Pageable pageable) {
+        log.info("[UserRepository] Reading Database findAll");
         return userRepository.findAll(pageable)
                 .map(userMapper::toDetailResponseDto);
     }
 
     @Override
     public Page<UserDetailResponseDto> getActiveUsers(Pageable pageable) {
+        log.info("[UserRepository] Reading Database findAllByDeletedFalse");
         return userRepository.findAll(pageable)
                 .map(userMapper::toDetailResponseDto);
     }
 
     @Override
     public Page<UserDetailResponseDto> getDeletedUsers(Pageable pageable) {
+        log.info("[UserRepository] Reading Database findAllByDeletedTrue");
         return userRepository.findAllDeleted(pageable)
                 .map(userMapper::toDetailResponseDto);
     }
@@ -75,7 +82,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponseDto updateUser(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
         User userEntity = this.getEntityById(id);
-
+        log.info("[UserRepository] Reading Database for update existsByEmail: {}", dto.getEmail());
         if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
@@ -89,13 +96,13 @@ public class UserServiceImpl implements UserService {
                 addressMapper.updateEntity(dto.getAddress(), userEntity.getAddress());
             }
         }
-
+        log.info("[UserRepository] Updating user");
         return userMapper.toDetailResponseDto(userRepository.save(userEntity));
     }
 
     @Override
     public UserDetailResponseDto updateAuthUser(UserRequestDto dto) {
-        UUID authUserId = requestContext.requireUser().getPublicId();
+        UUID authUserId = tenantContext.requireUser().getPublicId();
         return updateUser(authUserId, dto);
     }
 
@@ -104,19 +111,28 @@ public class UserServiceImpl implements UserService {
         User userEntity = this.getEntityById(id);
         userEntity.setDeleted(Boolean.TRUE);
         userEntity.getEmployments().forEach(employment -> employment.setDeleted(Boolean.TRUE));
+        log.info("[EmploymentRepository] Deleting user employments");
         employmentRepository.saveAll(userEntity.getEmployments());
+        log.info("[UserRepository] Deleting user");
         userRepository.save(userEntity);
     }
 
     @Override
     public void deleteAuthUser() {
-        UUID authUserId = requestContext.requireUser().getPublicId();
+        UUID authUserId = tenantContext.requireUser().getPublicId();
         deleteUser(authUserId);
     }
 
     @Override
     public User getEntityById(UUID id) {
+        log.info("[UserRepository] Searching user by id: {}", id);
         return userRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(USER, id.toString()));
     }
+
+    @Override
+    public User getEntityByEmail(String email) {
+        log.info("[UserRepository] Searching user by email: {}", email);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException(USER));    }
 }

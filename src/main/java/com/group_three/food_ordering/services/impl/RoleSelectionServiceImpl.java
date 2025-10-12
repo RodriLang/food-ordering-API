@@ -36,6 +36,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     @Override
     public AuthResponse selectRole(RoleSelectionRequestDto request) {
         User authenticatedUser = getAuthenticatedUser();
+        log.debug("[EmploymentService] Calling getEntityByIdAndActiveTrue for employmentId={}", request.employmentId());
         Employment employment = employmentService.getEntityByIdAndActiveTrue(request.employmentId());
         log.debug("[RoleSelection] Role selected={}", employment.getRole());
         return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getPublicId(), employment.getRole().name());
@@ -51,7 +52,8 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     @Override
     public List<RoleEmploymentResponseDto> generateRoleSelection(User user) {
-        log.info("[RoleSelection] Searching roles");
+        log.info("[RoleSelection] Searching roles for user {}", user.getPublicId());
+        log.debug("[EmploymentService] Calling getRoleEmploymentsByUserAndActiveTrue for userId={}", user.getPublicId());
         List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getPublicId());
         if (!roleEmployments.isEmpty()) {
             log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
@@ -68,8 +70,12 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
                 .build());
 
         List<RoleEmploymentResponseDto> roleSelection = generateRoleSelection(user);
+
+        log.debug("[RefreshTokenService] Calling generateRefreshToken for user email={}", user.getEmail());
         String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
+
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
+
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -82,6 +88,8 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
         CustomUserPrincipal principal = (CustomUserPrincipal)
                 SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         log.debug("[RoleSelectionService] Authenticated user email: {}", principal.getEmail());
+
+        log.debug("[UserRepository] Calling findByEmail for authenticated user email: {}", principal.getEmail());
         return userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("User"));
     }

@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.OrderRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductService productService;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
     private final TableSessionRepository tableSessionRepository;
     private final OrderServiceHelper orderServiceHelper;
 
@@ -47,11 +47,11 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
         log.debug("[OrderService] Create Order Request");
         log.debug("[OrderService] Getting current food Venue.");
-        FoodVenue currentFoodVenue = requestContext.requireFoodVenue();
+        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         log.debug("[OrderService] Getting current table session");
-        TableSession tableSession = requestContext.requireTableSession();
+        TableSession tableSession = tenantContext.requireTableSession();
         log.debug("[OrderService] Getting current participant");
-        Participant participant = requestContext.requireParticipant();
+        Participant participant = tenantContext.requireParticipant();
 
         Order order = orderMapper.toEntity(orderRequestDto);
         order.setOrderNumber(orderServiceHelper.generateOrderNumber());
@@ -66,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetails = orderRequestDto.getOrderDetails()
                 .stream()
                 .map(dto -> {
+                    log.debug("[ProductService] Calling getEntityByNameAndContext for product: {}", dto.getProductName());
                     Product product = productService.getEntityByNameAndContext(dto.getProductName());
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
                     detail.setProduct(product);
@@ -77,6 +78,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderDetails(orderDetails);
         orderServiceHelper.updateTotalPrice(order);
+        log.debug("[OrderRepository] Calling save to create new order for participant {}", participant.getPublicId());
         return orderMapper.toDto(orderRepository.save(order));
     }
 
@@ -117,12 +119,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
-        Participant currentParticipant = requestContext.requireParticipant();
+        Participant currentParticipant = tenantContext.requireParticipant();
 
-        TableSession session = tableSessionRepository.findByPublicId(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, tableSessionId.toString()));
+        TableSession session = getTableSessionEntityById(tableSessionId);
 
-        RoleType role = requestContext.getRole();
+        RoleType role = tenantContext.getRole();
 
         if (role.equals(RoleType.ROLE_CLIENT)
                 && !session.getParticipants().contains(currentParticipant)) {
@@ -132,8 +133,11 @@ public class OrderServiceImpl implements OrderService {
         //filtra por estado
         Page<Order> orders;
         if (status != null) {
+            log.debug("[OrderRepository] Calling findOrderByTableSession_PublicIdAndStatus for " +
+                    "tableSessionId={} and status={}", tableSessionId, status);
             orders = orderRepository.findOrderByTableSession_PublicIdAndStatus(tableSessionId, status, pageable);
         } else {
+            log.debug("[OrderRepository] Calling findOrderByTableSession_PublicId for tableSessionId={}", tableSessionId);
             orders = orderRepository.findOrderByTableSession_PublicId(tableSessionId, pageable);
         }
         return orders.map(orderMapper::toDto);
@@ -141,21 +145,26 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrderEntitiesByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus) {
-        TableSession session = tableSessionRepository.findByPublicId(tableSessionId)
-                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, tableSessionId.toString()));
+
+        TableSession session = getTableSessionEntityById(tableSessionId);
 
         List<Order> orders;
         if (orderStatus != null) {
-            orders = orderRepository.findOrderByTableSession_PublicIdAndStatus(session.getPublicId(), orderStatus, Pageable.unpaged()).toList();
+            log.debug("[OrderRepository] Calling findOrderByTableSession_PublicIdAndStatus or " +
+                    "tableSessionId={} and status={}", session.getPublicId(), orderStatus);
+
+            orders = orderRepository.findOrderByTableSession_PublicIdAndStatus(
+                    session.getPublicId(), orderStatus, Pageable.unpaged()).toList();
         } else {
-            orders = orderRepository.findOrderByTableSession_PublicId(session.getPublicId(), Pageable.unpaged()).toList();
+                log.debug("[OrderRepository] Calling findOrderByTableSession_PublicId (List) for tableSessionId={}", tableSessionId);
+                orders =   orderRepository.findOrderByTableSession_PublicId(tableSessionId, Pageable.unpaged()).toList();
         }
         return orders;
     }
 
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClient(OrderStatus status, Pageable pageable) {
-        User authenticatedClient = requestContext.requireUser();
+        User authenticatedClient = tenantContext.requireUser();
         return getOrdersByUser(authenticatedClient.getPublicId(), status, pageable);
     }
 
@@ -163,8 +172,10 @@ public class OrderServiceImpl implements OrderService {
         // Se filtra por estado
         Page<Order> orders;
         if (status != null) {
+            log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicIdAndStatus for userId={} and status={}", userId, status);
             orders = orderRepository.findOrdersByParticipant_PublicIdAndStatus(userId, status, pageable);
         } else {
+            log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicId for userId={}", userId);
             orders = orderRepository.findOrdersByParticipant_PublicId(userId, pageable);
         }
 
@@ -174,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndStatus(OrderStatus status, Pageable pageable) {
         log.debug("[OrderService] Get orders by authenticated user");
-        UUID currentClientId = requestContext.requireParticipant().getPublicId();
+        UUID currentClientId = tenantContext.requireParticipant().getPublicId();
         return getOrdersByUser(currentClientId, status, pageable);
     }
 
@@ -182,8 +193,8 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDto> getOrdersByAuthenticatedClientAndCurrentTableSessionAndStatus(
             OrderStatus status, Pageable pageable) {
 
-        UUID currentClientId = requestContext.requireParticipant().getPublicId();
-        UUID currentTableSessionId = requestContext.requireTableSession().getPublicId();
+        UUID currentClientId = tenantContext.requireParticipant().getPublicId();
+        UUID currentTableSessionId = tenantContext.requireTableSession().getPublicId();
 
         return getOrdersByClientAndTableSessionAndStatus(currentClientId, currentTableSessionId, status, pageable);
     }
@@ -192,9 +203,10 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderResponseDto> getOrdersByClientAndTableSessionAndStatus(
             UUID clientId, UUID tableSessionId, OrderStatus status, Pageable pageable) {
 
-        UUID currentClientId = requestContext.requireParticipant().getPublicId();
-        UUID currentTableSessionId = requestContext.requireTableSession().getPublicId();
+        UUID currentClientId = tenantContext.requireParticipant().getPublicId();
+        UUID currentTableSessionId = tenantContext.requireTableSession().getPublicId();
 
+        log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus for clientId={}, sessionId={}, status={}", currentClientId, currentTableSessionId, status);
         return orderRepository.findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus(
                 currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDto);
     }
@@ -202,15 +214,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable) {
         log.debug("[OrderService] Get orders by current participant");
-        UUID currentClientId = requestContext.requireParticipant().getPublicId();
+        UUID currentClientId = tenantContext.requireParticipant().getPublicId();
         log.debug("[OrderService] Current client ID={}", currentClientId);
+        log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicId for currentClientId={}", currentClientId);
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, pageable).map(orderMapper::toDto);
     }
 
     @Override
     public List<Order> getOrderEntitiesByCurrentParticipant() {
         log.debug("[OrderService] Get order entities by current participant");
-        UUID currentClientId = requestContext.requireParticipant().getPublicId();
+        UUID currentClientId = tenantContext.requireParticipant().getPublicId();
+        log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicId (unpaged) for currentClientId={}", currentClientId);
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, Pageable.unpaged()).toList();
     }
 
@@ -222,18 +236,22 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus status,
             Pageable pageable
     ) {
-        UUID venueId = requestContext.requireFoodVenue().getPublicId();
+        UUID venueId = tenantContext.requireFoodVenue().getPublicId();
         Page<Order> orders;
 
         if (from != null && to != null) {
             if (status != null) {
+                log.debug("[OrderRepository] Calling findByFoodVenue_PublicIdAndOrderDateBetweenAndStatus for venueId={}, from={}, to={}, status={}", venueId, from, to, status);
                 orders = orderRepository.findByFoodVenue_PublicIdAndOrderDateBetweenAndStatus(venueId, from, to, status, pageable);
             } else {
+                log.debug("[OrderRepository] Calling findByFoodVenue_PublicIdAndOrderDateBetween for venueId={}, from={}, to={}", venueId, from, to);
                 orders = orderRepository.findByFoodVenue_PublicIdAndOrderDateBetween(venueId, from, to, pageable);
             }
         } else if (status != null) {
+            log.debug("[OrderRepository] Calling findByFoodVenue_PublicIdAndStatus for venueId={}, status={}", venueId, status);
             orders = orderRepository.findByFoodVenue_PublicIdAndStatus(venueId, status, pageable);
         } else {
+            log.debug("[OrderRepository] Calling findByFoodVenue_PublicId for venueId={}", venueId);
             orders = orderRepository.findByFoodVenue_PublicId(venueId, pageable);
         }
         return orders;
@@ -248,6 +266,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto updateSpecialRequirements(UUID orderId, String specialRequirements) {
         Order existingOrder = this.getEntityById(orderId);
         existingOrder.setSpecialRequirements(specialRequirements);
+        log.debug("[OrderRepository] Calling save to update special requirements for order {}", orderId);
         orderRepository.save(existingOrder);
 
         return new OrderResponseDto();
@@ -257,14 +276,15 @@ public class OrderServiceImpl implements OrderService {
     public void delete(UUID id) {
         Order order = this.getEntityById(id);
         order.setDeleted(Boolean.TRUE);
+        log.debug("[OrderRepository] Calling save to soft delete order {}", id);
         orderRepository.save(order);
     }
 
     @Override
     public OrderResponseDto updateStatus(UUID id, OrderStatus orderStatus) {
         Order existingOrder = this.getEntityById(id);
-        Participant participant = requestContext.requireParticipant();
-        UUID currentContext = requestContext.requireFoodVenue().getPublicId();
+        Participant participant = tenantContext.requireParticipant();
+        UUID currentContext = tenantContext.requireFoodVenue().getPublicId();
 
         if (!existingOrder.getFoodVenue().getPublicId().equals(currentContext)) {
             throw new EntityNotFoundException(ORDER);
@@ -276,6 +296,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         existingOrder.setStatus(orderStatus);
+        log.debug("[OrderRepository] Calling save to update status to {} for order {}", orderStatus, id);
         orderRepository.save(existingOrder);
 
         return orderMapper.toDto(existingOrder);
@@ -286,7 +307,9 @@ public class OrderServiceImpl implements OrderService {
             LocalDate date, Integer orderNumber) {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = start.plusDays(1);
-        UUID currentVenueId = requestContext.requireFoodVenue().getPublicId();
+        UUID currentVenueId = tenantContext.requireFoodVenue().getPublicId();
+        log.debug("[OrderRepository] Calling findByFoodVenue_PublicIdAndOrderNumberAndOrderDateBetween for " +
+                "venueId={}, orderNumber={} and date range", currentVenueId, orderNumber);
         Order foundOrder = orderRepository
                 .findByFoodVenue_PublicIdAndOrderNumberAndOrderDateBetween(currentVenueId, orderNumber, start, end)
                 .orElseThrow(() -> new EntityNotFoundException(ORDER));
@@ -302,6 +325,7 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.getOrderDetails().remove(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
         this.setDefaultValues(orderDetail);
+        log.debug("[OrderRepository] Calling save to remove order detail from order {}", orderId);
         this.orderRepository.save(existingOrder);
     }
 
@@ -313,11 +337,13 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.getOrderDetails().add(orderDetail);
         orderServiceHelper.updateTotalPrice(existingOrder);
         this.setDefaultValues(orderDetail);
+        log.debug("[OrderRepository] Calling save to add order detail to order {}", orderId);
         this.orderRepository.save(existingOrder);
     }
 
     @Override
     public Order getEntityById(UUID id) {
+        log.debug("[OrderRepository] Calling findByPublicId for orderId={}", id);
         return orderRepository.findByPublicId(id)
                 .orElseThrow(() -> new EntityNotFoundException(ORDER, id.toString()));
     }
@@ -327,5 +353,11 @@ public class OrderServiceImpl implements OrderService {
         if (orderDetail.getPrice() == null) {
             orderDetail.setPrice(orderDetail.getProduct().getPrice().multiply(BigDecimal.valueOf(orderDetail.getQuantity())));
         }
+    }
+
+    private TableSession getTableSessionEntityById(UUID tableSessionId){
+        log.debug("[TableSessionRepository] Calling findByPublicId for tableSessionId={}", tableSessionId);
+        return tableSessionRepository.findByPublicId(tableSessionId)
+                .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION, tableSessionId.toString()));
     }
 }

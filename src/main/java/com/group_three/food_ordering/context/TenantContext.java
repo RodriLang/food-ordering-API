@@ -20,15 +20,12 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.group_three.food_ordering.utils.EntityName.AUDITOR_USER;
-
 @Slf4j
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 @RequiredArgsConstructor
-public class RequestContext {
+public class TenantContext {
 
-    private String bearerToken;
     private Claims claims;
     private User user;
     private Participant participant;
@@ -61,7 +58,10 @@ public class RequestContext {
     public Optional<RoleType> roleOpt() {
         // 1) priorizar rol del SessionInfo (ya validaste al emitir el token)
         if (sessionInfo != null && sessionInfo.role() != null && !sessionInfo.role().isBlank()) {
-            try { return Optional.of(RoleType.valueOf(sessionInfo.role())); } catch (IllegalArgumentException ignored) {}
+            try { return Optional.of(RoleType.valueOf(sessionInfo.role())); } catch (IllegalArgumentException ignored) {
+                log.warn("SessionInfo with unknown role={}", sessionInfo.role());
+                return Optional.empty();
+            }
         }
         // 2) fallback a claims si existen
         if (claims == null) return Optional.empty();
@@ -82,7 +82,6 @@ public class RequestContext {
     public boolean isAuthenticated() { return user != null; }
     public boolean isGuest() { return sessionInfo != null && "ROLE_GUEST".equals(sessionInfo.role()); }
 
-    void setBearerToken(String t) { this.bearerToken = t; }
     void setClaims(Claims c) { this.claims = c; }
     void setSessionInfo(SessionInfo s) { this.sessionInfo = s; }
     void setUser(User u) { this.user = u; }
@@ -90,8 +89,6 @@ public class RequestContext {
     void setTableSession(TableSession ts) { this.tableSession = ts; }
     void setFoodVenue(FoodVenue fv) { this.foodVenue = fv; }
 
-    public String bearerToken() { return bearerToken; }
-    public Claims claims() { return claims; }
     public SessionInfo session() { return sessionInfo; }
 
     public AuditorUser requireAuditorUser() {

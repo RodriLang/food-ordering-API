@@ -7,7 +7,7 @@ import com.group_three.food_ordering.analytics.metrics_repositories.PaymentMetri
 import com.group_three.food_ordering.analytics.metrics_repositories.ProductsMetricsRepository;
 import com.group_three.food_ordering.analytics.metrics_repositories.TableSessionMetricsRepository;
 import com.group_three.food_ordering.analytics.metrics_services.MetricsService;
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class MetricsServiceImpl implements MetricsService {
     private final TableSessionMetricsRepository tableSessionMetricsRepository;
     private final PaymentMetricsRepository paymentMetricsRepository;
     private final ProductsMetricsRepository productsMetricsRepository;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
 
     private static TemporalSalesDto apply(Map<String, Object> r) {
         String bucket = String.valueOf(r.get("bucket"));
@@ -103,7 +103,7 @@ public class MetricsServiceImpl implements MetricsService {
 
     @Override
     public VenueMetricsResponseDto getVenueOverview(LocalDateTime from, LocalDateTime to) {
-        UUID venueId = requestContext.requireFoodVenue().getPublicId();
+        UUID venueId = tenantContext.requireFoodVenue().getPublicId();
         long totalOrders = orderMetricsRepository.countByVenueAndDateBetween(venueId, from, to);
         BigDecimal totalRevenue = BigDecimal.valueOf(
                 orderMetricsRepository.sumTotalRevenueByVenue(venueId, from, to)
@@ -135,7 +135,7 @@ public class MetricsServiceImpl implements MetricsService {
             List<OrderStatus> statuses
     ) {
         // 1) Tenant
-        UUID venueId = requestContext.isAuthenticated() ? requestContext.requireFoodVenue().getPublicId() : null;
+        UUID venueId = tenantContext.isAuthenticated() ? tenantContext.requireFoodVenue().getPublicId() : null;
 
         // 2) Convertir enums a String si la query es nativa y usa IN (:statuses)
         List<String> statusStrings = statuses != null
@@ -157,7 +157,7 @@ public class MetricsServiceImpl implements MetricsService {
 
     @Override
     public List<ProductSalesDto> getTopProducts(LocalDateTime from, LocalDateTime to, int limit) {
-        UUID venueId = requestContext.requireFoodVenue().getPublicId();
+        UUID venueId = tenantContext.requireFoodVenue().getPublicId();
         var statuses = List.of("PAID","COMPLETED");
         var rows = productsMetricsRepository.topProducts(from, to, statuses, limit, venueId);
         return rows.stream().map(r -> new ProductSalesDto(

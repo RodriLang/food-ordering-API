@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.utils;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.exceptions.OrderInProgressException;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class OrderServiceHelper {
 
     private final OrderRepository orderRepository;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
 
     public void updateTotalPrice(Order order) {
         BigDecimal totalPrice = order.getOrderDetails().stream()
@@ -49,7 +49,7 @@ public class OrderServiceHelper {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
         int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(
-                requestContext.requireFoodVenue().getPublicId(), start, end));
+                tenantContext.requireFoodVenue().getPublicId(), start, end));
         return ordersCount + 1;
     }
 }

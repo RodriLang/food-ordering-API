@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.RequestContext;
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.response.*;
 import com.group_three.food_ordering.mappers.ProductMapper;
 import com.group_three.food_ordering.models.Category;
@@ -11,6 +11,7 @@ import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.services.CategoryService;
 import com.group_three.food_ordering.services.MenuService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MenuServiceImpl implements MenuService {
@@ -25,12 +27,12 @@ public class MenuServiceImpl implements MenuService {
     private final CategoryService categoryService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final RequestContext requestContext;
+    private final TenantContext tenantContext;
     private final FoodVenueRepository foodVenueRepository;
 
     @Override
     public MenuResponseDto getCurrentContextHierarchicalMenu(String category) {
-        FoodVenue foodVenue = requestContext.requireFoodVenue();
+        FoodVenue foodVenue = tenantContext.requireFoodVenue();
         if (foodVenue == null) {
             throw new IllegalStateException("No tenant context available for the current request.");
         }
@@ -39,13 +41,14 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public MenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
+        log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", foodVenueId);
         FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
         return generateHierarchicalMenu(foodVenue, category);
     }
 
     private MenuResponseDto generateHierarchicalMenu(FoodVenue foodVenue, String category) {
-
+        log.debug("[CategoryService] Calling findParentCategories for venue {}", foodVenue.getPublicId());
         List<Category> rootCategories = categoryService.findParentCategories(foodVenue.getPublicId());
 
         List<CategoryMenuResponseDto> categoriesDto;
@@ -74,6 +77,9 @@ public class MenuServiceImpl implements MenuService {
      */
     private CategoryMenuResponseDto buildCategoryTree(Category category, UUID foodVenueId) {
         // Productos de esta categoría
+        log.debug("[ProductRepository] Calling findAllByFoodVenueAndAvailableAndCategory for category {} in venue {}",
+                category.getName(), foodVenueId);
+
         List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
                 foodVenueId, true, category.getPublicId());
 
