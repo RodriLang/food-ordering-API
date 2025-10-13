@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @PreAuthorize("hasRole('ROOT')")
@@ -21,22 +21,22 @@ public class MetricsRootControllerImpl implements MetricsRootController {
     // ---- MÉTRICAS GENERALES ----
 
     @Override
-    public ResponseEntity<GeneralMetricsResponseDto> getGeneralOverview(LocalDateTime from, LocalDateTime to) {
+    public ResponseEntity<GeneralMetricsResponseDto> getGeneralOverview(Instant from, Instant to) {
         return ResponseEntity.ok(metricsService.getGeneralOverview(from, to));
     }
 
     @Override
-    public ResponseEntity<List<OrdersByVenueDto>> getOrdersByVenue(LocalDateTime from, LocalDateTime to) {
+    public ResponseEntity<List<OrdersByVenueDto>> getOrdersByVenue(Instant from, Instant to) {
         return ResponseEntity.ok(metricsService.getOrdersByVenue(from, to));
     }
 
     @Override
-    public ResponseEntity<List<RevenueByVenueDto>> getRevenueByVenue(LocalDateTime from, LocalDateTime to) {
+    public ResponseEntity<List<RevenueByVenueDto>> getRevenueByVenue(Instant from, Instant to) {
         return ResponseEntity.ok(metricsService.getRevenueByVenue(from, to));
     }
 
     @Override
-    public ResponseEntity<List<RevenueByVenueDto>> getTopVenuesByRevenue(LocalDateTime from, LocalDateTime to, int limit) {
+    public ResponseEntity<List<RevenueByVenueDto>> getTopVenuesByRevenue(Instant from, Instant to, int limit) {
         return ResponseEntity.ok(metricsService.getTopVenuesByRevenue(from, to, limit));
     }
 

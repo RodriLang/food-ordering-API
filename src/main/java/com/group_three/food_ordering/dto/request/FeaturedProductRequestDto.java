@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @NoArgsConstructor
@@ -20,10 +20,10 @@ public class FeaturedProductRequestDto {
     private String productName;
 
     @NotNull(message = "Featured from ID is required", groups = {OnCreate.class, OnUpdate.class})
-    private LocalDateTime featuredFrom = LocalDateTime.now();
+    private Instant featuredFrom = Instant.now();
 
     @NotNull(message = "Featured until ID is required", groups = {OnCreate.class, OnUpdate.class})
-    private LocalDateTime featuredUntil;
+    private Instant featuredUntil;
 
     private Integer priority = 0;
 

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Page<Payment> findByOrders(List<Order> orders, Pageable pageable);
 
-    Page<Payment> findByOrdersAndStatusAndCreationDateBetween(List<Order> orders, PaymentStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable);
+    Page<Payment> findByOrdersAndStatusAndCreationDateBetween(List<Order> orders, PaymentStatus status, Instant from, Instant to, Pageable pageable);
 
     boolean existsByPublicId(UUID publicId);
 

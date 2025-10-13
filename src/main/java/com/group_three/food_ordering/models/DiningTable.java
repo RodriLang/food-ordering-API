@@ -33,7 +33,7 @@ public class DiningTable extends BaseEntity {
     @OneToMany(mappedBy = "diningTable", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<TableSession> tableSessions = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 

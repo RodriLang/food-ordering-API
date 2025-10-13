@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailResponseDto create(UserRequestDto dto) {
         log.info("[UserRepository] Reading Database existsByEmail: {}", dto.getEmail());
-        if (userRepository.existsByEmail(dto.getEmail())) {
+        if (userRepository.existsByEmailAndDeletedFalse(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
         User userEntity = userMapper.toEntity(dto);
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserDetailResponseDto> getActiveUsers(Pageable pageable) {
         log.info("[UserRepository] Reading Database findAllByDeletedFalse");
-        return userRepository.findAll(pageable)
+        return userRepository.findAllByDeletedFalse(pageable)
                 .map(userMapper::toDetailResponseDto);
     }
 
@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
     public UserDetailResponseDto updateUser(UUID id, com.group_three.food_ordering.dto.request.UserRequestDto dto) {
         User userEntity = this.getEntityById(id);
         log.info("[UserRepository] Reading Database for update existsByEmail: {}", dto.getEmail());
-        if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
+        if (!userEntity.getEmail().equals(dto.getEmail()) && userRepository.existsByEmailAndDeletedFalse(dto.getEmail())) {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
 
@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailResponseDto updateAuthUser(UserRequestDto dto) {
-        UUID authUserId = tenantContext.requireUser().getPublicId();
+        UUID authUserId = tenantContext.getUserId();
         return updateUser(authUserId, dto);
     }
 
@@ -119,20 +119,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteAuthUser() {
-        UUID authUserId = tenantContext.requireUser().getPublicId();
+        UUID authUserId = tenantContext.getUserId();
         deleteUser(authUserId);
     }
 
     @Override
     public User getEntityById(UUID id) {
         log.info("[UserRepository] Searching user by id: {}", id);
-        return userRepository.findByPublicId(id)
+        return userRepository.findByPublicIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(USER, id.toString()));
     }
 
     @Override
     public User getEntityByEmail(String email) {
         log.info("[UserRepository] Searching user by email: {}", email);
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new EntityNotFoundException(USER));    }
 }

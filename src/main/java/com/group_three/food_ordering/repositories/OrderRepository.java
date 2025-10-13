@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,15 +20,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByPublicId(UUID publicId);
 
     Optional<Order> findByFoodVenue_PublicIdAndOrderNumberAndOrderDateBetween(
-            UUID foodVenueId, Integer orderNumber, LocalDateTime start, LocalDateTime end);
+            UUID foodVenueId, Integer orderNumber, Instant start, Instant end);
 
     Optional<Order> findByPublicIdAndFoodVenue_PublicId(UUID id, UUID foodVenueId);
 
     Page<Order> findByFoodVenue_PublicIdAndOrderDateBetweenAndStatus(
-            UUID foodVenueId, LocalDateTime start, LocalDateTime end, OrderStatus status, Pageable pageable);
+            UUID foodVenueId, Instant start, Instant end, OrderStatus status, Pageable pageable);
 
     Page<Order> findByFoodVenue_PublicIdAndOrderDateBetween(
-            UUID foodVenueId, LocalDateTime start, LocalDateTime end, Pageable pageable
+            UUID foodVenueId, Instant start, Instant end, Pageable pageable
     );
 
     Page<Order> findByFoodVenue_PublicId(UUID venueId, Pageable pageable);
@@ -56,8 +56,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "AND o.orderDate < :end ")
     Long countOrdersToday(
             @Param("venuePublicId") UUID venuePublicId,
-            @Param("start") LocalDateTime start,
-            @Param("end") LocalDateTime end
+            @Param("start") Instant start,
+            @Param("end") Instant end
     );
 
 }

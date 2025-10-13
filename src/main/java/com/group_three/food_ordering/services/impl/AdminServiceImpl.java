@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.ADMIN_EMPLOYMENT;
-import static com.group_three.food_ordering.utils.EntityName.USER;
 
 @Slf4j
 @Service
@@ -58,7 +57,7 @@ public class AdminServiceImpl implements AdminService {
         User user = userService.getEntityByEmail(email);
 
         log.debug("[EmploymentRepository] Calling findByUser_PublicId for userId={}", user.getPublicId());
-        Employment employment = employmentRepository.findByUser_PublicId(user.getPublicId()).getFirst();
+        Employment employment = employmentRepository.findByUser_PublicIdAndDeletedFalseAndDeletedFalse(user.getPublicId()).getFirst();
         return employmentMapper.toResponseDto(employment);
     }
 
@@ -71,21 +70,21 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public Page<EmploymentResponseDto> getActiveAdminUsers(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByActiveAndRole for active ADMIN users");
-        return employmentRepository.getAllByActiveAndRole(pageable, Boolean.TRUE, RoleType.ROLE_ADMIN)
+        return employmentRepository.getAllByActiveAndRoleAndDeletedFalse(pageable, Boolean.TRUE, RoleType.ROLE_ADMIN)
                 .map(employmentMapper::toResponseDto);
     }
 
     @Override
     public Page<EmploymentResponseDto> getInactiveAdminUsers(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByActiveAndRole for inactive ADMIN users");
-        return employmentRepository.getAllByActiveAndRole(pageable, Boolean.FALSE, RoleType.ROLE_ADMIN)
+        return employmentRepository.getAllByActiveAndRoleAndDeletedFalse(pageable, Boolean.FALSE, RoleType.ROLE_ADMIN)
                 .map(employmentMapper::toResponseDto);
     }
 
     @Override
     public Page<EmploymentResponseDto> getAllAdminUsers(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByRole for all ADMIN users");
-        return employmentRepository.getAllByRole(pageable, RoleType.ROLE_ADMIN)
+        return employmentRepository.getAllByRoleAndDeletedFalse(pageable, RoleType.ROLE_ADMIN)
                 .map(employmentMapper::toResponseDto);
     }
 
@@ -107,9 +106,9 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[EmploymentRepository] Calling findByPublicIdAndFoodVenueAndActive for ADMIN employment {}", publicId);
-        return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
+        return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActiveAndDeletedFalse(publicId, foodVenueId, Boolean.TRUE)
                 .orElseThrow(() -> new EntityNotFoundException(ADMIN_EMPLOYMENT, publicId.toString()));
     }
 }

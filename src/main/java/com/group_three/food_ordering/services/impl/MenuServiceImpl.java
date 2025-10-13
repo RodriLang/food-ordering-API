@@ -42,7 +42,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public MenuResponseDto getHierarchicalMenuByFoodVenueId(UUID foodVenueId, String category) {
         log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", foodVenueId);
-        FoodVenue foodVenue = foodVenueRepository.findByPublicId(foodVenueId)
+        FoodVenue foodVenue = foodVenueRepository.findByPublicIdAndDeletedFalse(foodVenueId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid foodVenueId: " + foodVenueId));
         return generateHierarchicalMenu(foodVenue, category);
     }
@@ -80,7 +80,7 @@ public class MenuServiceImpl implements MenuService {
         log.debug("[ProductRepository] Calling findAllByFoodVenueAndAvailableAndCategory for category {} in venue {}",
                 category.getName(), foodVenueId);
 
-        List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicId(
+        List<Product> products = productRepository.findAllByFoodVenue_PublicIdAndAvailableAndCategoryPublicIdAndDeletedFalse(
                 foodVenueId, true, category.getPublicId());
 
         List<ItemMenuResponseDto> productsDto = products.stream()

@@ -4,7 +4,7 @@ import com.group_three.food_ordering.models.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,5 +26,5 @@ public interface ProductsMetricsRepository extends JpaRepository<Product, Long> 
     ORDER BY revenue DESC
     LIMIT :limit
   """, nativeQuery = true)
-    List<Map<String,Object>> topProducts(LocalDateTime from, LocalDateTime to, List<String> status, int limit, UUID venueId);
+    List<Map<String,Object>> topProducts(Instant from, Instant to, List<String> status, int limit, UUID venueId);
 }

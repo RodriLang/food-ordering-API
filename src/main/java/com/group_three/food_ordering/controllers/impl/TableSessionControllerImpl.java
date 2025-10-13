@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -64,8 +64,8 @@ public class TableSessionControllerImpl implements TableSessionController {
     @Override
     public ResponseEntity<PageResponse<TableSessionResponseDto>> getTableSessionsByTableAndTimeRange(
             Integer tableNumber,
-            LocalDateTime start,
-            LocalDateTime end,
+            Instant start,
+            Instant end,
             Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(
                 tableSessionService.getByTableAndTimeRange(tableNumber, start, end, pageable)));
@@ -121,8 +121,8 @@ public class TableSessionControllerImpl implements TableSessionController {
 
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN', 'ROOT')")
     @Override
-    public ResponseEntity<Void> endTableSessionById(UUID tableSessionId) {
-        tableSessionService.closeSessionById(tableSessionId);
+    public ResponseEntity<Void> endTableSessionByTable(UUID tableId) {
+        tableSessionService.closeSessionByTable(tableId);
         return ResponseEntity.ok().build();
     }
 }

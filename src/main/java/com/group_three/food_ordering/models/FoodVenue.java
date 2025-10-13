@@ -44,7 +44,7 @@ public class FoodVenue extends BaseEntity {
     @Builder.Default
     private List<DiningTable> diningTables = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "venue_style_id")
     private VenueStyle venueStyle;
 

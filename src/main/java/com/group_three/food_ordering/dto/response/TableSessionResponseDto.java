@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,11 +17,13 @@ public class TableSessionResponseDto {
 
     private UUID publicId;
 
-    private LocalDateTime startTime;
+    private Instant startTime;
 
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     private Integer tableNumber;
+
+    private String tableStatus;
 
     private Integer numberOfParticipants;
 

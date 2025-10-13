@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
         log.debug("[UserRepository] Calling findByEmail for user {}", userEmail);
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository.findByEmailAndDeletedFalse(userEmail)
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
         SessionInfo sessionInfo = resolveSessionInfo(user);
@@ -97,6 +97,7 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(newRefreshToken)
+                .role(sessionInfo.role())
                 .build();
     }
 
@@ -108,7 +109,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
 
         log.debug("[UserRepository] Calling findByEmail for authentication user {}", loginRequest.getEmail());
-        User user = userRepository.findByEmail(loginRequest.getEmail())
+        User user = userRepository.findByEmailAndDeletedFalse(loginRequest.getEmail())
                 .orElseThrow(() -> {
                     log.warn("[AuthService] User not found for email={}", loginRequest.getEmail());
                     return new UsernameNotFoundException("Usuario o contraseña incorrectos");
@@ -175,13 +176,11 @@ public class AuthServiceImpl implements AuthService {
      * NO hace consultoría de negocio (no crea ni migra nada).
      */
     private SessionInfo createSessionInfoForLoggedUser(User loggedUser) {
-        UUID venueId = tenantContext.foodVenueIdOpt().orElse(null);
+        UUID venueId = tenantContext.getFoodVenueId();
 
-        UUID participantId = (tenantContext.participantOpt().isPresent())
-                ? tenantContext.requireParticipant().getPublicId() : null;
+        UUID participantId = tenantContext.getParticipantId();
 
-        UUID tableSessionId = (tenantContext.tableSessionOpt().isPresent())
-                ? tenantContext.requireTableSession().getPublicId() : null;
+        UUID tableSessionId = tenantContext.getTableSessionId();
 
         return SessionInfo.builder()
                 .userId(loggedUser.getPublicId())
@@ -226,6 +225,7 @@ public class AuthServiceImpl implements AuthService {
                 .participants(sessionInfo.participants())
                 .tableNumber(sessionInfo.tableNumber())
                 .numberOfParticipants(sessionInfo.participants() != null ? sessionInfo.participants().size() : null)
+                .role(sessionInfo.role())
                 .build();
 
         log.debug("[AuthService] Auth response generated");

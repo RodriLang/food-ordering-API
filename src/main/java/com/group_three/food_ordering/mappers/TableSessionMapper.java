@@ -16,6 +16,7 @@ public interface TableSessionMapper {
 
     @Mappings({
             @Mapping(source = "diningTable.number", target = "tableNumber"),
+            @Mapping(source = "diningTable.status", target = "tableStatus"),
             @Mapping(source = "sessionHost", target = "hostClient"),
             @Mapping(source = "participants", target = "numberOfParticipants", qualifiedByName = "calculateNumberOfParticipants"),
     })

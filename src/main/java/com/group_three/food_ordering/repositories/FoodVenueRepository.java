@@ -13,9 +13,11 @@ import java.util.UUID;
 @Repository
 public interface FoodVenueRepository extends JpaRepository<FoodVenue, Long> {
 
-    Optional<FoodVenue> findByEmailIgnoreCase(String email);
+    Optional<FoodVenue> findByEmailIgnoreCaseAndDeletedFalse(String email);
 
-    Optional<FoodVenue> findByPublicId(UUID publicId);
+    Optional<FoodVenue> findByPublicIdAndDeletedFalse(UUID publicId);
+
+    Page<FoodVenue> findAllByDeletedFalse(Pageable pageable);
 
     @Query("SELECT fv FROM FoodVenue fv WHERE fv.deleted = true")
     Page<FoodVenue> findAllDeleted(Pageable pageable);

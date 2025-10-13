@@ -6,7 +6,7 @@ import com.group_three.food_ordering.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ public interface PaymentService {
 
     PaymentResponseDto create(PaymentRequestDto dto);
 
-    Page<PaymentResponseDto> getAllByContextAndStatusAndDateBetween(PaymentStatus status, LocalDateTime from, LocalDateTime to, Pageable pageable);
+    Page<PaymentResponseDto> getAllByContextAndStatusAndDateBetween(PaymentStatus status, Instant from, Instant to, Pageable pageable);
 
     Page<PaymentResponseDto> getAllByTableSessionAndStatus(UUID tableSession, PaymentStatus status, Pageable pageable);
 

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
@@ -24,17 +24,17 @@ public class MetricsAdminControllerImpl implements MetricsAdminController {
     // ---- MÉTRICAS CONTEXTUALES (POR LOCAL) ----
 
     @Override
-    public ResponseEntity<VenueMetricsResponseDto> getVenueOverview(LocalDateTime from, LocalDateTime to) {
+    public ResponseEntity<VenueMetricsResponseDto> getVenueOverview(Instant from, Instant to) {
         return ResponseEntity.ok(metricsService.getVenueOverview(from, to));
     }
 
     @Override
-    public ResponseEntity<List<TemporalSalesDto>> getSalesEvolution(LocalDateTime from, LocalDateTime to, TimeBucket timeBucket, List<OrderStatus> status) {
+    public ResponseEntity<List<TemporalSalesDto>> getSalesEvolution(Instant from, Instant to, TimeBucket timeBucket, List<OrderStatus> status) {
         return ResponseEntity.ok(metricsService.getSalesEvolution(from, to, timeBucket, status));
     }
 
     @Override
-    public ResponseEntity<List<ProductSalesDto>> getTopProducts(LocalDateTime from, LocalDateTime to, int limit) {
+    public ResponseEntity<List<ProductSalesDto>> getTopProducts(Instant from, Instant to, int limit) {
         return ResponseEntity.ok(metricsService.getTopProducts(from, to, limit));
     }
 }

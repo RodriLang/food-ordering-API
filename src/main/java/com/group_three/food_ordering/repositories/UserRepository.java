@@ -13,11 +13,13 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByPublicId(UUID publicId);
+    Optional<User> findByPublicIdAndDeletedFalse(UUID publicId);
 
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailAndDeletedFalse(String email);
 
-    boolean existsByEmail(String email);
+    boolean existsByEmailAndDeletedFalse(String email);
+
+    Page<User> findAllByDeletedFalse(Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.deleted = true")
     Page<User> findAllDeleted(Pageable pageable);

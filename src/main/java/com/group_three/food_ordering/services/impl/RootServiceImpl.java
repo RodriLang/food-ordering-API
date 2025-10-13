@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.USER;
@@ -44,7 +45,7 @@ public class RootServiceImpl implements RootService {
     @Override
     public EmploymentResponseDto createRootUser(EmploymentRequestDto dto) {
         log.debug("[UserRepository] Calling findByEmail for user email={}", dto.getUserEmail());
-        User user = userRepository.findByEmail(dto.getUserEmail())
+        User user = userRepository.findByEmailAndDeletedFalse(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
         FoodVenue foodVenue = getFoodVenue(dto.getFoodVenueId());
@@ -66,7 +67,7 @@ public class RootServiceImpl implements RootService {
     @Override
     public Page<EmploymentResponseDto> getRootUsers(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByActiveAndRole to retrieve active ROOT users");
-        return employmentRepository.getAllByActiveAndRole(pageable, Boolean.TRUE, RoleType.ROLE_ROOT)
+        return employmentRepository.getAllByActiveAndRoleAndDeletedFalse(pageable, Boolean.TRUE, RoleType.ROLE_ROOT)
                 .map(employmentMapper::toResponseDto);
     }
 
@@ -81,7 +82,7 @@ public class RootServiceImpl implements RootService {
 
         log.debug("[EmploymentRepository] Calling findByUser_PublicIdAndRoleAndActiveTrue for user {} and role ROOT",
                 authenticatedUser.getPublicId());
-        Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrue(
+        Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrueAndDeletedFalse(
                 authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
 
         if (employment == null) {
@@ -99,14 +100,18 @@ public class RootServiceImpl implements RootService {
                 .build();
 
         String token = jwtService.generateAccessToken(sessionInfo);
+        Instant expiration = jwtService.getExpirationDateFromToken(token);
+
         return AuthResponse.builder()
                 .accessToken(token)
+                .expirationDate(expiration)
+                .role(employment.getRole().name())
                 .build();
     }
 
     private FoodVenue getFoodVenue(UUID foodVenueId) {
         log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", foodVenueId);
-        return foodVenueRepository.findByPublicId(foodVenueId)
+        return foodVenueRepository.findByPublicIdAndDeletedFalse(foodVenueId)
                 .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
     }
 }

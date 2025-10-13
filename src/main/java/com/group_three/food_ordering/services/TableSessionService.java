@@ -7,7 +7,7 @@ import com.group_three.food_ordering.models.TableSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface TableSessionService {
@@ -26,7 +26,7 @@ public interface TableSessionService {
 
     Page<TableSessionResponseDto> getByContextAndTable(Integer tableNumber, Pageable pageable);
 
-    Page<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable);
+    Page<TableSessionResponseDto> getByTableAndTimeRange(Integer tableNumber, Instant start, Instant end, Pageable pageable);
 
     Page<TableSessionResponseDto> getActiveSessions(Pageable pageable);
 
@@ -42,7 +42,7 @@ public interface TableSessionService {
 
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
 
-    TableSessionResponseDto closeCurrentSession();
+    void closeCurrentSession();
 
-    TableSessionResponseDto closeSessionById(UUID tableId);
+    void closeSessionByTable(UUID tableId);
 }

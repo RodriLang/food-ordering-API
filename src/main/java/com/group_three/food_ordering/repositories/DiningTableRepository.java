@@ -15,9 +15,8 @@ import java.util.UUID;
 @Repository
 public interface DiningTableRepository extends JpaRepository<DiningTable, Long> {
 
-    Optional<DiningTable> findByPublicId(UUID publicId);
+    Optional<DiningTable> findByPublicIdAndDeletedFalse(UUID publicId);
 
-    Page<DiningTable> findByFoodVenuePublicId(UUID foodVenueId, Pageable pageable);
     Page<DiningTable> findByFoodVenue_PublicIdAndDeletedFalse(UUID foodVenueId, Pageable pageable);
 
     Optional<DiningTable> findByFoodVenuePublicIdAndNumber(UUID foodVenueId, Integer number);
@@ -25,8 +24,9 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
     @Query("SELECT t FROM DiningTable t WHERE " +
             "t.foodVenue.publicId = :foodVenuePublicId AND " +
             "(:status IS NULL OR t.status = :status) AND " +
-            "(:capacity IS NULL OR t.capacity = :capacity) ")
-    Page<DiningTable> findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
+            "(:capacity IS NULL OR t.capacity = :capacity) AND " +
+            "t.deleted = false")
+    Page<DiningTable> findByFoodVenuePublicIdAndFilters(
             @Param("foodVenuePublicId") UUID foodVenuePublicId,
             @Param("status") DiningTableStatus status,
             @Param("capacity") Integer capacity,

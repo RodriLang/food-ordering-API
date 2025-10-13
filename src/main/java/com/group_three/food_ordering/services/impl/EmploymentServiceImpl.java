@@ -60,7 +60,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     public List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId) {
         log.debug("[EmploymentService] Getting active roles by user={}", userId);
         log.debug("[EmploymentRepository] Calling findByUser_PublicId (List) for userId={}", userId);
-        List<Employment> employments = employmentRepository.findByUser_PublicId(userId);
+        List<Employment> employments = employmentRepository.findByUser_PublicIdAndDeletedFalseAndDeletedFalse(userId);
         employments.forEach(employment -> log.debug("[EmploymentService] Employments founded " +
                 "FoodVenue={} Role={}", employment.getFoodVenue().getName(), employment.getRole()));
 
@@ -72,13 +72,13 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public Page<EmploymentResponseDto> getAllAndActiveTrue(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByActive to retrieve active employments");
-        return employmentRepository.getAllByActive(pageable, Boolean.TRUE).map(employmentMapper::toResponseDto);
+        return employmentRepository.getAllByActiveAndDeletedFalse(pageable, Boolean.TRUE).map(employmentMapper::toResponseDto);
     }
 
     @Override
     public Page<EmploymentResponseDto> getAllAndActiveFalse(Pageable pageable) {
         log.debug("[EmploymentRepository] Calling getAllByActive to retrieve inactive employments");
-        return employmentRepository.getAllByActive(pageable, Boolean.FALSE).map(employmentMapper::toResponseDto);
+        return employmentRepository.getAllByActiveAndDeletedFalse(pageable, Boolean.FALSE).map(employmentMapper::toResponseDto);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class EmploymentServiceImpl implements EmploymentService {
         User user = getUserByEmail(email);
 
         log.debug("[EmploymentRepository] Calling findByUser_PublicId for userId={}", user.getPublicId());
-        return employmentRepository.findByUser_PublicId(user.getPublicId(), pageable).map(employmentMapper::toResponseDto);
+        return employmentRepository.findByUser_PublicIdAndDeletedFalseAndDeletedFalse(user.getPublicId(), pageable).map(employmentMapper::toResponseDto);
     }
 
     @Override
@@ -112,13 +112,13 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public Employment getEntityByIdAndActiveTrue(UUID id) {
         log.debug("[EmploymentRepository] Calling findByPublicIdAndActive for employmentId={}", id);
-        return employmentRepository.findByPublicIdAndActive(id, Boolean.TRUE)
+        return employmentRepository.findByPublicIdAndActiveAndDeletedFalse(id, Boolean.TRUE)
                 .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT));
     }
 
     private User getUserByEmail(String email) {
         log.debug("[UserRepository] Calling findByEmail for user email={}", email);
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new EntityNotFoundException(USER));
 
     }

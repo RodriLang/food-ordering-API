@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -31,7 +31,7 @@ public class Payment extends BaseEntity {
     private List<Order> orders;
 
     @Column(name = "payment_date", updatable = false)
-    private LocalDateTime paymentDate;
+    private Instant paymentDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

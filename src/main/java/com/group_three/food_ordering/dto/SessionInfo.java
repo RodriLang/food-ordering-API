@@ -3,7 +3,7 @@ package com.group_three.food_ordering.dto;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,9 +25,9 @@ public record SessionInfo(
 
         Integer tableNumber,
 
-        LocalDateTime startTime,
+        Instant startTime,
 
-        LocalDateTime endTime,
+        Instant endTime,
 
         ParticipantResponseDto hostClient,
 

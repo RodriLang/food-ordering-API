@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @RequestMapping(ApiPaths.TABLE_SESSION_URI)
@@ -105,9 +105,9 @@ public interface TableSessionController {
             @Parameter(description = "Número de la mesa", required = true)
             @PathVariable Integer tableNumber,
             @Parameter(description = "Fecha y hora de inicio (ISO 8601)", required = true)
-            @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam(value = "start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant start,
             @Parameter(description = "Fecha y hora de fin (ISO 8601)")
-            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam(value = "end", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant end,
             @Parameter(hidden = true) Pageable pageable);
 
 
@@ -211,6 +211,6 @@ public interface TableSessionController {
                     @ApiResponse(responseCode = "404", description = "Mesa no encontrada")
             }
     )
-    @PatchMapping("/end/{tableSessionId}")
-    ResponseEntity<Void> endTableSessionById(@PathVariable UUID tableSessionId);
+    @PatchMapping("/end/{tableId}")
+    ResponseEntity<Void> endTableSessionByTable(@PathVariable UUID tableId);
 }

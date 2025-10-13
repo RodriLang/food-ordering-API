@@ -11,8 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -587,21 +587,21 @@ public class DataInitializer {//implements CommandLineRunner {
                     .diningTable(t3)
                     .foodVenue(v3)
                     .sessionHost(c1)
-                    .startTime(LocalDateTime.now())
+                    .startTime(Instant.now())
                     .build();
             TableSession ts2 = TableSession.builder()
                     .publicId(UUID.randomUUID())
                     .diningTable(t2)
                     .foodVenue(v2)
                     .sessionHost(c2)
-                    .startTime(LocalDateTime.now())
+                    .startTime(Instant.now())
                     .build();
             TableSession ts3 = TableSession.builder()
                     .publicId(UUID.randomUUID())
                     .diningTable(t3)
                     .foodVenue(v3)
                     .sessionHost(c3)
-                    .startTime(LocalDateTime.now())
+                    .startTime(Instant.now())
                     .build();
             tableSessionRepository.saveAll(List.of(ts1, ts2, ts3));
 

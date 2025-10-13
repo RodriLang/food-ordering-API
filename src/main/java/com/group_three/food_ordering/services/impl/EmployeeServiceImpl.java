@@ -37,7 +37,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmploymentResponseDto createEmployeeUser(EmploymentRequestDto dto) {
         log.debug("[UserRepository] Calling findByEmail for user email={}", dto.getUserEmail());
-        User user = userRepository.findByEmail(dto.getUserEmail())
+        User user = userRepository.findByEmailAndDeletedFalse(dto.getUserEmail())
                 .orElseThrow(() -> new EntityNotFoundException(USER_ENTITY_NAME));
 
         FoodVenue foodVenue = tenantContext.requireFoodVenue();
@@ -59,11 +59,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Page<EmploymentResponseDto> getEmployeeUsers(Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[EmploymentRepository] Calling getAllByActiveAndFoodVenue_PublicId for active employees in venue {}",
                 foodVenueId);
 
-        return employmentRepository.getAllByActiveAndFoodVenue_PublicId(pageable, Boolean.TRUE, foodVenueId)
+        return employmentRepository.getAllByActiveAndFoodVenue_PublicIdAndDeletedFalse(pageable, Boolean.TRUE, foodVenueId)
                 .map(employmentMapper::toResponseDto);
     }
 
@@ -73,7 +73,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         validateAllowedRole(role);
         log.debug("[EmploymentRepository] Calling getAllByActiveAndRoleAndFoodVenue_PublicId for role {} in venue {}",
                 role, foodVenue.getPublicId());
-        return employmentRepository.getAllByActiveAndRoleAndFoodVenue_PublicId(
+        return employmentRepository.getAllByActiveAndRoleAndFoodVenue_PublicIdAndDeletedFalse(
                         pageable, Boolean.TRUE, role, foodVenue.getPublicId())
                 .map(employmentMapper::toResponseDto);
     }
@@ -99,16 +99,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employment getEmploymentByPublicId(UUID publicId) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[EmploymentRepository] Calling findByPublicIdAndFoodVenue_PublicIdAndActive for " +
                 "employment {} in venue {}", publicId, foodVenueId);
 
-        return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActive(publicId, foodVenueId, Boolean.TRUE)
+        return employmentRepository.findByPublicIdAndFoodVenue_PublicIdAndActiveAndDeletedFalse(publicId, foodVenueId, Boolean.TRUE)
                 .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT, publicId.toString()));
     }
 
     private void validateContext(Employment employment) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         if (!foodVenueId.equals(employment.getFoodVenue().getPublicId())) {
             throw new EntityNotFoundException(EMPLOYMENT);
         }

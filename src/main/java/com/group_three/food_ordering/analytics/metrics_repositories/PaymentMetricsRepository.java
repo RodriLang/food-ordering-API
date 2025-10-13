@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Repository
@@ -22,7 +22,7 @@ public interface PaymentMetricsRepository extends JpaRepository<Payment, Long> {
       AND p.status = 'SUCCESS'
       AND p.paymentDate BETWEEN :from AND :to
 """)
-    Double findAverageSpending(UUID venueId, LocalDateTime from, LocalDateTime to);
+    Double findAverageSpending(UUID venueId, Instant from, Instant to);
 
 
 }

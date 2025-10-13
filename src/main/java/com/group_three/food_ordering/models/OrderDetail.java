@@ -32,7 +32,7 @@ public class OrderDetail {
     @Column
     private String specialInstructions;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 

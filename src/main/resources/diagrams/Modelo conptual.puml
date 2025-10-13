@@ -61,8 +61,8 @@ class DiningTable {
 }
 
 class TableSession {
-    - startTime : LocalDateTime
-    - endTime : LocalDateTime
+    - startTime : Instant
+    - endTime : Instant
 }
 
 class Product {
@@ -75,8 +75,8 @@ class Product {
 }
 
 class FeaturedProduct {
-    - featuredFrom : LocalDateTime
-    - featuredUntil : LocalDateTime
+    - featuredFrom : Instant
+    - featuredUntil : Instant
     - priority : Integer
     - active : Boolean
 }
@@ -93,7 +93,7 @@ class Order {
     - orderNumber : String
     - status : OrderStatus
     - totalPrice : BigDecimal
-    - orderDate : LocalDateTime
+    - orderDate : Instant
     - specialRequirements : String
 }
 
@@ -105,7 +105,7 @@ class OrderDetail {
 
 class Payment {
     - amount : BigDecimal
-    - paymentDate : LocalDateTime
+    - paymentDate : Instant
     - status : PaymentStatus
     - paymentMethod : PaymentMethod
 }

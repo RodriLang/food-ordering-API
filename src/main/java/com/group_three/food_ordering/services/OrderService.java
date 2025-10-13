@@ -36,9 +36,9 @@ public interface OrderService {
 
     List<Order> getOrderEntitiesForToday(OrderStatus orderStatus);
 
-    Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus, Pageable pageable);
+    Page<OrderResponseDto> getOrdersByTableSessionAndStatus(UUID tableSessionId, OrderStatus status, Pageable pageable);
 
-    List<Order> getOrderEntitiesByTableSessionAndStatus(UUID tableSessionId, OrderStatus orderStatus);
+    List<Order> getOrderEntitiesByTableSessionAndStatus(UUID tableSessionId, OrderStatus status);
 
     Page<OrderResponseDto> getOrdersByAuthenticatedClient(OrderStatus status, Pageable pageable);
 

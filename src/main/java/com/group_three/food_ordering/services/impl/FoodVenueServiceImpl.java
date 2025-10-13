@@ -40,7 +40,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public Page<FoodVenueAdminResponseDto> getAllAdmin(Pageable pageable) {
         log.debug("[FoodVenueRepository] Calling findAll for all food venues (Admin)");
-        return foodVenueRepository.findAll(pageable)
+        return foodVenueRepository.findAllByDeletedFalse(pageable)
                 .map(foodVenueMapper::toAdminDto);
     }
 
@@ -54,7 +54,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public Page<FoodVenuePublicResponseDto> getAllPublic(Pageable pageable) {
         log.debug("[FoodVenueRepository] Calling findAll for all food venues (Public)");
-        return foodVenueRepository.findAll(pageable)
+        return foodVenueRepository.findAllByDeletedFalse(pageable)
                 .map(foodVenueMapper::toPublicDto);
     }
 
@@ -67,7 +67,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     @Override
     public FoodVenue findEntityById(UUID id) {
         log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", id);
-        return foodVenueRepository.findByPublicId(id)
+        return foodVenueRepository.findByPublicIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE, id.toString()));
     }
 

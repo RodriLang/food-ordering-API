@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -18,9 +17,9 @@ public class AuthResponse {
     //Datos de la TableSession
     private Integer tableNumber;
 
-    private LocalDateTime startTime;
+    private Instant startTime;
 
-    private LocalDateTime endTime;
+    private Instant endTime;
 
     private Integer numberOfParticipants;
 
@@ -34,6 +33,8 @@ public class AuthResponse {
     private String refreshToken;
 
     private Instant expirationDate;
+
+    private String role;
 
     //Roles disponibles por Employments
     private List<RoleEmploymentResponseDto> employments;

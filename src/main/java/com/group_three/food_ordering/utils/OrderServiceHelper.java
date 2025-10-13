@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -46,10 +47,11 @@ public class OrderServiceHelper {
 
     public Integer generateOrderNumber() {
         LocalDate today = LocalDate.now();
-        LocalDateTime start = today.atStartOfDay();
-        LocalDateTime end = start.plusDays(1);
+        LocalDateTime startDay = today.atStartOfDay();
+        Instant start = Instant.from(startDay);
+        Instant end = Instant.from(startDay.plusDays(1));
         int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(
-                tenantContext.requireFoodVenue().getPublicId(), start, end));
+                tenantContext.getFoodVenueId(), start, end));
         return ordersCount + 1;
     }
 }

@@ -9,14 +9,14 @@ import java.util.UUID;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    Optional<Category> findByPublicIdAndFoodVenue_PublicId(UUID publicId, UUID foodVenuePublicId);
+    Optional<Category> findByPublicIdAndFoodVenue_PublicIdAndDeletedFalse(UUID publicId, UUID foodVenuePublicId);
 
-    List<Category> findByParentCategoryIsNullAndFoodVenue_PublicId(UUID foodVenuePublicId);
+    List<Category> findByParentCategoryIsNullAndFoodVenue_PublicIdAndDeletedFalse(UUID foodVenuePublicId);
 
-    List<Category> findByParentCategoryPublicIdAndFoodVenue_PublicId(UUID id, UUID foodVenuePublicId);
+    List<Category> findByParentCategoryPublicIdAndFoodVenue_PublicIdAndDeletedFalse(UUID id, UUID foodVenuePublicId);
 
-    List<Category> findAllByFoodVenue_PublicIdAndParentCategoryIsNull(UUID foodVenuePublicId);
+    List<Category> findAllByFoodVenue_PublicIdAndParentCategoryIsNullAndDeletedFalse(UUID foodVenuePublicId);
 
-    void deleteByPublicIdAndFoodVenue_PublicId(UUID publicId, UUID foodVenuePublicId);
+    void deleteByPublicIdAndFoodVenue_PublicIdAndDeletedFalse(UUID publicId, UUID foodVenuePublicId);
 
 }

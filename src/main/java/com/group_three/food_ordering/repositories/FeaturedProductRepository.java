@@ -13,12 +13,11 @@ import java.util.UUID;
 @Repository
 public interface FeaturedProductRepository extends JpaRepository<FeaturedProduct, Long> {
 
-    Optional<FeaturedProduct> findByPublicId(UUID publicId);
+    Optional<FeaturedProduct> findByPublicIdAndDeletedFalse(UUID publicId);
 
+    boolean existsByProduct_NameAndProduct_FoodVenue_PublicIdAndDeletedFalse(String productName, UUID foodVenuePublicId);
 
-    boolean existsByProduct_NameAndProduct_FoodVenue_PublicId(String productName, UUID foodVenuePublicId);
-
-    void deleteByProduct_NameAndProduct_FoodVenue_PublicId(String productName, UUID foodVenuePublicId);
+    void deleteByProduct_NameAndProduct_FoodVenue_PublicIdAndDeletedFalse(String productName, UUID foodVenuePublicId);
 
     @Query("""
                 SELECT fp
@@ -27,6 +26,7 @@ public interface FeaturedProductRepository extends JpaRepository<FeaturedProduct
                 AND (fp.featuredUntil IS NULL OR fp.featuredUntil >= CURRENT_TIMESTAMP)
                 AND fp.active = true
                 AND fp.product.name = :productName
+                AND fp.deleted = false
                 AND fp.product.foodVenue.publicId = :foodVenuePublicId
             """)
     Optional<FeaturedProduct> findActiveByProduct(String productName, UUID foodVenuePublicId);
@@ -37,6 +37,7 @@ public interface FeaturedProductRepository extends JpaRepository<FeaturedProduct
                 WHERE (fp.featuredFrom IS NULL OR fp.featuredFrom <= CURRENT_TIMESTAMP)
                 AND (fp.featuredUntil IS NULL OR fp.featuredUntil >= CURRENT_TIMESTAMP)
                 AND fp.active = true
+                AND fp.deleted = false
                 ORDER BY fp.priority ASC NULLS LAST, fp.lastUpdateDate DESC
             """)
     Page<FeaturedProduct> findActiveFeaturedProducts(Pageable pageable);

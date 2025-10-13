@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.CATEGORY;
-import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 
 @Slf4j
 @Service
@@ -54,13 +53,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getEntityById(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.foodVenueIdOpt()
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+        UUID currentFoodVenueId = tenantContext.getFoodVenueId();
 
         log.debug("[CategoryRepository] Calling findByPublicIdAndFoodVenue_PublicId for categoryId {} in venue {}",
                 publicId, currentFoodVenueId);
 
-        return categoryRepository.findByPublicIdAndFoodVenue_PublicId(publicId, currentFoodVenueId)
+        return categoryRepository.findByPublicIdAndFoodVenue_PublicIdAndDeletedFalse(publicId, currentFoodVenueId)
                 .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
 
     }
@@ -75,13 +73,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        UUID currentFoodVenueId = tenantContext.foodVenueIdOpt()
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+        UUID currentFoodVenueId = tenantContext.getFoodVenueId();
 
         log.debug("[CategoryRepository] Calling findByParentCategoryIsNullAndFoodVenue to get root categories for " +
                 "venue {}", currentFoodVenueId);
 
-        List<Category> roots = categoryRepository.findByParentCategoryIsNullAndFoodVenue_PublicId(currentFoodVenueId);
+        List<Category> roots = categoryRepository.findByParentCategoryIsNullAndFoodVenue_PublicIdAndDeletedFalse(currentFoodVenueId);
 
         return roots.stream()
                 .map(categoryMapper::toDto)
@@ -90,13 +87,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDto> getCategoriesByParentCategoryId(UUID publicId) {
-        UUID currentFoodVenueId = tenantContext.foodVenueIdOpt()
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
+        UUID currentFoodVenueId = tenantContext.getFoodVenueId();
 
         log.debug("[CategoryRepository] Calling findByParentCategoryPublicIdAndFoodVenue_PublicId to get children " +
                 "of {} in venue {}", publicId, currentFoodVenueId);
 
-        List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicId(
+        List<Category> children = categoryRepository.findByParentCategoryPublicIdAndFoodVenue_PublicIdAndDeletedFalse(
                 publicId, currentFoodVenueId);
 
         return children.stream()
@@ -109,7 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
         log.debug("[CategoryRepository] Calling findAllByFoodVenue_PublicIdAndParentCategoryIsNull " +
                 "to find all parent categories for venue {}", foodVenuePublicId);
 
-        return categoryRepository.findAllByFoodVenue_PublicIdAndParentCategoryIsNull(foodVenuePublicId)
+        return categoryRepository.findAllByFoodVenue_PublicIdAndParentCategoryIsNullAndDeletedFalse(foodVenuePublicId)
                 .stream()
                 .toList();
     }

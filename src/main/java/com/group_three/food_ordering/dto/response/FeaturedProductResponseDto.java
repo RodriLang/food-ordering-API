@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -16,9 +16,9 @@ public class FeaturedProductResponseDto {
 
     private UUID productId;
 
-    private LocalDateTime featuredFrom = LocalDateTime.now();
+    private Instant featuredFrom = Instant.now();
 
-    private LocalDateTime featuredUntil;
+    private Instant featuredUntil;
 
     private Integer priority = 0;
 

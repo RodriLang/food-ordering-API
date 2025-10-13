@@ -38,8 +38,8 @@ class Table {
 }
 
 class TableSession {
-    - startTime : LocalDateTime
-    - endTime : LocalDateTime
+    - startTime : Instant
+    - endTime : Instant
 }
 
 
@@ -65,8 +65,8 @@ class Order {
     - orderNumber : String
     - status : OrderStatus
     - totalPrice : BigDecimal
-    - createdAt : LocalDateTime
-    - updatedAt : LocalDateTime
+    - createdAt : Instant
+    - updatedAt : Instant
     - specialRequirements : String
 }
 
@@ -80,7 +80,7 @@ class Payment {
     - amount : BigDecimal
     - paymentMethod : PaymentMethod
     - status : PaymentStatus
-    - paidAt : LocalDateTime
+    - paidAt : Instant
 }
 
 

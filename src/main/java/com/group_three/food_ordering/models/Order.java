@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class Order extends BaseEntity {
     private BigDecimal totalPrice;
 
     @Column(name = "order_date", updatable = false)
-    private LocalDateTime orderDate;
+    private Instant orderDate;
 
     @Column
     private String specialRequirements;
@@ -47,15 +47,16 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.EAGER)
     private Participant participant;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "table_session_id")
     private TableSession tableSession;
 
     @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")
+    @Builder.Default
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +30,7 @@ public interface TableSessionMetricsRepository extends JpaRepository<TableSessio
     AND ts.end_time IS NOT NULL
   GROUP BY v.public_id, v.name
 """, nativeQuery = true)
-    List<AverageSessionDurationProjection> findAverageSessionDurationByVenue(LocalDateTime from, LocalDateTime to);
+    List<AverageSessionDurationProjection> findAverageSessionDurationByVenue(Instant from, Instant to);
 
 
     @Query(value = """
@@ -45,8 +45,8 @@ public interface TableSessionMetricsRepository extends JpaRepository<TableSessio
     AND ts.start_time BETWEEN :from AND :to
 """, nativeQuery = true)
     Double findAverageSessionDurationByVenueId(@Param("venueId") UUID venueId,
-                                               @Param("from") LocalDateTime from,
-                                               @Param("to") LocalDateTime to);
+                                               @Param("from") Instant from,
+                                               @Param("to") Instant to);
 
 
 }

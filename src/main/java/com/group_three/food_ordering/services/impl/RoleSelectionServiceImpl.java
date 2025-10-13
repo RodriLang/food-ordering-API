@@ -80,6 +80,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expirationDate(expiration)
+                .role(role)
                 .employments(roleSelection).build();
     }
 
@@ -90,7 +91,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
         log.debug("[RoleSelectionService] Authenticated user email: {}", principal.getEmail());
 
         log.debug("[UserRepository] Calling findByEmail for authenticated user email: {}", principal.getEmail());
-        return userRepository.findByEmail(principal.getEmail())
+        return userRepository.findByEmailAndDeletedFalse(principal.getEmail())
                 .orElseThrow(() -> new EntityNotFoundException("User"));
     }
 }

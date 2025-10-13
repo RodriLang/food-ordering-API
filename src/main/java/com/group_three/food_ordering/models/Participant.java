@@ -19,14 +19,14 @@ import org.hibernate.annotations.SQLDelete;
 @SuperBuilder
 public class Participant extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @Column(length = 100, nullable = false)
     private String nickname;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "table_session_id", referencedColumnName = "id")
     private TableSession tableSession;
 

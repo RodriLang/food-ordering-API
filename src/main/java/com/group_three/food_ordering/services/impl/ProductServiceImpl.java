@@ -23,7 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -69,15 +70,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getEntityById(UUID publicId) {
         log.debug("[ProductRepository] Calling findByPublicId for product publicId={}", publicId);
-        return productRepository.findByPublicId(publicId)
+        return productRepository.findByPublicIdAndDeletedFalse(publicId)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }
 
     @Override
     public ItemMenuResponseDto getByNameAndContext(String name) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[ProductRepository] Calling findByName for ItemMenu for name={} and venueId={}", name, foodVenueId);
-        Product product = productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
+        Product product = productRepository.findByNameAndFoodVenue_PublicIdAndDeletedFalse(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
 
@@ -86,9 +87,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getEntityByNameAndContext(String name) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[ProductRepository] Calling findByNameAndFoodVenue_PublicId for name={} and venueId={}", name, foodVenueId);
-        return productRepository.findByNameAndFoodVenue_PublicId(name, foodVenueId).stream()
+        return productRepository.findByNameAndFoodVenue_PublicIdAndDeletedFalse(name, foodVenueId).stream()
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
 
@@ -105,23 +106,23 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Page<ProductResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[ProductRepository] Calling findAllByFoodVenue_PublicId for venueId={}", foodVenueId);
-        return productRepository.findAllByFoodVenue_PublicId(foodVenueId, pageable)
+        return productRepository.findAllByFoodVenue_PublicIdAndDeletedFalse(foodVenueId, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
     public Page<ProductResponseDto> getAllAvailable(Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[ProductRepository] Calling findAllByFoodVenue_PublicIdAndAvailable for venueId={}", foodVenueId);
-        return productRepository.findAllByFoodVenue_PublicIdAndAvailable(foodVenueId, true, pageable)
+        return productRepository.findAllByFoodVenue_PublicIdAndAvailableAndDeletedFalse(foodVenueId, true, pageable)
                 .map(productMapper::toDto);
     }
 
     @Override
     public Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable) {
-        LocalDateTime fromDate = LocalDateTime.now().minusDays(days);
+        Instant fromDate = Instant.now().minus(Duration.ofDays(days));
         log.debug("[ProductRepository] Calling findTopSellingProducts from date {} with limit {}", fromDate, limit);
         return productRepository.findTopSellingProducts(fromDate, PageRequest.of(0, limit))
                 .map(productMapper::toItemMenuDto);

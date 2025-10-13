@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,7 +27,7 @@ public interface TableSessionRepository extends JpaRepository<TableSession, Long
     Page<TableSession> findByFoodVenuePublicIdAndDiningTableNumber(UUID foodVenueId, Integer tableNumber, Pageable pageable);
 
     Page<TableSession> findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
-            UUID foodVenueId, Integer tableNumber, LocalDateTime start, LocalDateTime end, Pageable pageable);
+            UUID foodVenueId, Integer tableNumber, Instant start, Instant end, Pageable pageable);
 
     Page<TableSession> findByFoodVenuePublicIdAndEndTimeIsNull(UUID foodVenueId, Pageable pageable);
 
@@ -40,6 +40,8 @@ public interface TableSessionRepository extends JpaRepository<TableSession, Long
     Page<TableSession> findPastSessionsByParticipantIdAndDeletedFalse(UUID foodVenueId, UUID clientId, Pageable pageable);
 
     Optional<TableSession> findTopByFoodVenuePublicIdAndDiningTablePublicIdOrderByStartTimeDesc(UUID foodVenueId, UUID tableId);
+
+    Optional<TableSession> findBySessionHost_PublicIdAndDiningTable_PublicId(UUID hostId, UUID tableId);
 
     Optional<TableSession> findTableSessionByDiningTable_PublicIdAndDiningTableStatusAndEndTimeIsNull(UUID tableId, DiningTableStatus status);
 

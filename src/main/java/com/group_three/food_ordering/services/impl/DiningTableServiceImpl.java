@@ -44,7 +44,7 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public Page<DiningTableResponseDto> getAll(Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[DiningTableRepository] Calling findByFoodVenue_PublicIdAndDeletedFalse for venue {}", foodVenueId);
         return diningTableRepository.findByFoodVenue_PublicIdAndDeletedFalse(foodVenueId, pageable)
                 .map(diningTableMapper::toDto);
@@ -59,13 +59,13 @@ public class DiningTableServiceImpl implements DiningTableService {
     @Override
     public DiningTable getEntityById(UUID tableId) {
         log.debug("[DiningTableRepository] Calling findByPublicId for tableId {}", tableId);
-        return diningTableRepository.findByPublicId(tableId)
+        return diningTableRepository.findByPublicIdAndDeletedFalse(tableId)
                 .orElseThrow(() -> new EntityNotFoundException(DINING_TABLE, tableId.toString()));
     }
 
     @Override
     public DiningTableResponseDto getByNumber(Integer number) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[DiningTableRepository] Calling findByFoodVenuePublicIdAndNumber for venue {} and table number {}",
                 foodVenueId, number);
 
@@ -76,11 +76,11 @@ public class DiningTableServiceImpl implements DiningTableService {
 
     @Override
     public Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[DiningTableRepository] Calling findByFoodVenuePublicIdAndFiltersAndDeletedFalse for " +
                 "venue {} with status {} and capacity {}", foodVenueId, status, capacity);
 
-        return diningTableRepository.findByFoodVenuePublicIdAndFiltersAndDeletedFalse(
+        return diningTableRepository.findByFoodVenuePublicIdAndFilters(
                 foodVenueId, status, capacity, pageable).map(diningTableMapper::toDto);
     }
 
@@ -109,15 +109,32 @@ public class DiningTableServiceImpl implements DiningTableService {
         diningTableRepository.save(diningTable);
     }
 
+    @Override
+    public void updateStatusByEntity(DiningTableStatus status, DiningTable diningTable) {
+
+        if ((status != null)) {
+            diningTable.setStatus(status);
+        }
+        log.debug("[DiningTableRepository] Calling save table number {} status {}",
+                diningTable.getPublicId(), status);
+
+        diningTableRepository.save(diningTable);
+    }
+
     @Transactional
     @Override
     public void delete(UUID id) {
         DiningTable diningTable = this.getEntityById(id);
-        if (diningTable.getStatus() != DiningTableStatus.AVAILABLE && diningTable.getStatus() != DiningTableStatus.OUT_OF_SERVICE ) {
+        if (diningTable.getStatus() != DiningTableStatus.AVAILABLE && diningTable.getStatus() != DiningTableStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Only tables with status AVAILABLE or OUT_OF_SERVICE can be deleted.");
         }
         diningTable.setDeleted(Boolean.TRUE);
         log.debug("[DiningTableRepository] Calling save to soft delete dining table {}", id);
+        diningTableRepository.save(diningTable);
+    }
+
+    @Override
+    public void save(DiningTable diningTable) {
         diningTableRepository.save(diningTable);
     }
 }

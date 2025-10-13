@@ -5,7 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "featured_products", indexes = {
@@ -23,16 +23,16 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public class FeaturedProduct extends BaseEntity {
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     @Column(name = "featured_from", nullable = false)
     @Builder.Default
-    private LocalDateTime featuredFrom = LocalDateTime.now();
+    private Instant featuredFrom = Instant.now();
 
     @Column(name = "featured_until")
-    private LocalDateTime featuredUntil;
+    private Instant featuredUntil;
 
     @Column(name = "priority")
     @Builder.Default

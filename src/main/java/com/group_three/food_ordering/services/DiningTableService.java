@@ -25,7 +25,11 @@ public interface DiningTableService {
 
     void updateStatus(DiningTableStatus status, UUID id);
 
+    void updateStatusByEntity(DiningTableStatus status, DiningTable diningTable);
+
     void delete(UUID id);
+
+    void save(DiningTable diningTable);
 
     Page<DiningTableResponseDto> getByFilters(DiningTableStatus status, Integer capacity, Pageable pageable);
 }

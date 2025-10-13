@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,7 +49,7 @@ public class MetricsServiceImpl implements MetricsService {
     // ---- MÉTRICAS GENERALES ----
 
     @Override
-    public GeneralMetricsResponseDto getGeneralOverview(LocalDateTime from, LocalDateTime to) {
+    public GeneralMetricsResponseDto getGeneralOverview(Instant from, Instant to) {
         long totalOrders = orderMetricsRepository.countOrdersBetween(from, to);
         long totalVenues = orderMetricsRepository.countDistinctVenuesBetween(from, to);
         BigDecimal totalRevenue = orderMetricsRepository.getRevenueGroupedByVenue(from, to).stream()
@@ -81,17 +81,17 @@ public class MetricsServiceImpl implements MetricsService {
     }
 
     @Override
-    public List<OrdersByVenueDto> getOrdersByVenue(LocalDateTime from, LocalDateTime to) {
+    public List<OrdersByVenueDto> getOrdersByVenue(Instant from, Instant to) {
         return orderMetricsRepository.getOrdersGroupedByVenue(from, to);
     }
 
     @Override
-    public List<RevenueByVenueDto> getRevenueByVenue(LocalDateTime from, LocalDateTime to) {
+    public List<RevenueByVenueDto> getRevenueByVenue(Instant from, Instant to) {
         return orderMetricsRepository.getRevenueGroupedByVenue(from, to);
     }
 
     @Override
-    public List<RevenueByVenueDto> getTopVenuesByRevenue(LocalDateTime from, LocalDateTime to, int limit) {
+    public List<RevenueByVenueDto> getTopVenuesByRevenue(Instant from, Instant to, int limit) {
         return orderMetricsRepository.getRevenueGroupedByVenue(from, to)
                 .stream()
                 .sorted((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()))
@@ -102,8 +102,8 @@ public class MetricsServiceImpl implements MetricsService {
     // ---- MÉTRICAS POR LOCAL ----
 
     @Override
-    public VenueMetricsResponseDto getVenueOverview(LocalDateTime from, LocalDateTime to) {
-        UUID venueId = tenantContext.requireFoodVenue().getPublicId();
+    public VenueMetricsResponseDto getVenueOverview(Instant from, Instant to) {
+        UUID venueId = tenantContext.getFoodVenueId();
         long totalOrders = orderMetricsRepository.countByVenueAndDateBetween(venueId, from, to);
         BigDecimal totalRevenue = BigDecimal.valueOf(
                 orderMetricsRepository.sumTotalRevenueByVenue(venueId, from, to)
@@ -129,13 +129,13 @@ public class MetricsServiceImpl implements MetricsService {
 
     @Override
     public List<TemporalSalesDto> getSalesEvolution(
-            LocalDateTime from,
-            LocalDateTime to,
+            Instant from,
+            Instant to,
             TimeBucket timeBucket,
             List<OrderStatus> statuses
     ) {
         // 1) Tenant
-        UUID venueId = tenantContext.isAuthenticated() ? tenantContext.requireFoodVenue().getPublicId() : null;
+        UUID venueId = tenantContext.isAuthenticated() ? tenantContext.getFoodVenueId() : null;
 
         // 2) Convertir enums a String si la query es nativa y usa IN (:statuses)
         List<String> statusStrings = statuses != null
@@ -156,8 +156,8 @@ public class MetricsServiceImpl implements MetricsService {
 
 
     @Override
-    public List<ProductSalesDto> getTopProducts(LocalDateTime from, LocalDateTime to, int limit) {
-        UUID venueId = tenantContext.requireFoodVenue().getPublicId();
+    public List<ProductSalesDto> getTopProducts(Instant from, Instant to, int limit) {
+        UUID venueId = tenantContext.getFoodVenueId();
         var statuses = List.of("PAID","COMPLETED");
         var rows = productsMetricsRepository.topProducts(from, to, statuses, limit, venueId);
         return rows.stream().map(r -> new ProductSalesDto(

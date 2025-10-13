@@ -105,12 +105,12 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
 
     private FeaturedProduct getFeaturedProductById(UUID id) {
         log.debug("[FeaturedProductRepository] Calling findByPublicId for featured product {}", id);
-        return featuredProductRepository.findByPublicId(id)
+        return featuredProductRepository.findByPublicIdAndDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(FEAT_PRODUCT));
     }
 
     private FeaturedProduct getActiveFeaturedProductByProductNameAndContext(String productName) {
-        UUID currentContextId = tenantContext.requireFoodVenue().getPublicId();
+        UUID currentContextId = tenantContext.getFoodVenueId();
         log.debug("[FeaturedProductRepository] Calling findActiveByProduct for productName {} in context {}",
                 productName, currentContextId);
         return featuredProductRepository.findActiveByProduct(productName, currentContextId)
@@ -118,10 +118,10 @@ public class FeaturedProductServiceImpl implements FeaturedProductService {
     }
 
     private Product getProductByNameAndContext(String productName) {
-        UUID currentContextId = tenantContext.requireFoodVenue().getPublicId();
+        UUID currentContextId = tenantContext.getFoodVenueId();
         log.debug("[ProductRepository] Calling findByNameAndFoodVenue_PublicId for productName {} in context {}",
                 productName, currentContextId);
-        List<Product> products = productRepository.findByNameAndFoodVenue_PublicId(productName, currentContextId);
+        List<Product> products = productRepository.findByNameAndFoodVenue_PublicIdAndDeletedFalse(productName, currentContextId);
         if (products.isEmpty()) {
             throw new EntityNotFoundException(PRODUCT);
         }

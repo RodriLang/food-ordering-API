@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,12 +69,12 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Page<PaymentResponseDto> getAllByContextAndStatusAndDateBetween(
             PaymentStatus status,
-            LocalDateTime from,
-            LocalDateTime to,
+            Instant from,
+            Instant to,
             Pageable pageable)
     {
         log.debug("[OrderService] Calling getOrderEntitiesByFilters for date range: {} to {}",
-                from.toLocalDate(), to.toLocalDate());
+                from, to);
 
         List<Order> orders = orderService.getOrderEntitiesByFilters(LocalDate.from(from), LocalDate.from(to), null);
         log.debug("[PaymentRepository] Calling findByOrdersAndStatusAndCreationDateBetween for {} orders, status {}",
@@ -95,7 +95,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Page<PaymentResponseDto> getAllByCurrentTableSessionAndStatus(PaymentStatus status, Pageable pageable) {
-        UUID currentTableSessionId = tenantContext.requireTableSession().getPublicId();
+        UUID currentTableSessionId = tenantContext.getTableSessionId();
         return getAllByTableSessionAndStatus(currentTableSessionId, status, pageable);
     }
 

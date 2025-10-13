@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +29,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
         WHERE o.orderDate BETWEEN :from AND :to
         GROUP BY v.publicId, v.name
     """)
-    List<OrdersByVenueDto> getOrdersGroupedByVenue(LocalDateTime from, LocalDateTime to);
+    List<OrdersByVenueDto> getOrdersGroupedByVenue(Instant from, Instant to);
 
     @Query("""
         SELECT new com.group_three.food_ordering.analytics.metrics_dto.RevenueByVenueDto(
@@ -46,7 +46,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
           AND o.orderDate BETWEEN :from AND :to
         GROUP BY v.publicId, v.name
     """)
-    List<RevenueByVenueDto> getRevenueGroupedByVenue(LocalDateTime from, LocalDateTime to);
+    List<RevenueByVenueDto> getRevenueGroupedByVenue(Instant from, Instant to);
 
     @Query("""
         SELECT SUM(o.totalPrice)
@@ -58,7 +58,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
           AND o.status = 'COMPLETED'
           AND o.orderDate BETWEEN :from AND :to
     """)
-    Double sumTotalRevenueByVenue(UUID venueId, LocalDateTime from, LocalDateTime to);
+    Double sumTotalRevenueByVenue(UUID venueId, Instant from, Instant to);
 
     // Cantidad de pedidos entre fechas
     @Query("""
@@ -66,7 +66,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
         FROM Order o
         WHERE o.orderDate BETWEEN :from AND :to
     """)
-    long countOrdersBetween(LocalDateTime from, LocalDateTime to);
+    long countOrdersBetween(Instant from, Instant to);
 
     // Cantidad de venues distintos con pedidos entre fechas
     @Query("""
@@ -76,7 +76,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
         JOIN ts.diningTable dt
         WHERE o.orderDate BETWEEN :from AND :to
     """)
-    long countDistinctVenuesBetween(LocalDateTime from, LocalDateTime to);
+    long countDistinctVenuesBetween(Instant from, Instant to);
 
 
     // Porcentaje de pedidos cancelados en un local entre fechas
@@ -91,7 +91,7 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
     WHERE dt.foodVenue.publicId = :venueId
       AND o.orderDate BETWEEN :from AND :to
 """)
-    double calculateCancellationRate(UUID venueId, LocalDateTime from, LocalDateTime to);
+    double calculateCancellationRate(UUID venueId, Instant from, Instant to);
 
 
     @Query(value = """
@@ -106,8 +106,8 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
   ORDER BY DATE_FORMAT(o.order_date, '%Y-%m-%d')
 """, nativeQuery = true)
     List<Map<String,Object>> salesByDay(
-            @Param("from") LocalDateTime from,
-            @Param("to") LocalDateTime to,
+            @Param("from") Instant from,
+            @Param("to") Instant to,
             @Param("statuses") List<String> statuses,
             @Param("venueId") UUID venueId
     );
@@ -124,8 +124,8 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
   GROUP BY CONCAT(YEAR(o.order_date), '-W', LPAD(WEEK(o.order_date, 3),2,'0'))
   ORDER BY CONCAT(YEAR(o.order_date), '-W', LPAD(WEEK(o.order_date, 3),2,'0'))
 """, nativeQuery = true)
-    List<Map<String,Object>> salesByWeek(@Param("from") LocalDateTime from,
-                                         @Param("to") LocalDateTime to,
+    List<Map<String,Object>> salesByWeek(@Param("from") Instant from,
+                                         @Param("to") Instant to,
                                          @Param("statuses") List<String> statuses,
                                          @Param("venueId") UUID venueId);
 
@@ -141,8 +141,8 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
   GROUP BY DATE_FORMAT(o.order_date, '%Y-%m')
   ORDER BY DATE_FORMAT(o.order_date, '%Y-%m')
 """, nativeQuery = true)
-    List<Map<String,Object>> salesByMonth(@Param("from") LocalDateTime from,
-                                          @Param("to") LocalDateTime to,
+    List<Map<String,Object>> salesByMonth(@Param("from") Instant from,
+                                          @Param("to") Instant to,
                                           @Param("statuses") List<String> statuses,
                                           @Param("venueId") UUID venueId);
 
@@ -150,10 +150,10 @@ public interface OrderMetricsRepository extends JpaRepository<Order, Long> {
 
     // Métodos adicionales para venue metrics
     @Query("SELECT COUNT(o) FROM Order o JOIN o.tableSession ts JOIN ts.diningTable dt JOIN dt.foodVenue v WHERE v.publicId = :venueId AND o.orderDate BETWEEN :from AND :to")
-    long countByVenueAndDateBetween(UUID venueId, LocalDateTime from, LocalDateTime to);
+    long countByVenueAndDateBetween(UUID venueId, Instant from, Instant to);
 
     @Query("SELECT AVG(o.totalPrice) FROM Order o JOIN o.tableSession ts JOIN ts.diningTable dt JOIN dt.foodVenue v WHERE v.publicId = :venueId AND o.orderDate BETWEEN :from AND :to")
-    double calculateAverageTicketByVenue(UUID venueId, LocalDateTime from, LocalDateTime to);
+    double calculateAverageTicketByVenue(UUID venueId, Instant from, Instant to);
 
     @Query("SELECT v.name FROM DiningTable dt JOIN dt.foodVenue v WHERE v.publicId = :venueId")
     List<String> findVenueNameById(UUID venueId);

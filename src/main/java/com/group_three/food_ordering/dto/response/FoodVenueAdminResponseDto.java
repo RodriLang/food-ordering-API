@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Data
@@ -26,9 +26,9 @@ public class FoodVenueAdminResponseDto {
 
     private AddressResponseDto address;
 
-    private LocalDateTime creationDate;
+    private Instant creationDate;
 
-    private LocalDateTime lastUpdateDate;
+    private Instant lastUpdateDate;
 
     private Integer numberOfEmployees;
 
