@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,7 +20,6 @@ public class DiningTableControllerImpl implements DiningTableController {
 
     private final DiningTableService diningTableService;
 
-    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Override
     public ResponseEntity<DiningTableResponseDto> createTable(
             DiningTableRequestDto diningTableRequestDto) {
@@ -29,27 +27,23 @@ public class DiningTableControllerImpl implements DiningTableController {
                 .body(diningTableService.create(diningTableRequestDto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PageResponse<DiningTableResponseDto>> getTables(Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(diningTableService.getAll(pageable)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<DiningTableResponseDto> getTableById(
             UUID id) {
         return ResponseEntity.ok(diningTableService.getById(id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<DiningTableResponseDto> getTableByNumber(
             Integer number) {
         return ResponseEntity.ok(diningTableService.getByNumber(number));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<PageResponse<DiningTableResponseDto>> getFilteredTables(
             DiningTableStatus status,
@@ -58,7 +52,6 @@ public class DiningTableControllerImpl implements DiningTableController {
         return ResponseEntity.ok(PageResponse.of(diningTableService.getByFilters(status, capacity, pageable)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<Void> updateStatus(
             DiningTableStatus status,
@@ -67,14 +60,12 @@ public class DiningTableControllerImpl implements DiningTableController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER','ROOT')")
     @Override
     public ResponseEntity<DiningTableResponseDto> update(
             DiningTableRequestDto diningTableRequestDto, UUID id) {
         return ResponseEntity.ok(diningTableService.update(diningTableRequestDto, id));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','ROOT')")
     @Override
     public ResponseEntity<Void> delete(UUID id) {
         diningTableService.delete(id);

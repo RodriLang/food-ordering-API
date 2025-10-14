@@ -5,13 +5,11 @@ import com.group_three.food_ordering.analytics.metrics_dto.*;
 import com.group_three.food_ordering.analytics.metrics_services.MetricsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
 
-@PreAuthorize("hasRole('ROOT')")
 @RestController
 @RequiredArgsConstructor
 public class MetricsRootControllerImpl implements MetricsRootController {

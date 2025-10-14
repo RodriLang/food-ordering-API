@@ -7,13 +7,13 @@ import com.group_three.food_ordering.analytics.metrics_services.MetricsService;
 import com.group_three.food_ordering.enums.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
 
-@PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
 @RestController
 @RequiredArgsConstructor
 public class MetricsAdminControllerImpl implements MetricsAdminController {

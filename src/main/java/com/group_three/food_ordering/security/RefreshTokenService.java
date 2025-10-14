@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +28,7 @@ public class RefreshTokenService {
         log.debug("[RefreshTokenService] Revoke existing token for user={}", userEmail);
         log.debug("[RefreshTokenRepository] Calling revokeAllByUserEmail for user={}", userEmail);
         refreshTokenRepository.revokeAllByUserEmail(userEmail);
-
+/*
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         RefreshToken refreshToken = RefreshToken.builder()
                 .token(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -43,7 +41,8 @@ public class RefreshTokenService {
         log.debug("[RefreshTokenRepository] Calling save to create new refresh token for user={}", userEmail);
         refreshTokenRepository.save(refreshToken);
         log.debug("[RefreshTokenService] Generated refresh token for user={}", userEmail);
-        return refreshToken.getToken();
+       */
+        return null;
     }
 
     public Optional<String> validateAndGetUserEmail(String token) {

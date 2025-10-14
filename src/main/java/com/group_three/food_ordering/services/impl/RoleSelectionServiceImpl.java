@@ -9,14 +9,12 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.UserRepository;
-import com.group_three.food_ordering.security.CustomUserPrincipal;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.EmploymentService;
 import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.RoleSelectionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -86,12 +84,9 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     private User getAuthenticatedUser() {
         log.debug("[RoleSelectionService] Fetching authenticated user from security context");
-        CustomUserPrincipal principal = (CustomUserPrincipal)
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        log.debug("[RoleSelectionService] Authenticated user email: {}", principal.getEmail());
 
-        log.debug("[UserRepository] Calling findByEmail for authenticated user email: {}", principal.getEmail());
-        return userRepository.findByEmailAndDeletedFalse(principal.getEmail())
-                .orElseThrow(() -> new EntityNotFoundException("User"));
+
+        return null;
+
     }
 }

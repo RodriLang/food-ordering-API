@@ -13,7 +13,6 @@ import com.group_three.food_ordering.repositories.ParticipantRepository;
 import com.group_three.food_ordering.services.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,9 +84,7 @@ public class ParticipantServiceImpl implements ParticipantService {
         Participant hostDesigned = getEntityById(participantId);
         Participant currentHost = tenantContext.requireParticipant();
         TableSession currentTableSession = tenantContext.requireTableSession();
-        if (!currentTableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
-            throw new AccessDeniedException("Only the current host can delegate hosting duties");
-        }
+
         //implementar una forma de capturar este evento para avisar al nuevo hot
         log.debug("[ParticipantService] Delegating host duties from {} to {} in session {}",
                 currentHost.getPublicId(), hostDesigned.getPublicId(), currentTableSession.getPublicId());

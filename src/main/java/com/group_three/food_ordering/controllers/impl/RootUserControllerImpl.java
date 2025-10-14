@@ -8,12 +8,10 @@ import com.group_three.food_ordering.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@PreAuthorize("hasRole('ROOT')")
 @RestController
 @RequiredArgsConstructor
 public class RootUserControllerImpl implements RootUserController {

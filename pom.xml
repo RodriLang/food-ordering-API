@@ -38,10 +38,13 @@
 		</dependency>
 
 		<!-- Spring Security-->
+
+		<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		-->
 
 		<!-- Spring Validation -->
 		<dependency>
@@ -55,14 +58,14 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- Spring Dev Tools -->
+		<!-- Spring Dev Tools
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-
+		-->
 		<!-- MySQL Driver -->
 		<dependency>
 			<groupId>com.mysql</groupId>

@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -28,7 +27,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
     private final AddressMapper addressMapper;
     private final TenantContext tenantContext;
     private final EmploymentRepository employmentRepository;
@@ -40,7 +38,6 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyUsedException(dto.getEmail());
         }
         User userEntity = userMapper.toEntity(dto);
-        userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
         userEntity.setPublicId(UUID.randomUUID());
         log.info("[UserRepository] Saving user: {}", userEntity.getEmail());
         return userMapper.toDetailResponseDto(userRepository.save(userEntity));

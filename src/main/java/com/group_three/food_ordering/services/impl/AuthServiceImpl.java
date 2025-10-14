@@ -19,9 +19,6 @@ import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -39,7 +36,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final ParticipantMapper participantMapper;
     private final TableSessionRepository tableSessionRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RoleEmploymentMapper roleEmploymentMapper;
     private final RefreshTokenService refreshTokenService;
@@ -107,8 +103,8 @@ public class AuthServiceImpl implements AuthService {
 
     private User authenticateUser(LoginRequest loginRequest) {
         log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
-
-        log.debug("[UserRepository] Calling findByEmail for authentication user {}", loginRequest.getEmail());
+/*
+      log.debug("[UserRepository] Calling findByEmail for authentication user {}", loginRequest.getEmail());
         User user = userRepository.findByEmailAndDeletedFalse(loginRequest.getEmail())
                 .orElseThrow(() -> {
                     log.warn("[AuthService] User not found for email={}", loginRequest.getEmail());
@@ -120,7 +116,9 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Usuario o contraseña incorrectos");
         }
         log.debug("[AuthService] Authenticated user: {}", user.getEmail());
-        return user;
+        */
+        return null;
+
     }
 
     /**
