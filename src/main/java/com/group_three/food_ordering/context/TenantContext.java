@@ -114,17 +114,19 @@ public class TenantContext {
     // =========================
 
     public Optional<User> userOpt() {
+        log.debug("[TenantContext] Getting user cache");
         if (!userResolved) {
-            if(participantOpt().isPresent()) {
+            if (participantOpt().isPresent()) {
+                log.debug("[TenantContext] Getting user from participant");
                 user = requireParticipant().getUser();
                 userResolved = true;
             } else if (userId != null) {
+                log.debug("[TenantContext] Getting user from user: {}", userId);
                 user = userRepo.findByPublicIdAndDeletedFalse(userId).orElse(null);
                 userResolved = true;
             }
             log.debug("[TenantContext] user loaded? {}", user != null);
         }
-        log.debug("[TenantContext] Getting user cache");
         return Optional.ofNullable(user);
     }
 
