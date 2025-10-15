@@ -47,7 +47,7 @@ public class TenantContext {
 
     // --- IDs para lazy-loading ---
     @Getter
-    private UUID userId;
+    private UUID userId = UUID.fromString("6ae09347-a6af-11f0-9d49-fc5cee3effed");
     @Getter
     private UUID participantId;
     @Getter
