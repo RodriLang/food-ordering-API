@@ -10,19 +10,22 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
-import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.EmploymentService;
+import com.group_three.food_ordering.services.UserService;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
-import static com.group_three.food_ordering.utils.EntityName.USER;
 import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 
 @Slf4j
@@ -31,13 +34,13 @@ import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 public class EmploymentServiceImpl implements EmploymentService {
 
     private final EmploymentRepository employmentRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
 
     @Override
     public EmploymentResponseDto create(EmploymentRequestDto dto) {
-        User user = findUserByEmail(dto.getUserEmail());
+        User user = userService.getEntityByEmail(dto.getUserEmail());
         FoodVenue foodVenue = findFoodVenueById(dto.getFoodVenueId());
 
         Employment employment = Employment.builder()
@@ -85,18 +88,30 @@ public class EmploymentServiceImpl implements EmploymentService {
         log.info("Soft-deleted employment with id {}", publicId);
     }
 
-    // Lógica para los filtros (simplificada)
     @Override
     public Page<EmploymentResponseDto> findByFilters(UUID foodVenueId, List<RoleType> roles, Boolean active, Pageable pageable) {
-        // Aquí iría la lógica para construir la query al repositorio
-        // Ejemplo: employmentRepository.findByFoodVenueAndRoleAndActive...
-        return Page.empty(); // Implementar la lógica de repositorio
-    }
 
-    // --- Métodos privados de ayuda ---
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmailAndDeletedFalse(email)
-                .orElseThrow(() -> new EntityNotFoundException(USER, email));
+        Specification<Employment> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            Join<Employment, FoodVenue> foodVenueJoin = root.join("foodVenue");
+
+            predicates.add(criteriaBuilder.equal(foodVenueJoin.get("publicId"), foodVenueId));
+
+            if (roles != null && !roles.isEmpty()) {
+                predicates.add(root.get("role").in(roles));
+            }
+
+            if (active != null) {
+                predicates.add(criteriaBuilder.equal(root.get("active"), active));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Employment> employmentPage = employmentRepository.findAll(spec, pageable);
+
+        return employmentPage.map(employmentMapper::toResponseDto);
     }
 
     private FoodVenue findFoodVenueById(UUID id) {

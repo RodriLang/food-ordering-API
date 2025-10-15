@@ -74,7 +74,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public Page<EmploymentResponseDto> getFilteredEmployments(String email, Boolean active, Pageable pageable) {
-        UUID foodVenueId = tenantContext.requireFoodVenue().getPublicId();
+        UUID foodVenueId = tenantContext.getFoodVenueId();
         List<RoleType> allowedRoles = List.of(RoleType.ROLE_STAFF, RoleType.ROLE_MANAGER);
 
         log.debug("Fetching filtered employees for food venue {}", foodVenueId);
