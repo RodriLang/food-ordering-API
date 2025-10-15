@@ -47,13 +47,13 @@ public class TenantContext {
 
     // --- IDs para lazy-loading ---
     @Getter
-    private UUID userId = UUID.fromString("6ae09347-a6af-11f0-9d49-fc5cee3effed");
+    private UUID userId = UUID.fromString("ae65ea40-58ed-41fb-9dae-dbb922df3237");
     @Getter
     private UUID participantId;
     @Getter
     private UUID tableSessionId;
     @Getter
-    private UUID foodVenueId = UUID.fromString("6ae17fe9-a6af-11f0-9d49-fc5cee3effed");
+    private UUID foodVenueId = UUID.fromString("ccb90ad5-a6c4-11f0-92dc-5405db46fc8a");
 
     // --- Flags de memoization (cachear incluso null) ---
     private boolean userResolved;
