@@ -8,9 +8,6 @@ import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,55 +22,44 @@ import java.util.UUID;
 @Tag(name = "Empleados (STAFF/MANAGER)", description = "Gestión de los empleados (Staff y Manager) de un Food Venue.")
 public interface EmployeeController {
 
-    @PostMapping
-    @Operation(
-            summary = "Crear un nuevo empleado",
-            description = "Permite registrar un nuevo empleado. Se pueden asignar los roles STAFF o MANAGER.",
-            requestBody = @RequestBody(
-                    description = "Datos del empleado a crear",
-                    required = true,
-                    // CORREGIDO: El schema ahora coincide con el DTO del método.
-                    content = @Content(schema = @Schema(implementation = EmployeeRequestDto.class))
-            )
-    )
-    @ApiResponses(value = {
+    @Operation(summary = "Crear un nuevo empleado (STAFF/MANAGER)")
+    @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
-    ResponseEntity<EmploymentResponseDto> create(@Validated(OnCreate.class) @RequestBody EmployeeRequestDto dto);
+    @PostMapping
+    ResponseEntity<EmploymentResponseDto> create(
+            @Validated(OnCreate.class) @RequestBody EmployeeRequestDto dto);
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Actualizar datos de empleo")
-    @ApiResponses(value = {
+    @Operation(summary = "Actualizar datos de un empleado")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Empleado actualizado exitosamente"),
-            @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
     })
+    @PutMapping("/{id}")
     ResponseEntity<EmploymentResponseDto> update(
             @PathVariable UUID id,
             @Validated(OnUpdate.class) @RequestBody EmployeeRequestDto dto);
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Buscar un empleado por ID")
-    @ApiResponses(value = {
+    @Operation(summary = "Buscar un empleado por su ID")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Empleado encontrado"),
-            @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
     })
+    @GetMapping("/{id}")
     ResponseEntity<EmploymentResponseDto> getById(@PathVariable UUID id);
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Remover un empleado")
-    @ApiResponses(value = {
+    @Operation(summary = "Eliminar (desactivar) un empleado")
+    @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Empleado eliminado"),
-            @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Empleado no encontrado")
     })
+    @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id);
 
-    // UNIFICADO: Se reemplazaron /actives y /laid-off por este único endpoint.
+    @Operation(summary = "Listar empleados con filtros")
+    @ApiResponse(responseCode = "200", description = "Listado de empleados")
     @GetMapping
-    @Operation(
-            summary = "Listar empleados con filtros",
-            description = "Devuelve una lista paginada de empleados, opcionalmente filtrada por estado y/o email."
-    )
     ResponseEntity<PageResponse<EmploymentResponseDto>> getEmployees(
             @Parameter(description = "Filtrar por el email del usuario.")
             @RequestParam(required = false) String email,
