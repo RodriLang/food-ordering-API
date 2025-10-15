@@ -1,7 +1,7 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
+import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.utils.OnCreate;
@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RequestMapping(ApiPaths.EMPLOYMENT_URI)
-@Tag(name = "Empleados", description = "Gestión de los empleados de los lugares de comida")
+@RequestMapping(ApiPaths.EMPLOYEE_URI)
+@Tag(name = "Empleados (STAFF/MANAGER)", description = "Gestión de los empleados (Staff y Manager) de un Food Venue.")
 public interface EmployeeController {
 
     @PostMapping
@@ -32,75 +32,55 @@ public interface EmployeeController {
             requestBody = @RequestBody(
                     description = "Datos del empleado a crear",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = EmploymentRequestDto.class))
+                    // CORREGIDO: El schema ahora coincide con el DTO del método.
+                    content = @Content(schema = @Schema(implementation = EmployeeRequestDto.class))
             )
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     })
-    ResponseEntity<EmploymentResponseDto> create(@Validated(OnCreate.class) @RequestBody EmploymentRequestDto dto);
-
+    ResponseEntity<EmploymentResponseDto> create(@Validated(OnCreate.class) @RequestBody EmployeeRequestDto dto);
 
     @PutMapping("/{id}")
-    @Operation(
-            summary = "Actualizar datos de empleo"
-    )
+    @Operation(summary = "Actualizar datos de empleo")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Empleado actualizado exitosamente"),
             @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
     })
     ResponseEntity<EmploymentResponseDto> update(
             @PathVariable UUID id,
-            @Validated(OnUpdate.class) @RequestBody EmploymentRequestDto dto);
-
+            @Validated(OnUpdate.class) @RequestBody EmployeeRequestDto dto);
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Buscar un empleado por ID",
-            description = "Devuelve un empleado específico si está activo."
-    )
+    @Operation(summary = "Buscar un empleado por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Empleado encontrado"),
             @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
     })
     ResponseEntity<EmploymentResponseDto> getById(@PathVariable UUID id);
 
-
-    @GetMapping("/user/{email}")
-    @Operation(
-            summary = "Listar empleos de un usuario",
-            description = "Devuelve todos los empleos relacionados a un usuario."
-    )
-    ResponseEntity<PageResponse<EmploymentResponseDto>> getEmploymentsByUser(
-            @PathVariable String email, @Parameter Pageable pageable);
-
-
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Eliminar un empleado",
-            description = "Marca como eliminado al usuario asociado."
-    )
+    @Operation(summary = "Remover un empleado")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Empleado eliminado"),
             @ApiResponse(responseCode = "404", description = "Empleado no encontrado", content = @Content)
     })
     ResponseEntity<Void> delete(@PathVariable UUID id);
 
-
-    @GetMapping("/actives")
+    // UNIFICADO: Se reemplazaron /actives y /laid-off por este único endpoint.
+    @GetMapping
     @Operation(
-            summary = "Listar empleados activos",
-            description = "Devuelve todos los empleados que no han sido eliminados."
+            summary = "Listar empleados con filtros",
+            description = "Devuelve una lista paginada de empleados, opcionalmente filtrada por estado y/o email."
     )
-    ResponseEntity<PageResponse<EmploymentResponseDto>> getActiveEmployees(Pageable pageable);
+    ResponseEntity<PageResponse<EmploymentResponseDto>> getEmployees(
+            @Parameter(description = "Filtrar por el email del usuario.")
+            @RequestParam(required = false) String email,
 
+            @Parameter(description = "Filtrar por estado. 'true' para activos, 'false' para eliminados. Si se omite, devuelve todos.")
+            @RequestParam(required = false) Boolean active,
 
-    @GetMapping("/deleted")
-    @Operation(
-            summary = "Listar empleados eliminados",
-            description = "Devuelve todos los empleados cuyo usuario fue eliminado."
-    )
-    ResponseEntity<PageResponse<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable);
-
+            @Parameter(hidden = true)
+            Pageable pageable);
 }

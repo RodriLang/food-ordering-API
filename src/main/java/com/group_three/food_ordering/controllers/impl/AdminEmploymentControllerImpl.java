@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers.impl;
 
-import com.group_three.food_ordering.controllers.AdminController;
+import com.group_three.food_ordering.controllers.AdminEmploymentController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
@@ -9,15 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@PreAuthorize("hasRole('ROOT')")
 @RestController
 @RequiredArgsConstructor
-public class AdminControllerImpl implements AdminController {
+public class AdminEmploymentControllerImpl implements AdminEmploymentController {
 
     private final AdminService adminService;
 
@@ -32,28 +30,8 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public ResponseEntity<EmploymentResponseDto> getByEmail(String email) {
-        return ResponseEntity.ok(adminService.findByEmail(email));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getAll(Pageable pageable) {
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getAllAdmins(Boolean active, Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(adminService.getAllAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getActives(Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(adminService.getActiveAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getInactives(Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(adminService.getInactiveAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<EmploymentResponseDto> update(UUID id, EmploymentRequestDto dto) {
-        return null;
     }
 
     @Override

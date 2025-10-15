@@ -2,7 +2,7 @@ package com.group_three.food_ordering.services;
 
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
-import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
+import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.models.Employment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,22 +12,17 @@ import java.util.UUID;
 
 public interface EmploymentService {
 
-    EmploymentResponseDto createEmployment(EmploymentRequestDto dto);
+    EmploymentResponseDto create(EmploymentRequestDto dto);
 
-    List<RoleEmploymentResponseDto> getRoleEmploymentsByUserAndActiveTrue(UUID userId);
+    Employment getEmploymentEntityById(UUID publicId, Boolean active);
 
-    Page<EmploymentResponseDto> getAllAndActiveTrue(Pageable pageable);
+    EmploymentResponseDto getEmploymentDtoById(UUID publicId);
 
-    Page<EmploymentResponseDto> getAllAndActiveFalse(Pageable pageable);
+    List<Employment> getEmploymentsByUser(String userEmail, UUID foodVenueId, Boolean active);
 
-    Page<EmploymentResponseDto> getByUserAndActiveTrue(String email, Pageable pageable);
+    EmploymentResponseDto update(UUID publicId, Employment newEmployment);
 
-    EmploymentResponseDto getByIdAndActiveTrue(UUID id);
+    void softDelete(UUID publicId);
 
-    void delete(UUID id);
-
-    EmploymentResponseDto update(UUID id, EmploymentRequestDto dto);
-
-    Employment getEntityByIdAndActiveTrue(UUID id);
-
+    Page<EmploymentResponseDto> findByFilters(UUID foodVenueId, List<RoleType> roles, Boolean active, Pageable pageable);
 }

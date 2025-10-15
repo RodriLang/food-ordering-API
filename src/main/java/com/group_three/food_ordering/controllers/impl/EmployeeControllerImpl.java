@@ -1,64 +1,50 @@
 package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.EmployeeController;
-import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
+import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
-import com.group_three.food_ordering.services.EmploymentService;
+import com.group_three.food_ordering.services.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
 @RestController
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
 @RequiredArgsConstructor
 public class EmployeeControllerImpl implements EmployeeController {
 
-    private final EmploymentService employmentService;
+    private final EmployeeService employeeService;
 
 
     @Override
-    public ResponseEntity<EmploymentResponseDto> create(EmploymentRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(employmentService.createEmployment(dto));
+    public ResponseEntity<EmploymentResponseDto> create(EmployeeRequestDto dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.createEmployeeUser(dto));
     }
 
     @Override
     public ResponseEntity<EmploymentResponseDto> update(
             UUID id,
-            EmploymentRequestDto dto) {
-        return ResponseEntity.ok(employmentService.update(id, dto));
+            EmployeeRequestDto dto) {
+        return ResponseEntity.ok(employeeService.updateEmployee(id, dto));
     }
 
     @Override
     public ResponseEntity<EmploymentResponseDto> getById(UUID id) {
-        return ResponseEntity.ok(employmentService.getByIdAndActiveTrue(id));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getEmploymentsByUser(
-            String email, Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(employmentService.getByUserAndActiveTrue(email, pageable)));
+        return ResponseEntity.ok(employeeService.getEmploymentById(id));
     }
 
     @Override
     public ResponseEntity<Void> delete(UUID id) {
-        employmentService.delete(id);
+        employeeService.deleteEmployeeUser(id);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getActiveEmployees(Pageable pageable) {
-
-        return ResponseEntity.ok(PageResponse.of(employmentService.getAllAndActiveTrue(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getDeletedEmployees(Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(employmentService.getAllAndActiveFalse(pageable)));
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getEmployees(String email, Boolean active, Pageable pageable) {
+        return ResponseEntity.ok(PageResponse.of(employeeService.getFilteredEmployments(email, active, pageable)));
     }
 }

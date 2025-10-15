@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers.impl;
 
-import com.group_three.food_ordering.controllers.RootController;
+import com.group_three.food_ordering.controllers.RootAssigmentController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-public class RootControllerImpl implements RootController {
+public class RootAssigmentControllerImpl implements RootAssigmentController {
 
     private final RootService rootService;
 
