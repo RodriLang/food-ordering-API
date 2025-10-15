@@ -13,7 +13,6 @@ import com.group_three.food_ordering.repositories.ParticipantRepository;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.utils.EntityName;
-import io.jsonwebtoken.Claims;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,6 @@ public class TenantContext {
     private final FoodVenueRepository foodVenueRepo;
 
     // --- Estado actual del request ---
-    private Claims claims;
     private SessionInfo sessionInfo;
     private User user;
     private Participant participant;
@@ -65,9 +63,6 @@ public class TenantContext {
     // Setters de contexto/IDs
     // =========================
 
-    void setClaims(Claims c) {
-        this.claims = c;
-    }
 
     void setSessionInfo(SessionInfo s) {
         this.sessionInfo = s;
@@ -114,33 +109,36 @@ public class TenantContext {
     // =========================
 
     public Optional<User> userOpt() {
+        log.debug("[TenantContext] Getting user cache");
         if (!userResolved) {
-            if(participantOpt().isPresent()) {
+            if (participantOpt().isPresent()) {
+                log.debug("[TenantContext] Getting user from participant");
                 user = requireParticipant().getUser();
                 userResolved = true;
             } else if (userId != null) {
+                log.debug("[TenantContext] Getting user from user: {}", userId);
                 user = userRepo.findByPublicIdAndDeletedFalse(userId).orElse(null);
                 userResolved = true;
             }
             log.debug("[TenantContext] user loaded? {}", user != null);
         }
-        log.debug("[TenantContext] Getting user cache");
         return Optional.ofNullable(user);
     }
 
     public Optional<Participant> participantOpt() {
+        log.debug("[TenantContext] Getting participant cache");
         if (!participantResolved) {
+            log.debug("[TenantContext] Getting participant from participantId: {}", participantId);
             participant = (participantId != null) ? participantRepo.findByPublicId(participantId).orElse(null) : null;
             participantResolved = true;
             log.debug("[TenantContext] participant loaded? {}", participant != null);
         }
-        log.debug("[TenantContext] Getting participant cache");
         return Optional.ofNullable(participant);
     }
 
     public Optional<TableSession> tableSessionOpt() {
         if (!tableSessionResolved) {
-            if(participantOpt().isPresent()) {
+            if (participantOpt().isPresent()) {
                 tableSession = requireParticipant().getTableSession();
                 tableSessionResolved = true;
             }
@@ -152,7 +150,7 @@ public class TenantContext {
 
     public Optional<FoodVenue> foodVenueOpt() {
         if (!foodVenueResolved) {
-            if(tableSessionOpt().isPresent()) {
+            if (tableSessionOpt().isPresent()) {
                 foodVenue = requireTableSession().getFoodVenue();
             } else {
                 foodVenue = (foodVenueId != null) ? foodVenueRepo.findByPublicIdAndDeletedFalse(foodVenueId).orElse(null) : null;
@@ -217,20 +215,7 @@ public class TenantContext {
                 return Optional.empty();
             }
         }
-        // 2) fallback a claims si existen
-        if (claims == null) return Optional.empty();
-        Object raw = claims.get("role");
-        if (raw == null) return Optional.empty();
-        String s = String.valueOf(raw).trim();
-        if (s.isEmpty()) return Optional.empty();
-        s = s.toUpperCase(Locale.ROOT);
-        if (!s.startsWith("ROLE_")) s = "ROLE_" + s;
-        try {
-            return Optional.of(RoleType.valueOf(s));
-        } catch (IllegalArgumentException ex) {
-            log.warn("Token con role desconocido: {}", s);
-            return Optional.empty();
-        }
+        return Optional.empty();
     }
 
     public boolean isAuthenticated() {

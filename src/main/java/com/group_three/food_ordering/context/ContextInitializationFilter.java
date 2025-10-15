@@ -45,7 +45,6 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
             String token = auth.substring(7);
             try {
                 var claims = jwtService.extractAllClaims(token); // puede tirar ExpiredJwtException
-                tenantContext.setClaims(claims);
 
                 SessionInfo si = jwtService.getSessionInfoFromClaims(claims);
                 tenantContext.setSessionInfo(si);
