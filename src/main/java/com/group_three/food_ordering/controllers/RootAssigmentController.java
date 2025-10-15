@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RequestMapping(ApiPaths.ROOT_ACCESS_URI)
 @Tag(name = "Acceso root", description = "Operaciones relacionadas con los usuarios root del sistema")
-public interface RootController {
+public interface RootAssigmentController {
 
     @Operation(
             summary = "Obtener todos los usuarios root",

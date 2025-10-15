@@ -17,3 +17,5 @@ public interface RootService {
     AuthResponse selectContext(UUID foodVenuePublicId);
 
 }
+
+

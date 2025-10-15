@@ -21,7 +21,7 @@ public class ApiPaths {
     public static final String FEAT_PRODUCT_URI = PRODUCT_URI + "/featured";
     public static final String ORDER_URI = URI_BASE_V1 + "/orders";
     public static final String PAYMENT_URI = URI_BASE_V1 + "/payments";
-    public static final String EMPLOYMENT_URI = URI_BASE_V1 + "/employments";
+    public static final String EMPLOYEE_URI = URI_BASE_V1 + "/employees";
     public static final String ROOT_ACCESS_URI = URI_BASE_V1 + "/root";
     public static final String ADMIN_URI = ROOT_ACCESS_URI + "/admins";
     public static final String ROOT_USER_URI = ROOT_ACCESS_URI + "/users";

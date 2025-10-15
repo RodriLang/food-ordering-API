@@ -18,8 +18,8 @@ public class JpaAuditingConfig {
     public AuditorAware<UUID> auditorProvider(TenantContext tenantContext) {
         return () -> {
             try {
-                AuditorUser currentUser = tenantContext.requireAuditorUser();
-                return Optional.ofNullable(currentUser).map(AuditorUser::publicId);
+               // AuditorUser currentUser = tenantContext.requireAuditorUser();
+                return null;//Optional.ofNullable(currentUser).map(AuditorUser::publicId);
             } catch (Exception e) {
                 return Optional.empty();
             }

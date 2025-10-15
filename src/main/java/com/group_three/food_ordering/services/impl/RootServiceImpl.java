@@ -7,14 +7,11 @@ import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
-import com.group_three.food_ordering.mappers.EmploymentMapper;
-import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
-import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
-import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.services.EmploymentService; // Servicio Central
 import com.group_three.food_ordering.services.RootService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,79 +20,50 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
-import static com.group_three.food_ordering.utils.EntityName.USER;
 import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
-import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RootServiceImpl implements RootService {
 
-    private final EmploymentRepository employmentRepository;
-    private final UserRepository userRepository;
+    private final EmploymentService employmentService; // Servicio Central
     private final FoodVenueRepository foodVenueRepository;
-    private final EmploymentMapper employmentMapper;
     private final TenantContext tenantContext;
     private final JwtService jwtService;
 
-
     @Override
     public EmploymentResponseDto createRootUser(EmploymentRequestDto dto) {
-        log.debug("[UserRepository] Calling findByEmail for user email={}", dto.getUserEmail());
-        User user = userRepository.findByEmailAndDeletedFalse(dto.getUserEmail())
-                .orElseThrow(() -> new EntityNotFoundException(USER));
-
-        FoodVenue foodVenue = getFoodVenue(dto.getFoodVenueId());
-
-        Employment employment = Employment.builder()
-                .publicId(UUID.randomUUID())
-                .user(user)
-                .foodVenue(foodVenue)
-                .role(RoleType.ROLE_ROOT)
-                .build();
-
-        log.debug("[EmploymentRepository] Calling save to create new ROOT employment for user {} in venue {}",
-                user.getPublicId(), foodVenue.getPublicId());
-        Employment savedEmployment = employmentRepository.save(employment);
-
-        return employmentMapper.toResponseDto(savedEmployment);
+        log.info("Creating a new ROOT user for email {}", dto.getUserEmail());
+        dto.setRole(RoleType.ROLE_ROOT); // Forzamos el rol
+        return employmentService.create(dto);
     }
 
     @Override
     public Page<EmploymentResponseDto> getRootUsers(Pageable pageable) {
-        log.debug("[EmploymentRepository] Calling getAllByActiveAndRole to retrieve active ROOT users");
-        return employmentRepository.getAllByActiveAndRoleAndDeletedFalse(pageable, Boolean.TRUE, RoleType.ROLE_ROOT)
-                .map(employmentMapper::toResponseDto);
+        log.debug("Fetching all active ROOT users.");
+        // Un usuario ROOT no está atado a un FoodVenue, por eso pasamos null
+        return employmentService.findByFilters(null, List.of(RoleType.ROLE_ROOT), Boolean.TRUE, pageable);
     }
 
     @Override
     public AuthResponse selectContext(UUID foodVenuePublicId) {
-        log.debug("[RootService] Select context process started");
-        FoodVenue selectedFoodVenue = getFoodVenue(foodVenuePublicId);
-        log.debug("[RootService] Selected FoodVenue foodVenueId={}", selectedFoodVenue.getPublicId());
+        log.info("ROOT user selecting context for food venue {}", foodVenuePublicId);
+
+        // Esta lógica es única de RootService y no se puede delegar
+        FoodVenue selectedFoodVenue = foodVenueRepository.findByPublicIdAndDeletedFalse(foodVenuePublicId)
+                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE, foodVenuePublicId.toString()));
+
         User authenticatedUser = tenantContext.requireUser();
-        log.debug("[RootService] Authenticated user email={} publicId={}",
-                authenticatedUser.getEmail(), authenticatedUser.getPublicId());
 
-        log.debug("[EmploymentRepository] Calling findByUser_PublicIdAndRoleAndActiveTrue for user {} and role ROOT",
-                authenticatedUser.getPublicId());
-        Employment employment = employmentRepository.findByUser_PublicIdAndRoleAndActiveTrueAndDeletedFalse(
-                authenticatedUser.getPublicId(), RoleType.ROLE_ROOT).getFirst();
-
-        if (employment == null) {
-            throw new EntityNotFoundException(EMPLOYMENT);
-        }
-        employment.setFoodVenue(selectedFoodVenue);
-        log.debug("[RootService] Context Selected foodVenueId={} role={}",
-                employment.getFoodVenue().getPublicId(), employment.getRole());
-
+        // Construimos la información para el nuevo token
         SessionInfo sessionInfo = SessionInfo.builder()
                 .foodVenueId(selectedFoodVenue.getPublicId())
                 .subject(authenticatedUser.getEmail())
-                .role(employment.getRole().name())
+                .role(RoleType.ROLE_ROOT.name()) // El rol no cambia
                 .userId(authenticatedUser.getPublicId())
                 .build();
 
@@ -105,13 +73,7 @@ public class RootServiceImpl implements RootService {
         return AuthResponse.builder()
                 .accessToken(token)
                 .expirationDate(expiration)
-                .role(employment.getRole().name())
+                .role(RoleType.ROLE_ROOT.name())
                 .build();
-    }
-
-    private FoodVenue getFoodVenue(UUID foodVenueId) {
-        log.debug("[FoodVenueRepository] Calling findByPublicId for foodVenueId={}", foodVenueId);
-        return foodVenueRepository.findByPublicIdAndDeletedFalse(foodVenueId)
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE));
     }
 }

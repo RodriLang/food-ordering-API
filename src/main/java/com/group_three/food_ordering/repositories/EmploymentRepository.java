@@ -30,7 +30,7 @@ public interface EmploymentRepository extends JpaRepository<Employment, Long> {
 
     List<Employment> findByUser_PublicIdAndRoleAndActiveTrueAndDeletedFalse(UUID userId, RoleType role);
 
-    Page<Employment> findByUser_PublicIdAndFoodVenue_PublicIdAndDeletedFalseAndDeletedFalse(UUID userPublicId, Pageable pageable, UUID foodVenuePublicId);
+    List<Employment> findByUser_EmailAndFoodVenue_PublicIdAndActiveAndDeletedFalse(String userEmail, UUID foodVenuePublicId, Boolean active);
 
     Page<Employment> getAllByActiveAndFoodVenue_PublicIdAndDeletedFalse(Pageable pageable, Boolean active, UUID foodVenuePublicId);
 

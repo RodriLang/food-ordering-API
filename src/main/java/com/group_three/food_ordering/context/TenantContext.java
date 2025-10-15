@@ -39,7 +39,7 @@ public class TenantContext {
 
     // --- Estado actual del request ---
     private Claims claims;
-    private SessionInfo sessionInfo;
+    private SessionInfo sessionInfo = SessionInfo.builder().role(RoleType.ROLE_ADMIN.name()).build();
     private User user;
     private Participant participant;
     private TableSession tableSession;
@@ -53,7 +53,7 @@ public class TenantContext {
     @Getter
     private UUID tableSessionId;
     @Getter
-    private UUID foodVenueId;
+    private UUID foodVenueId = UUID.fromString("6ae17fe9-a6af-11f0-9d49-fc5cee3effed");
 
     // --- Flags de memoization (cachear incluso null) ---
     private boolean userResolved;

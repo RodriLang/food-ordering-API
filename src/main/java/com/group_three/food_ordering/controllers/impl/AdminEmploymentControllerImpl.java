@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers.impl;
 
-import com.group_three.food_ordering.controllers.AdminController;
+import com.group_three.food_ordering.controllers.AdminEmploymentController;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-public class AdminControllerImpl implements AdminController {
+public class AdminEmploymentControllerImpl implements AdminEmploymentController {
 
     private final AdminService adminService;
 
@@ -30,28 +30,8 @@ public class AdminControllerImpl implements AdminController {
     }
 
     @Override
-    public ResponseEntity<EmploymentResponseDto> getByEmail(String email) {
-        return ResponseEntity.ok(adminService.findByEmail(email));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getAll(Pageable pageable) {
+    public ResponseEntity<PageResponse<EmploymentResponseDto>> getAllAdmins(Boolean active, Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(adminService.getAllAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getActives(Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(adminService.getActiveAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<PageResponse<EmploymentResponseDto>> getInactives(Pageable pageable) {
-        return ResponseEntity.ok(PageResponse.of(adminService.getInactiveAdminUsers(pageable)));
-    }
-
-    @Override
-    public ResponseEntity<EmploymentResponseDto> update(UUID id, EmploymentRequestDto dto) {
-        return null;
     }
 
     @Override

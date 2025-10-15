@@ -1,14 +1,14 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.dto.request.RoleSelectionRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.User;
-import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.EmploymentService;
 import com.group_three.food_ordering.security.RefreshTokenService;
@@ -28,21 +28,22 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
 
     private final EmploymentService employmentService;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final TenantContext tenantContext;
+    private final RoleEmploymentMapper roleEmploymentMapper;
 
     @Override
     public AuthResponse selectRole(RoleSelectionRequestDto request) {
-        User authenticatedUser = getAuthenticatedUser();
+        User authenticatedUser = tenantContext.requireUser();
         log.debug("[EmploymentService] Calling getEntityByIdAndActiveTrue for employmentId={}", request.employmentId());
-        Employment employment = employmentService.getEntityByIdAndActiveTrue(request.employmentId());
+        Employment employment = employmentService.getEmploymentEntityById(request.employmentId(), Boolean.TRUE);
         log.debug("[RoleSelection] Role selected={}", employment.getRole());
         return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getPublicId(), employment.getRole().name());
     }
 
     @Override
     public AuthResponse selectClient() {
-        User authenticatedUser = getAuthenticatedUser();
+        User authenticatedUser = tenantContext.requireUser();
         log.debug("[RoleSelection] Employment selected ROLE_CLIENT");
 
         return generateLoginResponse(authenticatedUser, null, RoleType.ROLE_CLIENT.name());
@@ -52,7 +53,11 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     public List<RoleEmploymentResponseDto> generateRoleSelection(User user) {
         log.info("[RoleSelection] Searching roles for user {}", user.getPublicId());
         log.debug("[EmploymentService] Calling getRoleEmploymentsByUserAndActiveTrue for userId={}", user.getPublicId());
-        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getRoleEmploymentsByUserAndActiveTrue(user.getPublicId());
+        UUID foodVenueId = tenantContext.getFoodVenueId();
+        List<RoleEmploymentResponseDto> roleEmployments = employmentService.getEmploymentsByUser(
+                user.getEmail(), foodVenueId, Boolean.TRUE).stream()
+                .map(roleEmploymentMapper::toResponseDto)
+                .toList();
         if (!roleEmployments.isEmpty()) {
             log.info("[RoleSelection] Role selection generated for user {}", user.getEmail());
         }
@@ -82,11 +87,4 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
                 .employments(roleSelection).build();
     }
 
-    private User getAuthenticatedUser() {
-        log.debug("[RoleSelectionService] Fetching authenticated user from security context");
-
-
-        return null;
-
-    }
 }
