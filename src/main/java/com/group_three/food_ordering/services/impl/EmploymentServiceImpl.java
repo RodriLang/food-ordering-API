@@ -47,7 +47,8 @@ public class EmploymentServiceImpl implements EmploymentService {
                 .build();
 
         Employment saved = employmentRepository.save(employment);
-        log.info("Created new employment for user {} in venue {} with role {}", user.getEmail(), foodVenue.getName(), dto.getRole());
+        log.info("Created new employment for user {} in venue {} with role {} with uuid {}",
+                user.getEmail(), foodVenue.getName(), dto.getRole(), employment.getPublicId());
         return employmentMapper.toResponseDto(saved);
     }
 
