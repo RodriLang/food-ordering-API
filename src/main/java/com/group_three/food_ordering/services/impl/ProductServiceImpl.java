@@ -49,7 +49,6 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.toEntity(productRequestDto);
         FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         product.setFoodVenue(currentFoodVenue);
-        product.setPublicId(UUID.randomUUID());
         log.debug("[ProductService] Applying rules and saving new product for venue {}", currentFoodVenue.getPublicId());
         return applyProductRulesAndSave(product, productRequestDto);
     }
@@ -135,8 +134,8 @@ public class ProductServiceImpl implements ProductService {
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
         product.setCategory(findCategory(productRequestDto.getCategoryId()));
         product.setTags(findTags(productRequestDto.getTagsId()));
-        log.debug("[ProductRepository] Calling save for product {}", product.getPublicId());
         Product savedProduct = productRepository.save(product);
+        log.debug("[ProductRepository] Calling save for product {}", product.getPublicId());
         return productMapper.toDto(savedProduct);
     }
 
