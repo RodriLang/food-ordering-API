@@ -49,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.toEntity(productRequestDto);
         FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         product.setFoodVenue(currentFoodVenue);
+        product.setPublicId(UUID.randomUUID());
         log.debug("[ProductService] Applying rules and saving new product for venue {}", currentFoodVenue.getPublicId());
         return applyProductRulesAndSave(product, productRequestDto);
     }
