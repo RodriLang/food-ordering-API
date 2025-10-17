@@ -2,6 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.group_three.food_ordering.exceptions.CloudinaryException;
 import com.group_three.food_ordering.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
 
         } catch (IOException e) {
             log.error("[CloudinaryService] Error uploading image to Cloudinary", e);
-            throw new RuntimeException("Failed to upload image: " + e.getMessage());
+            throw new CloudinaryException("Failed to upload image.", e);
         }
     }
 
@@ -48,7 +49,7 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             log.info("[CloudinaryService] Image deleted successfully: {}", publicId);
         } catch (IOException e) {
             log.error("[CloudinaryService] Error deleting image from Cloudinary", e);
-            throw new RuntimeException("Failed to delete image: " + e.getMessage());
+            throw new CloudinaryException("Failed to delete image.", e);
         }
     }
 }
