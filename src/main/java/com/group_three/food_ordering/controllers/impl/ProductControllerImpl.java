@@ -7,6 +7,7 @@ import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {
@@ -25,6 +27,7 @@ public class ProductControllerImpl implements ProductController {
     @Override
     public ResponseEntity<ProductResponseDto> createProduct(
             ProductRequestDto productRequestDto) {
+        log.debug("[ProductController] Create product request received");
         return ResponseEntity.status(HttpStatus.OK).body(productService.create(productRequestDto));
     }
 

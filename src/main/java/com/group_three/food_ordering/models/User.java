@@ -43,7 +43,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Employment> employments = new ArrayList<>();
 
