@@ -7,7 +7,6 @@ import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {

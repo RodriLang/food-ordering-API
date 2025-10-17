@@ -108,8 +108,8 @@ public class AuthServiceImpl implements AuthService {
     private User authenticateUser(LoginRequest loginRequest) {
         log.debug("[AuthService] Authenticating user email={}", loginRequest.getEmail());
 
-        log.debug("[UserRepository] Calling findByEmail for authentication user {}", loginRequest.getEmail());
-        User user = userRepository.findByEmailAndDeletedFalse(loginRequest.getEmail())
+        log.debug("[UserRepository] Calling findByEmailWithEmployments for authentication user {}", loginRequest.getEmail());
+        User user = userRepository.findByEmailWithEmployments(loginRequest.getEmail())
                 .orElseThrow(() -> {
                     log.warn("[AuthService] User not found for email={}", loginRequest.getEmail());
                     return new UsernameNotFoundException("Usuario o contraseña incorrectos");
