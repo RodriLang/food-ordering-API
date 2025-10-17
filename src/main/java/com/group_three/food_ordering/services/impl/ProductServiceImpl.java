@@ -14,20 +14,26 @@ import com.group_three.food_ordering.models.Tag;
 import com.group_three.food_ordering.repositories.CategoryRepository;
 import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.repositories.TagRepository;
+import com.group_three.food_ordering.services.CloudinaryService;
 import com.group_three.food_ordering.services.ProductService;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
 import static com.group_three.food_ordering.utils.EntityName.TAG;
@@ -41,16 +47,40 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
+    private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
+    private final Validator validator;
 
     @Override
-    public ProductResponseDto create(ProductRequestDto productRequestDto) {
+    public ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image) {
+        log.info("Creating product: {}", productRequestDto.getName());
+
+        // 1. Mapear a entidad
         Product product = productMapper.toEntity(productRequestDto);
-        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
-        product.setFoodVenue(currentFoodVenue);
-        log.debug("[ProductService] Applying rules and saving new product for venue {}", currentFoodVenue.getPublicId());
-        return applyProductRulesAndSave(product, productRequestDto);
+
+        // 2. Asignar venue actual
+        FoodVenue foodVenue = tenantContext.requireFoodVenue();
+        product.setFoodVenue(foodVenue);
+
+        // 3. Subir imagen si existe
+        if (image != null && !image.isEmpty()) {
+            log.debug("Uploading image to Cloudinary: {}", image.getOriginalFilename());
+            product.setImageUrl(cloudinaryService.uploadImage(image));
+        }
+
+        // 4. Aplicar reglas de negocio
+        product.setPrice(productRequestDto.getPrice() != null ? productRequestDto.getPrice() : BigDecimal.ZERO);
+        product.setStock(productRequestDto.getStock() != null ? productRequestDto.getStock() : 0);
+        product.setAvailable(product.getStock() > 0);
+        product.setCategory(findCategory(productRequestDto.getCategoryId()));
+        product.setTags(findTags(productRequestDto.getTagsId()));
+
+        // 5. Guardar
+        log.debug("[ProductRepository] Calling save to create new product for venue {}", foodVenue.getPublicId());
+        Product savedProduct = productRepository.save(product);
+
+        return productMapper.toDto(savedProduct);
     }
 
     @Override
@@ -126,6 +156,21 @@ public class ProductServiceImpl implements ProductService {
         log.debug("[ProductRepository] Calling findTopSellingProducts from date {} with limit {}", fromDate, limit);
         return productRepository.findTopSellingProducts(fromDate, PageRequest.of(0, limit))
                 .map(productMapper::toItemMenuDto);
+    }
+
+    private <T> void validateDto(T dto, Class<?>... groups) {
+        Set<ConstraintViolation<T>> violations = validator.validate(dto, groups);
+
+        if (!violations.isEmpty()) {
+            String errors = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .collect(Collectors.joining("; "));
+
+            log.error("Validation failed for {}: {}", dto.getClass().getSimpleName(), errors);
+            throw new IllegalArgumentException("Validation errors: " + errors);
+        }
+
+        log.debug("Validation passed for {}", dto.getClass().getSimpleName());
     }
 
     private ProductResponseDto applyProductRulesAndSave(Product product, ProductRequestDto productRequestDto) {

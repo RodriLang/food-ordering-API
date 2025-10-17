@@ -7,14 +7,17 @@ import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {
@@ -23,9 +26,8 @@ public class ProductControllerImpl implements ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Override
-    public ResponseEntity<ProductResponseDto> createProduct(
-            ProductRequestDto productRequestDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.create(productRequestDto));
+    public ResponseEntity<ProductResponseDto> createProduct(ProductRequestDto productRequestDto, MultipartFile image) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productRequestDto, image));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")

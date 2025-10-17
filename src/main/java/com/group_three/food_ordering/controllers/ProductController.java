@@ -5,17 +5,19 @@ import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
-import com.group_three.food_ordering.utils.OnCreate;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -25,9 +27,11 @@ public interface ProductController {
 
     @Operation(summary = "Crear un nuevo producto")
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ProductResponseDto> createProduct(
-            @RequestBody @Validated(OnCreate.class) ProductRequestDto productRequestDto);
+            @RequestPart("product") @Valid ProductRequestDto productRequestDto,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    );
 
     @Operation(summary = "Listar todos los productos")
     @ApiResponse(responseCode = "200", description = "Listado de productos")

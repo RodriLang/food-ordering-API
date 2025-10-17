@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(ApiPaths.TABLE_SESSION_URI +"/scan-qr").permitAll()
                         .requestMatchers(ApiPaths.ROLE_SELECTOR_URI + "/**").authenticated()
                         .requestMatchers(ApiPaths.CURRENT_URI + "/**").authenticated()
+                        .requestMatchers(ApiPaths.PRODUCT_URI + "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

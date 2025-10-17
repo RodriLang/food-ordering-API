@@ -7,12 +7,13 @@ import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
 public interface ProductService {
 
-    ProductResponseDto create(ProductRequestDto productRequestDto);
+    ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image);
 
     ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto);
 
@@ -37,5 +38,4 @@ public interface ProductService {
     void decrementStockProduct(Product product, Integer quantity);
 
     Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable);
-
 }
