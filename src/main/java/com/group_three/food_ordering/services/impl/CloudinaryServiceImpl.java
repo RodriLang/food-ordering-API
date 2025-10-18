@@ -2,6 +2,7 @@ package com.group_three.food_ordering.services.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.exceptions.CloudinaryException;
 import com.group_three.food_ordering.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
@@ -20,18 +21,21 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     private final Cloudinary cloudinary;
 
     @Override
-    public String uploadImage(MultipartFile file) {
+    @SuppressWarnings("unchecked")
+    public String uploadImage(MultipartFile file, CloudinaryFolder folder) {
         try {
             log.debug("[CloudinaryService] Uploading image to Cloudinary: {}", file.getOriginalFilename());
 
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+            String folderPath = "food_ordering/" + folder.getFolderName();
+
+            Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", "food_ordering/products",
+                            "folder", folderPath,
                             "resource_type", "image"
                     ));
 
             String imageUrl = (String) uploadResult.get("secure_url");
-            log.info("[CloudinaryService] Image uploaded successfully: {}", imageUrl);
+            log.info("[CloudinaryService] Image uploaded successfully to {}: {}", folderPath, imageUrl);
 
             return imageUrl;
 

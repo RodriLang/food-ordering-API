@@ -3,6 +3,7 @@ package com.group_three.food_ordering.services;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.models.Product;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 public interface ProductService {
 
-    ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image);
+    ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder cloudinaryFolder);
 
     ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto);
 

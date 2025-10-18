@@ -5,6 +5,7 @@ import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +25,8 @@ public class ProductControllerImpl implements ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Override
-    public ResponseEntity<ProductResponseDto> createProduct(ProductRequestDto productRequestDto, MultipartFile image) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productRequestDto, image));
+    public ResponseEntity<ProductResponseDto> createProduct(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder cloudinaryFolder) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productRequestDto, image, cloudinaryFolder));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")

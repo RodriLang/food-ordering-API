@@ -5,6 +5,7 @@ import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +31,8 @@ public interface ProductController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ProductResponseDto> createProduct(
             @RequestPart("product") @Valid ProductRequestDto productRequestDto,
-            @RequestPart(value = "image", required = false) MultipartFile image
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam("cloudinaryFolder") CloudinaryFolder cloudinaryFolder
     );
 
     @Operation(summary = "Listar todos los productos")

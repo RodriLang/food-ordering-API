@@ -4,6 +4,7 @@ import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InsufficientStockException;
 import com.group_three.food_ordering.mappers.ProductMapper;
@@ -16,8 +17,6 @@ import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.repositories.TagRepository;
 import com.group_three.food_ordering.services.CloudinaryService;
 import com.group_three.food_ordering.services.ProductService;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,9 +30,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
 import static com.group_three.food_ordering.utils.EntityName.TAG;
@@ -50,10 +47,9 @@ public class ProductServiceImpl implements ProductService {
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
-    private final Validator validator;
 
     @Override
-    public ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image) {
+    public ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder folder) {
         log.info("Creating product: {}", productRequestDto.getName());
 
         // 1. Mapear a entidad
@@ -66,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
         // 3. Subir imagen si existe
         if (image != null && !image.isEmpty()) {
             log.debug("Uploading image to Cloudinary: {}", image.getOriginalFilename());
-            product.setImageUrl(cloudinaryService.uploadImage(image));
+            product.setImageUrl(cloudinaryService.uploadImage(image, folder));
         }
 
         // 4. Aplicar reglas de negocio
@@ -156,21 +152,6 @@ public class ProductServiceImpl implements ProductService {
         log.debug("[ProductRepository] Calling findTopSellingProducts from date {} with limit {}", fromDate, limit);
         return productRepository.findTopSellingProducts(fromDate, PageRequest.of(0, limit))
                 .map(productMapper::toItemMenuDto);
-    }
-
-    private <T> void validateDto(T dto, Class<?>... groups) {
-        Set<ConstraintViolation<T>> violations = validator.validate(dto, groups);
-
-        if (!violations.isEmpty()) {
-            String errors = violations.stream()
-                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                    .collect(Collectors.joining("; "));
-
-            log.error("Validation failed for {}: {}", dto.getClass().getSimpleName(), errors);
-            throw new IllegalArgumentException("Validation errors: " + errors);
-        }
-
-        log.debug("Validation passed for {}", dto.getClass().getSimpleName());
     }
 
     private ProductResponseDto applyProductRulesAndSave(Product product, ProductRequestDto productRequestDto) {
