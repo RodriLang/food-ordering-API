@@ -61,8 +61,11 @@ public class ProductServiceImpl implements ProductService {
 
         // 3. Subir imagen si existe
         if (image != null && !image.isEmpty()) {
-            log.debug("Uploading image to Cloudinary: {}", image.getOriginalFilename());
-            product.setImageUrl(cloudinaryService.uploadImage(image, folder));
+            log.debug("Uploading image to Cloudinary for venue '{}': {}",
+                    foodVenue.getName(), image.getOriginalFilename());
+
+            String imageUrl = cloudinaryService.uploadImage(image, foodVenue.getName(), folder);
+            product.setImageUrl(imageUrl);
         }
 
         // 4. Aplicar reglas de negocio

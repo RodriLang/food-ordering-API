@@ -27,6 +27,9 @@ public class DiningTable extends BaseEntity {
     @Column(nullable = false)
     private Integer capacity;
 
+    @Column
+    private String qrCodeImageUrl;
+
     @Enumerated(EnumType.STRING)
     private DiningTableStatus status;
 

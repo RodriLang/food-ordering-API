@@ -5,6 +5,7 @@ import com.group_three.food_ordering.models.DiningTable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -32,4 +33,10 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
             @Param("capacity") Integer capacity,
             Pageable pageable
     );
+
+    @Modifying
+    @Query("UPDATE DiningTable t SET t.qrCodeImageUrl = :qrCodeUrl WHERE t.publicId = :publicId")
+    void updateQrCodeUrl(@Param("publicId") UUID publicId, @Param("qrCodeUrl") String qrCodeUrl);
+
+    boolean existsByPublicIdAndDeletedFalse(UUID publicId);
 }
