@@ -1,0 +1,17 @@
+package com.group_three.food_ordering.qr.qr_dto.qr_request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@Schema(description = "Request para generar QR code de mesa")
+public record GenerateQrCodeRequest(
+
+        @NotBlank(message = "Base URL is required")
+        @Schema(description = "URL base donde redirigirá el QR", example = "http://localhost:4200/#/scan-qr")
+        String baseUrl,
+
+        @NotNull(message = "Table number is required")
+        @Schema(description = "Número de mesa", example = "9")
+        Integer tableNumber
+) {}

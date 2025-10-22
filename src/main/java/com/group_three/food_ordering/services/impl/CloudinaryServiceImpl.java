@@ -20,12 +20,13 @@ import java.util.Map;
 public class CloudinaryServiceImpl implements CloudinaryService {
 
     private final Cloudinary cloudinary;
+    private static final String BASE_FOLDER = "food_ordering";
 
     @Override
     public String uploadImage(MultipartFile file, String venueName, CloudinaryFolder folder) {
         try {
             log.debug("[CloudinaryService] Uploading image to Cloudinary: {}", file.getOriginalFilename());
-            String folderPath = String.join("/", "food_ordering", venueName, folder.getFolderName());
+            String folderPath = String.join("/", BASE_FOLDER, venueName, folder.getFolderName());
 
             return uploadToCloudinary(
                     file.getBytes(),
@@ -40,10 +41,28 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
+    public String uploadGlobalImage(MultipartFile file, CloudinaryFolder folder) {
+        try {
+            log.debug("[CloudinaryService] Uploading global image to Cloudinary: {}", file.getOriginalFilename());
+            String folderPath = String.join("/", BASE_FOLDER, folder.getFolderName());
+
+            return uploadToCloudinary(
+                    file.getBytes(),
+                    folderPath,
+                    null,
+                    false
+            );
+        } catch (IOException e) {
+            log.error("[CloudinaryService] Error uploading global image to Cloudinary", e);
+            throw new CloudinaryException("Failed to upload global image.", e);
+        }
+    }
+
+    @Override
     public String uploadQrCode(byte[] qrCodeBytes, String venueName, String identifier) {
         try {
             log.debug("[CloudinaryService] Uploading QR code to Cloudinary for venue: {}", venueName);
-            String folderPath = String.join("/", "food_ordering", venueName, "qr-codes");
+            String folderPath = String.join("/", BASE_FOLDER, venueName, "qr-codes");
 
             return uploadToCloudinary(
                     qrCodeBytes,
