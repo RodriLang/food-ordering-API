@@ -17,6 +17,8 @@ import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.AuthService;
+import com.group_three.food_ordering.services.OrderService;
+import com.group_three.food_ordering.services.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -44,6 +46,8 @@ public class AuthServiceImpl implements AuthService {
     private final RoleEmploymentMapper roleEmploymentMapper;
     private final RefreshTokenService refreshTokenService;
     private final TenantContext tenantContext;
+    private final ParticipantService participantService;
+    private final OrderService orderService;
 
     // =====================================
     // Public API
@@ -131,23 +135,81 @@ public class AuthServiceImpl implements AuthService {
     private SessionInfo resolveSessionInfo(User loggedUser) {
         log.debug("[AuthService] Resolving session info for user={}", loggedUser.getEmail());
 
-        // 1) ¿Usuario con sesión activa en DB?
-        log.debug("[TableSessionRepository] Calling findActiveSessionByUserEmailAndDeletedFalse for user {}",
-                loggedUser.getEmail());
+        Optional<Participant> guestOpt = tenantContext.participantOpt();
+        Optional<TableSession> guestSessionOpt = tenantContext.tableSessionOpt();
 
         Optional<TableSession> activeOpt = tableSessionRepository
                 .findActiveSessionByUserEmailAndDeletedFalse(loggedUser.getEmail());
 
-        if (activeOpt.isPresent()) {
-            TableSession active = activeOpt.get();
-            log.debug("[AuthService] Found active session={} for user={}", active.getPublicId(), loggedUser.getEmail());
-            return createSessionInfoFromActiveSession(active, loggedUser);
+        // === Caso 1: Usuario ya tiene sesión activa y no viene desde una mesa ===
+        if (guestOpt.isEmpty() && activeOpt.isPresent()) {
+            log.debug("[AuthService] Found active session for user={}, returning existing session", loggedUser.getEmail());
+            return createSessionInfoFromActiveSession(activeOpt.get(), loggedUser);
         }
 
-        // 2) Usuario sin sesión activa → sesión limpia. (Si el request venía con datos de guest o tenant, los re-usa)
-        log.debug("[AuthService] No active session for {}. Building clean session info.", loggedUser.getEmail());
+        // === Caso 2: Usuario sin sesión activa, pero está en una mesa como invitado ===
+        if (guestOpt.isPresent() && activeOpt.isEmpty()) {
+            Participant guest = guestOpt.get();
+            log.debug("[AuthService] Migrating guest participant {} -> user {}", guest.getPublicId(), loggedUser.getEmail());
+            migrateGuestToClient(guest, loggedUser);
+            return createSessionInfoFromActiveSession(guest.getTableSession(), loggedUser);
+        }
+
+        // === Caso 3: Usuario con sesión activa + sesión de invitado simultánea ===
+        if (guestOpt.isPresent()) {
+            TableSession active = activeOpt.get();
+            TableSession guestSession = guestSessionOpt.orElse(null);
+
+            if (guestSession == null) {
+                log.warn("[AuthService] Guest participant has no table session. Defaulting to active one.");
+                return createSessionInfoFromActiveSession(active, loggedUser);
+            }
+
+            if (active.getPublicId().equals(guestSession.getPublicId())) {
+                log.debug("[AuthService] Same table session detected. Merging guest orders into existing participant.");
+                mergeGuestParticipant(guestOpt.get(), active, loggedUser);
+                return createSessionInfoFromActiveSession(active, loggedUser);
+            } else {
+                log.warn("[AuthService] Conflict: user has active session {} but trying to log in from another session {}",
+                        active.getPublicId(), guestSession.getPublicId());
+                throw new BadCredentialsException("El usuario ya tiene una sesión activa en otra mesa.");
+            }
+        }
+
+        // === Caso 4: Sin sesión activa ni invitado (login limpio) ===
+        log.debug("[AuthService] No active or guest session found for user={}", loggedUser.getEmail());
         return createSessionInfoForLoggedUser(loggedUser);
     }
+
+    private void migrateGuestToClient(Participant guest, User loggedUser) {
+        participantService.update(guest, loggedUser);
+        log.debug("[AuthService] Guest participant migrated to CLIENT: {}", guest.getPublicId());
+    }
+
+    private void mergeGuestParticipant(Participant guest, TableSession session, User loggedUser) {
+        Participant existing = session.getParticipants().stream()
+                .filter(p -> p.getUser() != null && p.getUser().equals(loggedUser))
+                .findFirst()
+                .orElse(null);
+
+        if (existing == null) {
+            // No había participante “real”: convertir invitado en cliente
+            participantService.update(guest, loggedUser);
+            log.debug("[AuthService] No existing participant found. Guest {} converted to CLIENT.", guest.getPublicId());
+            return;
+        }
+
+        // Reasignar pedidos
+        Integer moved = orderService.reassignOrdersToParticipant(guest, existing);
+
+        // Eliminar participante invitado
+        session.getParticipants().remove(guest);
+        participantService.softDelete(guest.getPublicId());
+
+        log.debug("[AuthService] Merged guest {} into existing {}. Orders moved={}",
+                guest.getPublicId(), existing.getPublicId(), moved);
+    }
+
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());

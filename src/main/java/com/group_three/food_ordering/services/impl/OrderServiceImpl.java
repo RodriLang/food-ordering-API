@@ -226,6 +226,14 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, Pageable.unpaged()).toList();
     }
 
+    @Override
+    public Integer reassignOrdersToParticipant(Participant guest, Participant existing){
+        List<Order> orders = orderRepository.findOrdersByParticipant_PublicId(guest.getPublicId(), Pageable.unpaged()).toList();
+        orders.forEach(order -> order.setParticipant(existing));
+        orderRepository.saveAll(orders);
+        return orders.size();
+    }
+
     // permite recibir parámetros opcionalmente
 // omitiendo el filtro que no fue especificado en la consulta
     private Page<Order> fetchOrders(
