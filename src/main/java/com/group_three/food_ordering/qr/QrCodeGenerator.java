@@ -5,6 +5,7 @@ import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.group_three.food_ordering.exceptions.QrCodeGeneratorException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -44,17 +44,23 @@ public class QrCodeGenerator {
 
         } catch (Exception e) {
             log.error("[QrCodeGenerator] Error generating QR code", e);
-            throw new RuntimeException("Failed to generate QR code with labels", e);
+            throw new QrCodeGeneratorException("Failed to generate QR code with labels", e);
         }
     }
 
-    private BitMatrix generateQrMatrix(String content) throws Exception {
+    private BitMatrix generateQrMatrix(String content) {
         QRCodeWriter writer = new QRCodeWriter();
 
         Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.MARGIN, 1); // Margin mínimo
+        try {
+            return writer.encode(content, BarcodeFormat.QR_CODE, QR_WIDTH, QR_HEIGHT, hints);
 
-        return writer.encode(content, BarcodeFormat.QR_CODE, QR_WIDTH, QR_HEIGHT, hints);
+        } catch (Exception e) {
+            log.error("[QrCodeGenerator] Error generating QR matrix", e);
+            throw new QrCodeGeneratorException("Failed to generate QR matrix", e);
+        }
+
     }
 
     private BufferedImage createBlankImage() {
@@ -102,9 +108,14 @@ public class QrCodeGenerator {
         graphics.drawString(label, textX, textY);
     }
 
-    private byte[] convertToBytes(BufferedImage image) throws Exception {
+    private byte[] convertToBytes(BufferedImage image) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(image, "PNG", outputStream);
+        try {
+            ImageIO.write(image, "PNG", outputStream);
+        } catch (Exception e) {
+            log.error("[QrCodeGenerator] Error converting image to bytes", e);
+            throw new QrCodeGeneratorException("Failed to convert QR code image to bytes", e);
+        }
         return outputStream.toByteArray();
     }
 }

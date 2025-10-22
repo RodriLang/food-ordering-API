@@ -5,6 +5,7 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.DiningTable;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.qr.qr_dto.qr_request.GenerateQrCodeRequest;
+import com.group_three.food_ordering.qr.qr_dto.qr_response.GenerateQrCodeResponse;
 import com.group_three.food_ordering.repositories.DiningTableRepository;
 import com.group_three.food_ordering.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class QrCodeServiceImpl implements QrCodeService {
 
     @Override
     @Transactional
-    public String generateTableQrCode(GenerateQrCodeRequest request) {
+    public GenerateQrCodeResponse generateTableQrCode(GenerateQrCodeRequest request) {
         log.info("[QrCodeService] Generating QR code for table number {} with baseUrl: {}",
                 request.tableNumber(), request.baseUrl());
 
@@ -63,6 +64,6 @@ public class QrCodeServiceImpl implements QrCodeService {
         tableRepository.updateQrCodeUrl(tableId, qrCodeUrl);
 
         log.info("[QrCodeService] QR code generated and saved: {}", qrCodeUrl);
-        return qrCodeUrl;
+        return new GenerateQrCodeResponse(qrCodeUrl);
     }
 }

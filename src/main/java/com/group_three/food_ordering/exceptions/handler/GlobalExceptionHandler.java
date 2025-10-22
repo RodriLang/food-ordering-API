@@ -13,10 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -64,14 +60,21 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
-    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("error", "EXPIRED_TOKEN");
-        error.put("message", "Access token has expired. Please use the refresh token.");
-        error.put("timestamp", Instant.now().toString());
+    // Error en el guardado de imágenes en Cloudinary
+    @ExceptionHandler(CloudinaryException.class)
+    public ResponseEntity<ErrorResponse> handleIndeterminateTenantContextError(CloudinaryException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
+    }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    // Error al generar un código QR
+    @ExceptionHandler(QrCodeGeneratorException.class)
+    public ResponseEntity<ErrorResponse> handleQrCodeGeneratorError(QrCodeGeneratorException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredJwtError(ExpiredJwtException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.UNAUTHORIZED, request);
     }
 
     // Errores de validación de DTO (@Valid fallidos)
