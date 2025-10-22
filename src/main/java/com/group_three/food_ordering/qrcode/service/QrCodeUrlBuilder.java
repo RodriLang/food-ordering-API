@@ -1,5 +1,5 @@
 
-package com.group_three.food_ordering.qr;
+package com.group_three.food_ordering.qrcode.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

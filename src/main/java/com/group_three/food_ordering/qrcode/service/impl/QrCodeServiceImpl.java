@@ -1,10 +1,14 @@
-package com.group_three.food_ordering.qr;
+package com.group_three.food_ordering.qrcode.service.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.models.DiningTable;
 import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.qr.qr_dto.qr_request.GenerateQrCodeRequest;
+import com.group_three.food_ordering.qrcode.dto.request.GenerateQrCodeRequestDto;
+import com.group_three.food_ordering.qrcode.dto.response.GenerateQrCodeResponseDto;
+import com.group_three.food_ordering.qrcode.service.QrCodeGenerator;
+import com.group_three.food_ordering.qrcode.service.QrCodeService;
+import com.group_three.food_ordering.qrcode.service.QrCodeUrlBuilder;
 import com.group_three.food_ordering.repositories.DiningTableRepository;
 import com.group_three.food_ordering.services.CloudinaryService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +33,7 @@ public class QrCodeServiceImpl implements QrCodeService {
 
     @Override
     @Transactional
-    public String generateTableQrCode(GenerateQrCodeRequest request) {
+    public GenerateQrCodeResponseDto generateTableQrCode(GenerateQrCodeRequestDto request) {
         log.info("[QrCodeService] Generating QR code for table number {} with baseUrl: {}",
                 request.tableNumber(), request.baseUrl());
 
@@ -63,6 +67,10 @@ public class QrCodeServiceImpl implements QrCodeService {
         tableRepository.updateQrCodeUrl(tableId, qrCodeUrl);
 
         log.info("[QrCodeService] QR code generated and saved: {}", qrCodeUrl);
-        return qrCodeUrl;
+
+        return new GenerateQrCodeResponseDto(
+                qrCodeUrl,
+                "QR code generated successfully"
+        );
     }
 }
