@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Component
 @RequiredArgsConstructor
@@ -48,8 +49,10 @@ public class OrderServiceHelper {
     public Integer generateOrderNumber() {
         LocalDate today = LocalDate.now();
         LocalDateTime startDay = today.atStartOfDay();
-        Instant start = Instant.from(startDay);
-        Instant end = Instant.from(startDay.plusDays(1));
+        ZoneId zoneId = ZoneId.systemDefault();
+        Instant start = startDay.atZone(zoneId).toInstant();
+        Instant end = startDay.plusDays(1).atZone(zoneId).toInstant();
+
         int ordersCount = Math.toIntExact(orderRepository.countOrdersToday(
                 tenantContext.getFoodVenueId(), start, end));
         return ordersCount + 1;
