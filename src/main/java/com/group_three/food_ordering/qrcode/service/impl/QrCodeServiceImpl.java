@@ -54,23 +54,24 @@ public class QrCodeServiceImpl implements QrCodeService {
         String tableUrl = urlBuilder.buildTableUrl(request.baseUrl(), tableId);
         log.debug("[QrCodeService] QR will redirect to: {}", tableUrl);
 
-        // 4. Generar QR code
+        // 4. Obtener logo del venue (puede ser null)
+        String venueLogo = venue.getVenueStyle() != null ? venue.getVenueStyle().getLogoUrl() : null;
+        log.debug("[QrCodeService] Using venue logo: {}", venueLogo);
+
+        // 5. Generar QR code con logo dinámico
         String topLabel = String.format("Mesa %d", table.getNumber());
         String bottomLabel = venue.getName();
-        byte[] qrCodeBytes = qrCodeGenerator.generateQrCodeWithLabels(tableUrl, topLabel, bottomLabel);
+        byte[] qrCodeBytes = qrCodeGenerator.generateQrCodeWithLabels(tableUrl, topLabel, bottomLabel, venueLogo);
 
-        // 5. Subir a Cloudinary
+        // 6. Subir a Cloudinary
         String identifier = "table-" + tableId;
         String qrCodeUrl = cloudinaryService.uploadQrCode(qrCodeBytes, venue.getName(), identifier);
 
-        // 6. Actualizar tabla
+        // 7. Actualizar tabla
         tableRepository.updateQrCodeUrl(tableId, qrCodeUrl);
 
         log.info("[QrCodeService] QR code generated and saved: {}", qrCodeUrl);
 
-        return new GenerateQrCodeResponseDto(
-                qrCodeUrl,
-                "QR code generated successfully"
-        );
+        return new GenerateQrCodeResponseDto(qrCodeUrl);
     }
 }

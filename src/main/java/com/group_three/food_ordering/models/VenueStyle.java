@@ -27,7 +27,7 @@ public class VenueStyle {
     @Column(length = 500)
     private String bannerUrl;
 
-    @Column(length = 7) // #RRGGBB
+    @Column(length = 7)
     private String primaryColor;
 
     @Column(length = 7)

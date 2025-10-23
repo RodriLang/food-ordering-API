@@ -7,9 +7,5 @@ public record GenerateQrCodeResponseDto(
 
         @Schema(description = "URL del QR code generado",
                 example = "https://res.cloudinary.com/example/qr-codes/table-123.png")
-        String qrCodeUrl,
-
-        @Schema(description = "Mensaje de confirmación",
-                example = "QR code generated successfully")
-        String message
+        String qrCodeUrl
 ) {}
