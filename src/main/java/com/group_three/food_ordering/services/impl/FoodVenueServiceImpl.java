@@ -7,6 +7,7 @@ import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.FoodVenueMapper;
 import com.group_three.food_ordering.models.FoodVenue;
+import com.group_three.food_ordering.models.VenueStyle;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.services.FoodVenueService;
 import lombok.RequiredArgsConstructor;
@@ -91,12 +92,13 @@ public class FoodVenueServiceImpl implements FoodVenueService {
 
     @Override
     public FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
-
+        log.debug("[FoodVenueService] Updating current food venue {}", foodVenueRequestDto);
         FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         foodVenueMapper.updateEntity(foodVenueRequestDto, currentFoodVenue);
-
+        FoodVenue updatedFoodVenue = foodVenueRepository.save(currentFoodVenue);
+        log.debug("[FoodVenueService] Current food venue updated {}", updatedFoodVenue);
         log.debug("[FoodVenueRepository] Calling save to update current food venue {}", currentFoodVenue.getPublicId());
-        return foodVenueMapper.toPublicDto(foodVenueRepository.save(currentFoodVenue));
+        return foodVenueMapper.toPublicDto(updatedFoodVenue);
     }
 
     @Override

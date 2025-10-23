@@ -12,7 +12,7 @@ public interface ParticipantService {
 
     Participant create(User user, TableSession tableSession);
 
-    Participant update(UUID participantIdUser, User user);
+    Participant update(Participant participant, User user);
 
     ParticipantResponseDto getById(UUID id);
 

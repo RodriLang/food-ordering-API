@@ -53,14 +53,13 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public Participant update(UUID participantIdUser, User user) {
-        Participant participant = getEntityById(participantIdUser);
+    public Participant update(Participant participant, User user) {
         if (user != null) {
             participant.setUser(user);
             participant.setRole(RoleType.ROLE_CLIENT);
             participant.setNickname(user.getName());
         }
-        log.debug("[ParticipantRepository] Calling save to update participant {}", participantIdUser);
+        log.debug("[ParticipantRepository] Calling save to update participant {}", participant.getPublicId());
         participantRepository.save(participant);
         log.debug("[ParticipantService] Participant updated. Nickname={}. Role={}. User={}",
                 participant.getNickname(), participant.getRole(), user != null ? user.getEmail() : null);

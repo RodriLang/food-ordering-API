@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.models.Order;
 import com.group_three.food_ordering.models.OrderDetail;
+import com.group_three.food_ordering.models.Participant;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -51,6 +52,8 @@ public interface OrderService {
     Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable);
 
     List<Order> getOrderEntitiesByCurrentParticipant();
+
+    Integer reassignOrdersToParticipant(Participant guest, Participant existing);
 
     void delete(UUID id);
 
