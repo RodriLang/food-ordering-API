@@ -18,6 +18,7 @@ public interface FoodVenueMapper {
 
     @Mapping(target = "styles", source = "venueStyle")
     @Mapping(source = "address", target = "address", qualifiedByName = "flatAddress")
+    @Mapping(source = "address", target = "location", qualifiedByName = "flatLocation")
     FoodVenuePublicResponseDto toPublicDto(FoodVenue foodVenue);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -28,5 +29,10 @@ public interface FoodVenueMapper {
     @Named("flatAddress")
     default String flatAddress(Address address) {
         return address.getStreet() + " " + address.getNumber();
+    }
+
+    @Named("flatLocation")
+    default String flatLocation(Address address) {
+        return address.getCity() + ", " + address.getCountry();
     }
 }

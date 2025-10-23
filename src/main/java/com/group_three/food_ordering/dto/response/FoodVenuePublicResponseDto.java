@@ -23,6 +23,8 @@ public class FoodVenuePublicResponseDto {
 
     private String address;
 
+    private String location;
+
     private VenueStyleResponseDto styles;
 
 }
