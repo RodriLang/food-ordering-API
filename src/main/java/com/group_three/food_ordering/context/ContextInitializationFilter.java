@@ -61,6 +61,7 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(req, res);
+        log.debug("[ContextInitializationFilter] End filter");
     }
 }
 

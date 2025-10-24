@@ -7,7 +7,13 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring", uses = {AddressMapper.class, VenueStyleMapper.class, DiningTableMapper.class})
+@Mapper(componentModel = "spring",
+        uses = {
+                AddressMapper.class,
+                VenueStyleMapper.class,
+                DiningTableMapper.class,
+                ProductMapper.class
+        })
 public interface FoodVenueMapper {
 
     @Mapping(target = "venueStyle", source = "styleRequestDto")

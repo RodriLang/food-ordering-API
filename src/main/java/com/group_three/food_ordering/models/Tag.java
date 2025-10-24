@@ -22,6 +22,7 @@ public class Tag {
     Long id;
 
     @Column
+    @EqualsAndHashCode.Include
     private String label;
 
 }

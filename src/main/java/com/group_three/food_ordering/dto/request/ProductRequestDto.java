@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -37,8 +38,8 @@ public class ProductRequestDto {
     @Size(max = 255, groups = {OnCreate.class, OnUpdate.class})
     private String imageUrl;
 
-    private Long categoryId;
+    private UUID categoryId;
 
-    private List<Long> tagsId;
+    private List<String> tags;
 
 }

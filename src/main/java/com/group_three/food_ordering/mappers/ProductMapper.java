@@ -14,8 +14,20 @@ public interface ProductMapper {
     @Mapping(target = "category", source = "category.name")
     ItemMenuResponseDto toItemMenuDto(Product product);
 
+    @Mapping(target = "tags", ignore = true)
     Product toEntity(ProductRequestDto productRequestDto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "tags", ignore = true)
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "price", ignore = true)
+    @Mapping(target = "stock", ignore = true)
+    @Mapping(target = "available", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "publicId", ignore = true)
+    @Mapping(target = "foodVenue", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "imageUrl", ignore = true)
     void updateEntity(@MappingTarget Product productEntity, ProductRequestDto dto);
+
 }

@@ -17,20 +17,20 @@ import com.group_three.food_ordering.repositories.ProductRepository;
 import com.group_three.food_ordering.repositories.TagRepository;
 import com.group_three.food_ordering.services.CloudinaryService;
 import com.group_three.food_ordering.services.ProductService;
+import com.group_three.food_ordering.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static com.group_three.food_ordering.utils.EntityName.PRODUCT;
 import static com.group_three.food_ordering.utils.EntityName.TAG;
@@ -43,12 +43,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final TagRepository tagRepository;
+    private final TagService tagService;
     private final CategoryRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
     private final ProductMapper productMapper;
     private final TenantContext tenantContext;
 
     @Override
+    @Transactional
     public ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder folder) {
         log.info("Creating product: {}", productRequestDto.getName());
 
@@ -73,7 +75,8 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(productRequestDto.getStock() != null ? productRequestDto.getStock() : 0);
         product.setAvailable(product.getStock() > 0);
         product.setCategory(findCategory(productRequestDto.getCategoryId()));
-        product.setTags(findTags(productRequestDto.getTagsId()));
+
+        product.setTags(new HashSet<>(findTags(productRequestDto.getTags())));
 
         // 5. Guardar
         log.debug("[ProductRepository] Calling save to create new product for venue {}", foodVenue.getPublicId());
@@ -83,6 +86,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto) {
         Product product = getEntityById(publicId);
         productMapper.updateEntity(product, productRequestDto);
@@ -99,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product getEntityById(UUID publicId) {
         log.debug("[ProductRepository] Calling findByPublicId for product publicId={}", publicId);
-        return productRepository.findByPublicIdAndDeletedFalse(publicId)
+        return productRepository.findAndLockByPublicIdAndDeletedFalse(publicId)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }
 
@@ -125,6 +129,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void delete(UUID publicId) {
         Product product = getEntityById(publicId);
         product.setDeleted(Boolean.TRUE);
@@ -162,11 +167,20 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(productRequestDto.getStock() != null ? productRequestDto.getStock() : 0);
         product.setAvailable(product.getStock() != null && product.getStock() > 0);
         product.setCategory(findCategory(productRequestDto.getCategoryId()));
-        product.setTags(findTags(productRequestDto.getTagsId()));
-        log.debug("[ProductRepository] Calling save for product {}", product.getPublicId());
+
+        Set<Tag> tags = product.getTags();
+        tags.clear();
+
+        Set<Tag> newTags = tagService.createIfNotExists(productRequestDto.getTags());
+        if (!newTags.isEmpty()) {
+            tags.addAll(newTags);
+        }
         Product savedProduct = productRepository.save(product);
-        return productMapper.toDto(savedProduct);
+        ProductResponseDto productResponseDto = productMapper.toDto(savedProduct);
+        log.debug("[ProductService] Product updated successfully = {}", productResponseDto);
+        return productResponseDto;
     }
+
 
     public void validateStock(Product product, Integer quantity) throws InsufficientStockException {
         if (product.getStock() < quantity) {
@@ -179,38 +193,47 @@ public class ProductServiceImpl implements ProductService {
                 product.getPublicId(), product.getStock(), quantity);
     }
 
+    @Transactional
     public void incrementStockProduct(Product product, Integer quantity) {
         if (quantity != null && quantity > 0) {
             log.debug("[ProductService] Incrementing stock for product {} by {}", product.getPublicId(), quantity);
-            product.setStock(product.getStock() + quantity);
-            product.setAvailable(product.getStock() + quantity > 0);
+            int newStock = product.getStock() + quantity;
+            product.setStock(newStock);
+            product.setAvailable(newStock > 0);
+            // productRepository.save(product);
         }
     }
 
+    @Transactional
     public void decrementStockProduct(Product product, Integer quantity) {
         validateStock(product, quantity);
         log.debug("[ProductService] Decrementing stock for product {} by {}", product.getPublicId(), quantity);
-        product.setStock(product.getStock() - quantity);
-        product.setAvailable(product.getStock() - quantity > 0);
+        int newStock = product.getStock() - quantity;
+        product.setStock(newStock);
+        product.setAvailable(newStock > 0);
+        // productRepository.save(product);
     }
 
-    private List<Tag> findTags(List<Long> tagsId) {
-        if (tagsId != null && !tagsId.isEmpty()) {
-            log.debug("[TagRepository] Calling findById for multiple tags: {}", tagsId);
-            return tagsId.stream()
-                    .map(tagId -> tagRepository.findById(tagId)
-                            .orElseThrow(() -> new EntityNotFoundException(TAG)))
-                    .toList();
+    private Set<Tag> findTags(List<String> tagLabels) {
+        if (tagLabels != null && !tagLabels.isEmpty()) {
+            log.debug("[TagRepository] Calling findById for multiple tags: {}", tagLabels);
+            Set<Tag> tags = tagRepository.findAllByLabelIn(tagLabels);
+            if (tags.size() != tagLabels.size()) {
+                throw new EntityNotFoundException(TAG);
+            }
+            return new HashSet<>(tags);
         } else {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
     }
 
-    private Category findCategory(Long categoryId) {
+    private Category findCategory(UUID categoryId) {
+        log.debug("[CategoryRepository] Calling findById for categoryId={}", categoryId);
         if (categoryId != null) {
-            log.debug("[CategoryRepository] Calling findById for categoryId={}", categoryId);
-            return categoryRepository.findById(categoryId)
+            Category category = categoryRepository.findByPublicIdAndFoodVenue_PublicIdAndDeletedFalse(categoryId, tenantContext.getFoodVenueId())
                     .orElseThrow(() -> new EntityNotFoundException(CATEGORY));
+            log.debug("[Product Service] Category found={}", category.getName());
+            return category;
         } else {
             return null;
         }

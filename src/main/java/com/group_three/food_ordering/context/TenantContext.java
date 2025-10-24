@@ -10,7 +10,6 @@ import com.group_three.food_ordering.models.TableSession;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.repositories.ParticipantRepository;
-import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.utils.EntityName;
 import lombok.Getter;
@@ -20,7 +19,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,7 +31,6 @@ public class TenantContext {
     // --- Repos para lazy-loading ---
     private final UserRepository userRepo;
     private final ParticipantRepository participantRepo;
-    private final TableSessionRepository tableSessionRepo;
     private final FoodVenueRepository foodVenueRepo;
 
     // --- Estado actual del request ---
@@ -42,6 +39,7 @@ public class TenantContext {
     private Participant participant;
     private TableSession tableSession;
     private FoodVenue foodVenue;
+    private AuditorUser cachedAuditorUser;
 
     // --- IDs para lazy-loading ---
     @Getter
@@ -54,15 +52,15 @@ public class TenantContext {
     private UUID foodVenueId;
 
     // --- Flags de memoization (cachear incluso null) ---
-    private boolean userResolved;
-    private boolean participantResolved;
-    private boolean tableSessionResolved;
-    private boolean foodVenueResolved;
+    private boolean userResolved = false;
+    private boolean participantResolved = false;
+    private boolean tableSessionResolved = false;
+    private boolean foodVenueResolved = false;
+    private boolean auditorUserResolved = false;
 
     // =========================
     // Setters de contexto/IDs
     // =========================
-
 
     void setSessionInfo(SessionInfo s) {
         this.sessionInfo = s;
@@ -74,34 +72,6 @@ public class TenantContext {
             this.userId = s.userId();
             this.participantId = s.participantId();
         }
-    }
-
-    void setFoodVenueIdHeader(UUID foodVenueId) {
-        this.foodVenueId = foodVenueId;
-    }
-
-    void setUser(User u) {
-        this.user = u;
-        this.userResolved = true;
-        this.userId = (u != null ? u.getPublicId() : null);
-    }
-
-    void setParticipant(Participant p) {
-        this.participant = p;
-        this.participantResolved = true;
-        this.participantId = (p != null ? p.getPublicId() : null);
-    }
-
-    void setTableSession(TableSession ts) {
-        this.tableSession = ts;
-        this.tableSessionResolved = true;
-        this.tableSessionId = (ts != null ? ts.getPublicId() : null);
-    }
-
-    void setFoodVenue(FoodVenue fv) {
-        this.foodVenue = fv;
-        this.foodVenueResolved = true;
-        this.foodVenueId = (fv != null ? fv.getPublicId() : null);
     }
 
     // =========================
@@ -174,7 +144,7 @@ public class TenantContext {
     }
 
     // =========================
-    // Require helpers (igual que antes)
+    // Require helpers
     // =========================
 
     public User requireUser() {
@@ -231,41 +201,35 @@ public class TenantContext {
     }
 
     public AuditorUser requireAuditorUser() {
-        if (userOpt().isPresent()) {
-            User u = user; // ya cargado por userOpt()
-            return new AuditorUser(u.getPublicId(), u.getEmail());
+        log.debug("[TenantContext] Require Auditor User called");
+
+        if (auditorUserResolved) {
+            if (cachedAuditorUser == null) {
+                // Ahora solo se lanzará si la resolución falló previamente
+                throw new EntityNotFoundException(EntityName.AUDITOR_USER);
+            }
+            return cachedAuditorUser;
         }
-        if (sessionInfo != null && sessionInfo.subject() != null) {
-            return new AuditorUser(null, sessionInfo.subject());
+
+        log.debug("[TenantContext] Auditor User not cached, resolving...");
+
+        if (sessionInfo != null && sessionInfo.userId() != null && sessionInfo.subject() != null) {
+            log.debug("[TenantContext] Getting auditor user from SessionInfo (User ID + Subject)");
+            cachedAuditorUser = new AuditorUser(sessionInfo.userId(), sessionInfo.subject());
+        } else if (userOpt().isPresent()) {
+            log.debug("[TenantContext] Getting auditor user from resolved User entity");
+            User u = user;
+            cachedAuditorUser = new AuditorUser(u.getPublicId(), u.getEmail());
+        } else if (sessionInfo != null && sessionInfo.subject() != null) {
+            log.debug("[TenantContext] Getting auditor user from SessionInfo subject only (ID is null)");
+            cachedAuditorUser = new AuditorUser(null, sessionInfo.subject());
+        } else {
+            log.debug("[TenantContext] No auditor user found");
+            auditorUserResolved = true;
+            throw new EntityNotFoundException(EntityName.AUDITOR_USER);
         }
-        throw new EntityNotFoundException(EntityName.AUDITOR_USER);
-    }
-
-    // =========================
-    // Invalidaciones de cache
-    // =========================
-
-    public void invalidateUser() {
-        this.user = null;
-        this.userResolved = false;
-        log.debug("[TenantContext] User invalidated");
-    }
-
-    public void invalidateParticipant() {
-        this.participant = null;
-        this.participantResolved = false;
-        log.debug("[TenantContext] Participant invalidated");
-    }
-
-    public void invalidateTableSession() {
-        this.tableSession = null;
-        this.tableSessionResolved = false;
-        log.debug("[TenantContext] TableSession invalidated");
-    }
-
-    public void invalidateFoodVenue() {
-        this.foodVenue = null;
-        this.foodVenueResolved = false;
-        log.debug("[TenantContext] FoodVenue invalidated");
+        log.debug("[TenantContext] Auditor user resolved: {}", cachedAuditorUser);
+        auditorUserResolved = true;
+        return cachedAuditorUser;
     }
 }
