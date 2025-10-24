@@ -109,4 +109,10 @@ public class CategoryServiceImpl implements CategoryService {
                 .stream()
                 .toList();
     }
+
+    @Override
+    public List<Category> findAllByFoodVenue(UUID foodVenuePublicId) {
+        log.debug("[CategoryRepository] Calling findAllByFoodVenue for venue {}", foodVenuePublicId);
+        return categoryRepository.findAllByFoodVenue_PublicIdAndDeletedFalse(foodVenuePublicId);
+    }
 }

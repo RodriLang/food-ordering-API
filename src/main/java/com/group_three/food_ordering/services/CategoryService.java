@@ -25,4 +25,6 @@ public interface CategoryService {
 
     List<Category> findParentCategories(UUID foodVenuePublicId);
 
+    List<Category> findAllByFoodVenue(UUID foodVenuePublicId);
+
 }
