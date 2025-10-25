@@ -1,8 +1,8 @@
 package com.group_three.food_ordering.context;
 
-import com.group_three.food_ordering.configs.ApiPaths;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.security.JwtService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,14 +24,6 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path.startsWith(ApiPaths.AUTH_URI + "/logout")
-                || path.startsWith(ApiPaths.AUTH_URI + "/refresh")
-                || path.startsWith(ApiPaths.TABLE_SESSION_URI + "/end");
-    }
-
-    @Override
     protected void doFilterInternal(@NotNull HttpServletRequest req,
                                     @NotNull HttpServletResponse res,
                                     @NotNull FilterChain chain)
@@ -39,29 +31,43 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
 
         log.info("[ContextInitializationFilter] {} {}", req.getMethod(), req.getRequestURI());
 
-        // 1) Token opcional
         String auth = req.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
             String token = auth.substring(7);
             try {
-                var claims = jwtService.extractAllClaims(token); // puede tirar ExpiredJwtException
+                // Intenta validar y extraer claims (fallará si está vencido)
+                var claims = jwtService.extractAllClaims(token);
+                setContext(claims);
 
-                SessionInfo si = jwtService.getSessionInfoFromClaims(claims);
-                tenantContext.setSessionInfo(si);
-
-                log.debug("[ContextInitializationFilter] Session info: user={}, participant={}, tableSession={}, foodVenue={}",
-                        si != null ? si.userId() : null,
-                        si != null ? si.participantId() : null,
-                        si != null ? si.tableSessionId() : null,
-                        si != null ? si.foodVenueId() : null);
             } catch (io.jsonwebtoken.ExpiredJwtException ex) {
-                // Si el access está vencido y no es /auth/refresh (ya excluido), dejar seguir la cadena.
-                log.debug("[ContextInitializationFilter] Access token expired; skipping context init");
+                // Si el token está vencido, extrae los claims para inicializar el contexto.
+                log.warn("[ContextInitializationFilter] Access token expired, setting context from expired claims.");
+
+                // Se obtienen los claims de la excepción
+                var claims = ex.getClaims();
+                setContext(claims);
+
+            } catch (Exception ex) {
+                // Captura otras excepciones de JWT (malformado, firma inválida, etc.)
+                log.warn("[ContextInitializationFilter] Invalid JWT token: {}", ex.getMessage());
             }
         }
 
         chain.doFilter(req, res);
         log.debug("[ContextInitializationFilter] End filter");
+    }
+
+    private void setContext(Claims claims){
+
+        SessionInfo sessionInfo = jwtService.getSessionInfoFromClaims(claims);
+        tenantContext.setSessionInfo(sessionInfo);
+
+        log.debug("[ContextInitializationFilter] Session info from EXPIRED token: user={}, participant={}, tableSession={}, foodVenue={}",
+                sessionInfo != null ? sessionInfo.userId() : null,
+                sessionInfo != null ? sessionInfo.participantId() : null,
+                sessionInfo != null ? sessionInfo.tableSessionId() : null,
+                sessionInfo != null ? sessionInfo.foodVenueId() : null);
+
     }
 }
 

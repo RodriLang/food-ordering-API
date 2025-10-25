@@ -8,7 +8,6 @@ import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
-import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
@@ -30,8 +29,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static com.group_three.food_ordering.utils.EntityName.*;
 
 @Slf4j
 @Service
@@ -86,11 +83,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new InvalidTokenException("Invalid or expired refresh token"));
         log.debug("[AuthService] Refresh token request for user={}", userEmail);
 
-        log.debug("[UserRepository] Calling findByEmail for user {}", userEmail);
-        User user = userRepository.findByEmailAndDeletedFalse(userEmail)
-                .orElseThrow(() -> new EntityNotFoundException(USER));
-
-        SessionInfo sessionInfo = resolveSessionInfo(user);
+        SessionInfo sessionInfo = tenantContext.session();
 
         log.debug("[JwtService] Generating new access token for user {}", userEmail);
         String newAccessToken = jwtService.generateAccessToken(sessionInfo);
