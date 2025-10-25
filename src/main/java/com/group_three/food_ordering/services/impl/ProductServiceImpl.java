@@ -95,14 +95,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductResponseDto getById(UUID publicId) {
-        Product product = getEntityById(publicId);
+        log.debug("[ProductRepository] Calling findByPublicId for product publicId={}", publicId);
+        Product product = productRepository.findByPublicIdAndDeletedFalse(publicId)
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
         return productMapper.toDto(product);
     }
 
     @Override
     public Product getEntityById(UUID publicId) {
-        log.debug("[ProductRepository] Calling findByPublicId for product publicId={}", publicId);
+        log.debug("[ProductRepository] Calling findAndLockByPublicId for product publicId={}", publicId);
         return productRepository.findAndLockByPublicIdAndDeletedFalse(publicId)
                 .orElseThrow(() -> new EntityNotFoundException(PRODUCT));
     }

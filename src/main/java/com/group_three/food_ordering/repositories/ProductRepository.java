@@ -19,6 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Product> findAndLockByPublicIdAndDeletedFalse(UUID publicId);
 
+    Optional<Product> findByPublicIdAndDeletedFalse(UUID publicId);
+
     List<Product> findByNameAndFoodVenue_PublicIdAndDeletedFalse(String name, UUID foodVenueId);
 
     Page<Product> findAllByFoodVenue_PublicIdAndDeletedFalse(UUID foodVenueId, Pageable pageable);
