@@ -32,7 +32,7 @@ public interface ProductController {
     ResponseEntity<ProductResponseDto> createProduct(
             @RequestPart("product") @Valid ProductRequestDto productRequestDto,
             @RequestPart(value = "image", required = false) MultipartFile image,
-            @RequestParam("cloudinaryFolder") CloudinaryFolder cloudinaryFolder
+            @RequestParam(value = "cloudinaryFolder", required = false, defaultValue = "PRODUCTS") CloudinaryFolder cloudinaryFolder
     );
 
     @Operation(summary = "Listar todos los productos")
@@ -86,9 +86,13 @@ public interface ProductController {
 
     @Operation(summary = "Actualizar parcialmente un producto")
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
-    @PatchMapping("/{id}")
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody ProductRequestDto productRequestDto);
+            @PathVariable UUID id,
+            @RequestPart("product") @Validated(OnUpdate.class) ProductRequestDto productRequestDto,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "cloudinaryFolder", required = false, defaultValue = "PRODUCTS") CloudinaryFolder cloudinaryFolder
+    );
 
 
     @Operation(summary = "Eliminar un producto")

@@ -8,6 +8,7 @@ import com.group_three.food_ordering.dto.response.ProductResponseDto;
 import com.group_three.food_ordering.enums.CloudinaryFolder;
 import com.group_three.food_ordering.services.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {
@@ -25,8 +27,12 @@ public class ProductControllerImpl implements ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")
     @Override
-    public ResponseEntity<ProductResponseDto> createProduct(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder cloudinaryFolder) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(productRequestDto, image, cloudinaryFolder));
+    public ResponseEntity<ProductResponseDto> createProduct(
+            ProductRequestDto productRequestDto,
+            MultipartFile image,
+            CloudinaryFolder cloudinaryFolder) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.create(productRequestDto, image, cloudinaryFolder));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'MANAGER', 'ROOT')")
@@ -52,8 +58,7 @@ public class ProductControllerImpl implements ProductController {
     public ResponseEntity<PageResponse<ItemMenuResponseDto>> getTopSellingProducts(
             Integer limit,
             Integer days,
-            Pageable pageable
-    ) {
+            Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(productService.getTopSellingProducts(limit, days, pageable)));
     }
 
@@ -66,8 +71,11 @@ public class ProductControllerImpl implements ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'ROOT')")
     @Override
     public ResponseEntity<ProductResponseDto> updateProduct(
-            UUID id, ProductRequestDto productRequestDto) {
-        return ResponseEntity.ok(productService.update(id, productRequestDto));
+            UUID id,
+            ProductRequestDto productRequestDto,
+            MultipartFile image,
+            CloudinaryFolder cloudinaryFolder) {
+        return ResponseEntity.ok(productService.update(id, productRequestDto, image, cloudinaryFolder));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'ROOT')")

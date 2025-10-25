@@ -61,13 +61,16 @@ public class ProductServiceImpl implements ProductService {
         FoodVenue foodVenue = tenantContext.requireFoodVenue();
         product.setFoodVenue(foodVenue);
 
-        // 3. Subir imagen si existe
+        // 3. Subir imagen si existe (OPCIONAL)
         if (image != null && !image.isEmpty()) {
             log.debug("Uploading image to Cloudinary for venue '{}': {}",
                     foodVenue.getName(), image.getOriginalFilename());
 
             String imageUrl = cloudinaryService.uploadImage(image, foodVenue.getName(), folder);
             product.setImageUrl(imageUrl);
+        } else {
+            log.debug("No image provided for product, setting default or null");
+            product.setImageUrl(null); // O puedes establecer una imagen por defecto
         }
 
         // 4. Aplicar reglas de negocio
@@ -87,9 +90,38 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto) {
+    public ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder folder) {
+        log.info("Updating product: {}", publicId);
+
         Product product = getEntityById(publicId);
+
+        // 1. Mapear cambios básicos
         productMapper.updateEntity(product, productRequestDto);
+
+        // 2. Si hay nueva imagen, subir a Cloudinary (OPCIONAL)
+        if (image != null && !image.isEmpty()) {
+            FoodVenue foodVenue = tenantContext.requireFoodVenue();
+            log.debug("Uploading new image to Cloudinary for venue '{}': {}",
+                    foodVenue.getName(), image.getOriginalFilename());
+
+            // Opcional: Eliminar imagen anterior de Cloudinary si existe
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                try {
+                    cloudinaryService.deleteImage(product.getImageUrl());
+                    log.debug("Old image deleted from Cloudinary");
+                } catch (Exception e) {
+                    log.warn("Failed to delete old image from Cloudinary: {}", e.getMessage());
+                }
+            }
+
+            String imageUrl = cloudinaryService.uploadImage(image, foodVenue.getName(), folder);
+            product.setImageUrl(imageUrl);
+            log.debug("New image uploaded successfully: {}", imageUrl);
+        } else {
+            log.debug("No new image provided, keeping existing image: {}", product.getImageUrl());
+        }
+
+        // 3. Aplicar reglas de negocio y guardar
         log.debug("[ProductService] Applying rules and saving update for product {}", publicId);
         return applyProductRulesAndSave(product, productRequestDto);
     }

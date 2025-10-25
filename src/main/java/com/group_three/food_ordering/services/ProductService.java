@@ -16,7 +16,7 @@ public interface ProductService {
 
     ProductResponseDto create(ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder cloudinaryFolder);
 
-    ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto);
+    ProductResponseDto update(UUID publicId, ProductRequestDto productRequestDto, MultipartFile image, CloudinaryFolder folder);
 
     ProductResponseDto getById(UUID publicId);
 
