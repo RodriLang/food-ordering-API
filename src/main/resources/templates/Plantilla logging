@@ -1,0 +1,21 @@
+CREATE / INIT
+log.debug("[Entity] Initializing entity key=value ..."); // antes de persistir
+log.info("[Entity] Initialized entity successfully key=value ..."); // después de persistir
+log.error("[Entity] Failed to initialize entity key=value reason={}", reason); // fallo
+
+UPDATE
+log.debug("[Entity] Updating entity key=value ...");
+log.info("[Entity] Updated entity successfully key=value ...");
+log.warn("[Entity] Update partially applied key=value reason={}");
+log.error("[Entity] Failed to update entity key=value reason={}");
+
+DELETE
+log.info("[Entity] Deleted entity successfully key=value ...");
+log.warn("[Entity] Attempted to delete non-existent entity key=value");
+log.error("[Entity] Failed to delete entity key=value reason={}");
+
+READ / FETCH
+log.debug("[Entity] Fetching entity key=value ...");
+log.info("[Entity] Fetched entity successfully key=value ...");
+log.warn("[Entity] Entity not found key=value");
+log.error("[Entity] Failed to fetch entity key=value reason={}");

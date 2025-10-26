@@ -1,19 +1,22 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "order_details")
+@SQLDelete(sql = "UPDATE order_details SET deleted = true WHERE id = ?")
 @Getter
 @Setter
-@ToString(exclude = "order")
-@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@NoArgsConstructor
-@Entity(name = "order_details")
-@SQLDelete(sql = "UPDATE order_details SET deleted = true WHERE id = ?")
+@Builder
 public class OrderDetail {
 
     @Id
@@ -26,31 +29,11 @@ public class OrderDetail {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(length = 255)
+    @Column
     private String specialInstructions;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "order_id")
-    private Order order;
-
-    @Column(nullable = false)
-    private Boolean deleted;
-
-    @PrePersist
-    public void onCreate() {
-        if (this.quantity == null) this.quantity = 1;
-        if (this.price == null) {
-            this.price = this.product.getPrice().multiply(BigDecimal.valueOf(quantity));
-        }
-        if (this.deleted == null) this.deleted = false;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        if (this.quantity == null) this.quantity = 1;
-    }
 }

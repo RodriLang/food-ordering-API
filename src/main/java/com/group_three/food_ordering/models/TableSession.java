@@ -1,59 +1,59 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.*;
 
-@Entity(name = "table_sessions")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "table_sessions")
+@SQLDelete(sql = "UPDATE table_sessions SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"foodVenue", "orders", "participants"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-public class TableSession {
-    @Id
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+@SuperBuilder
+public class TableSession extends BaseEntity {
 
     @Column(name = "start_time", nullable = false)
-    private LocalDateTime startTime;
+    private Instant startTime;
 
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private Instant endTime;
 
-    @ManyToOne
-    @JoinColumn(name = "table_id", nullable = false)
-    private Table table;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "dining_table_id", nullable = false)
+    private DiningTable diningTable;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "food_venue_id", nullable = false)
     private FoodVenue foodVenue;
 
-    @ManyToOne
-    @JoinColumn(name = "host_client_id", nullable = false)
-    private Client hostClient;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "host_id")
+    private Participant sessionHost;
 
-    @OneToMany(mappedBy = "tableSession", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "tableSession",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
+    )
     private List<Order> orders = new ArrayList<>();
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "table_session_clients",
+            name = "table_session_participants",
             joinColumns = @JoinColumn(name = "table_session_id"),
-            inverseJoinColumns = @JoinColumn(name = "client_id")
+            inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
-    private List<Client> participants = new ArrayList<>();
+    @Builder.Default
+    private List<Participant> participants = new ArrayList<>();
 
-    @PrePersist
-    public void onCreate() {
-        if (this.id == null) this.id = UUID.randomUUID();
-    }
 }

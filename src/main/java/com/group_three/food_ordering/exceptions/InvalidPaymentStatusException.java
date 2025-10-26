@@ -16,6 +16,10 @@ public class InvalidPaymentStatusException extends RuntimeException {
         super(MESSAGE + paymentId + ", " + status);
     }
 
+    public InvalidPaymentStatusException(String message) {
+        super(message);
+    }
+
     public InvalidPaymentStatusException(UUID paymentId, PaymentStatus status, Throwable cause) {
         super(MESSAGE + paymentId + ", " + status, cause);
     }

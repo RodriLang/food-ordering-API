@@ -1,31 +1,26 @@
 package com.group_three.food_ordering.models;
 
-import com.group_three.food_ordering.enums.RoleType;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type")
 @Table(name = "users")
-@Data
-@NoArgsConstructor
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = "employments")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-
-public class User {
-
-    @Id
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+@SuperBuilder
+public class User extends BaseEntity {
 
     @Column(length = 50)
     private String name;
@@ -48,16 +43,8 @@ public class User {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-    
-    private LocalDateTime removedAt;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Employment> employments = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
-
-    @PrePersist
-    public void onCreate() {
-        if (this.id == null) this.id = UUID.randomUUID();
-    }
 }

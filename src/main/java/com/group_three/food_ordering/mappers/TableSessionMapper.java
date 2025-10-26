@@ -1,22 +1,31 @@
 package com.group_three.food_ordering.mappers;
 
-import com.group_three.food_ordering.dtos.create.TableSessionCreateDto;
-import com.group_three.food_ordering.dtos.response.TableSessionResponseDto;
+import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
+import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
+import com.group_three.food_ordering.models.Participant;
 import com.group_three.food_ordering.models.TableSession;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+
+@Mapper(componentModel = "spring", uses = {ParticipantMapper.class})
 public interface TableSessionMapper {
 
     @Mappings({
-            @Mapping(source = "table.id", target = "tableId"),
-            @Mapping(source = "table.number", target = "tableNumber"),
-            @Mapping(source = "hostClient.id", target = "hostClientId"),
-            @Mapping(target = "participantsIds", expression = "java(tableSession.getParticipants().stream().map(p -> p.getId()).toList())")
+            @Mapping(source = "diningTable.number", target = "tableNumber"),
+            @Mapping(source = "diningTable.status", target = "tableStatus"),
+            @Mapping(source = "sessionHost", target = "hostClient"),
+            @Mapping(source = "participants", target = "numberOfParticipants", qualifiedByName = "calculateNumberOfParticipants"),
     })
-    TableSessionResponseDto toDTO(TableSession tableSession);
+    TableSessionResponseDto toDto(TableSession tableSession);
 
-    TableSession toEntity(TableSessionCreateDto dto);
+    TableSession toEntity(TableSessionRequestDto dto);
+
+    @Named("calculateNumberOfParticipants")
+    default Integer calculateNumberOfParticipants(List<Participant> participants){
+        return participants.size();
+    }
 }

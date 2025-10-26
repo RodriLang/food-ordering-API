@@ -1,4 +1,4 @@
-# 🍽️ Food Ordering API
+﻿# 🍽️ Food Ordering API
 
 ![Java](https://img.shields.io/badge/Java-21-blue?logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-brightgreen?logo=spring)

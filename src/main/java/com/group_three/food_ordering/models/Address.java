@@ -1,12 +1,14 @@
 package com.group_three.food_ordering.models;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Builder
 @Embeddable
 @Data
 @NoArgsConstructor
@@ -30,5 +32,6 @@ public class Address {
 
     @NotBlank(message = "Postal code is required")
     private String postalCode;
+
 }
 

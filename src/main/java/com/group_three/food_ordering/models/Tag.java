@@ -1,25 +1,28 @@
 package com.group_three.food_ordering.models;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
 
-import java.util.UUID;
-
-@Entity(name= "tags")
-@Data
-@Builder
-@NoArgsConstructor
+@Entity
+@Table(name = "tags")
+@SQLDelete(sql = "UPDATE tags SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 public class Tag {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @Column
+    @EqualsAndHashCode.Include
     private String label;
 
 }

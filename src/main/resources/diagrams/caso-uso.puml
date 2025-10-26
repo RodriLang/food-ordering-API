@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Customer
+actor Staff
+actor VenueAdmin
+actor SystemAdmin
+
+rectangle "Food Ordering System" {
+
+  Customer --> (Register/Login)
+  Customer --> (Browse Venue Menu)
+  Customer --> (Place Order)
+  Customer --> (Pay Order)
+  Customer --> (Track Order)
+  Customer --> (Cancel Order)
+
+  Staff --> (View Incoming Orders)
+  Staff --> (Update Order Status)
+  Staff --> (Notify Customer)
+
+  VenueAdmin --> (Manage Menu)
+  VenueAdmin --> (Manage Staff)
+  VenueAdmin --> (View Orders Report)
+
+  SystemAdmin --> (Manage Venues)
+  SystemAdmin --> (Manage Venue Admins)
+  SystemAdmin --> (View System Stats)
+}
+@enduml

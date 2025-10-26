@@ -1,13 +1,10 @@
 package com.group_three.food_ordering.mappers;
 
-
-import com.group_three.food_ordering.dtos.create.OrderDetailRequestDto;
-import com.group_three.food_ordering.dtos.response.OrderDetailResponseDto;
+import com.group_three.food_ordering.dto.request.OrderDetailRequestDto;
+import com.group_three.food_ordering.dto.response.OrderDetailResponseDto;
 import com.group_three.food_ordering.models.OrderDetail;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.math.BigDecimal;
 
 @Mapper(componentModel = "spring")
 public interface OrderDetailMapper {
@@ -17,8 +14,7 @@ public interface OrderDetailMapper {
     @Mapping(source = "product.price", target = "unitPrice")
     @Mapping(target = "subtotal",
             expression = "java(orderDetail.getPrice() != null ? orderDetail.getPrice().multiply(java.math.BigDecimal.valueOf(orderDetail.getQuantity())) : java.math.BigDecimal.ZERO)")
-
-    OrderDetailResponseDto toDTO(OrderDetail orderDetail);
+    OrderDetailResponseDto toDto(OrderDetail orderDetail);
 
     OrderDetail toEntity(OrderDetailRequestDto orderDetailDTO);
 

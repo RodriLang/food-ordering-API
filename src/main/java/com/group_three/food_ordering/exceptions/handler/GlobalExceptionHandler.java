@@ -2,7 +2,9 @@ package com.group_three.food_ordering.exceptions.handler;
 
 import com.group_three.food_ordering.exceptions.*;
 import com.group_three.food_ordering.exceptions.responses.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,12 +13,18 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     // Error de entidad no encontrada en la base de datos
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException e, HttpServletRequest request) {
+        log.warn("[{}] {}", e.getEntityName(), e.getMessage());
         return buildErrorResponse(e, HttpStatus.NOT_FOUND, request);
     }
 
@@ -50,6 +58,21 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e, HttpStatus.CONFLICT, request);
     }
 
+    // Error de contexto indeterminado cuando no se puede obtener el Food Venue
+    @ExceptionHandler(MissingTenantContextException.class)
+    public ResponseEntity<ErrorResponse> handleIndeterminateTenantContext(MissingTenantContextException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
+    }
+
+    @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
+    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", "EXPIRED_TOKEN");
+        error.put("message", "Access token has expired. Please use the refresh token.");
+        error.put("timestamp", Instant.now().toString());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
 
     // Errores de validación de DTO (@Valid fallidos)
     @ExceptionHandler(MethodArgumentNotValidException.class)

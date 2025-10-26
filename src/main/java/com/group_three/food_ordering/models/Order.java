@@ -5,32 +5,25 @@ import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
 @SQLDelete(sql = "UPDATE orders SET deleted = true WHERE id = ?")
 @Getter
 @Setter
-@EqualsAndHashCode
-@ToString(exclude = "foodVenue")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"foodVenue", "participant", "tableSession", "orderDetails"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class Order {
-
-    @Id
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    @Column(name = "id", length = 36)
-    private UUID id;
+@SuperBuilder
+public class Order extends BaseEntity {
 
     @Column
     private Integer orderNumber;
@@ -41,42 +34,29 @@ public class Order {
     @Column
     private BigDecimal totalPrice;
 
-    @Column(updatable = false)
-    private LocalDateTime creationDate;
+    @Column(name = "order_date", updatable = false)
+    private Instant orderDate;
 
-    private LocalDateTime updateDate;
     @Column
     private String specialRequirements;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private FoodVenue foodVenue;
 
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
+    @ManyToOne (fetch = FetchType.EAGER)
+    private Participant participant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Client client;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "table_session_id")
     private TableSession tableSession;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id")
+    @Builder.Default
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @PrePersist
-    public void onCreate() {
-        this.creationDate = LocalDateTime.now();
-        this.updateDate = LocalDateTime.now();
-        if (this.id == null) this.id = UUID.randomUUID();
-        if (this.status == null) this.status = OrderStatus.PENDING;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updateDate = LocalDateTime.now();
-    }
 }
-

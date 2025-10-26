@@ -1,34 +1,36 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Table;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-
-@Entity(name = "products")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "products")
+@SQLDelete(sql = "UPDATE products SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@SuperBuilder
+public class Product extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "food_venue_id")
     private FoodVenue foodVenue;
 
     @Column
     private String name;
 
-    @Column(length = 255)
+    @Column
     private String description;
 
     @Column
@@ -43,25 +45,17 @@ public class Product {
     @Column
     private Integer stock;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "products_tags",
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags= new ArrayList<>();
+    @Builder.Default
+    private Set<Tag> tags = new HashSet<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
-
-    @PrePersist
-    public void onCreate()
-    {
-        this.available = true;
-        if (this.price == null){ this.price = BigDecimal.ZERO;
-        }
-        if (this.stock == null){ this.stock = 0;}
-    }
 
 }

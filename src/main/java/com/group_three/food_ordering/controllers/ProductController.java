@@ -1,88 +1,103 @@
 package com.group_three.food_ordering.controllers;
 
 import com.group_three.food_ordering.configs.ApiPaths;
-import com.group_three.food_ordering.dtos.create.ProductCreateDto;
-import com.group_three.food_ordering.dtos.response.ProductResponseDto;
-import com.group_three.food_ordering.dtos.update.ProductUpdateDto;
-import com.group_three.food_ordering.services.interfaces.IProductService;
+import com.group_three.food_ordering.dto.request.ProductRequestDto;
+import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
+import com.group_three.food_ordering.dto.response.PageResponse;
+import com.group_three.food_ordering.dto.response.ProductResponseDto;
+import com.group_three.food_ordering.enums.CloudinaryFolder;
+import com.group_three.food_ordering.utils.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-@RestController
-@RequestMapping(ApiPaths.PRODUCT_BASE)
-@RequiredArgsConstructor
-public class ProductController {
+import java.util.UUID;
 
-    private final IProductService productService;
+@RequestMapping(ApiPaths.PRODUCT_URI)
+@Tag(name = "Productos", description = "Gestión de los productos de los lugares de comida")
+public interface ProductController {
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
     @Operation(summary = "Crear un nuevo producto")
     @ApiResponse(responseCode = "200", description = "Producto creado correctamente")
-    @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(
-            @RequestBody @Valid ProductCreateDto productCreateDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.create(productCreateDto));
-    }
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<ProductResponseDto> createProduct(
+            @RequestPart("product") @Valid ProductRequestDto productRequestDto,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "cloudinaryFolder", required = false, defaultValue = "PRODUCTS") CloudinaryFolder cloudinaryFolder
+    );
+
     @Operation(summary = "Listar todos los productos")
     @ApiResponse(responseCode = "200", description = "Listado de productos")
     @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> getProducts() {
-        return ResponseEntity.ok(productService.getAll());
-    }
+    ResponseEntity<PageResponse<ProductResponseDto>> getProducts(Pageable pageable);
 
-    @PreAuthorize("isAuthenticated()")
+
     @Operation(summary = "Listar productos disponibles")
     @ApiResponse(responseCode = "200", description = "Listado de productos disponibles")
     @GetMapping("/available")
-    public ResponseEntity<List<ProductResponseDto>> getProductsAvailable() {
-        return ResponseEntity.ok(productService.getAllAvailable());
-    }
+    ResponseEntity<PageResponse<ProductResponseDto>> getProductsAvailable(Pageable pageable);
+
 
     @Operation(summary = "Obtener un producto por ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
+    @GetMapping("/find-by-id/{id}")
+    ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID id);
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getById(id));
-    }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
-    @Operation(summary = "Reemplazar un producto")
-    @ApiResponse(responseCode = "200", description = "Producto reemplazado correctamente")
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> replaceProduct(
-            @PathVariable Long id, @Valid @RequestBody ProductCreateDto productCreateDto) {
-        return ResponseEntity.ok(productService.replace(id, productCreateDto));
-    }
+    @Operation(
+            summary = "Obtener productos populares",
+            description = "Devuelve una lista paginada con la cantidad indicada productos con mas ventas en el tiempo solicitado"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    @GetMapping("/top-selling")
+    ResponseEntity<PageResponse<ItemMenuResponseDto>> getTopSellingProducts(
+            @RequestParam Integer limit,
+            @RequestParam Integer days,
+            @Parameter Pageable pageable
+    );
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN','ROOT')")
+
+    @Operation(
+            summary = "Obtener producto por nombre",
+            description = "Devuelve un producto usando como identificador su nombre y el contexto actual"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Producto encontrado"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
+    @GetMapping("/find-by-name/{productName}")
+    ResponseEntity<ItemMenuResponseDto> getProductByNameAndContext(@PathVariable String productName);
+
+
     @Operation(summary = "Actualizar parcialmente un producto")
     @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
-    @PatchMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> updateProduct(
-            @PathVariable Long id, @Valid @RequestBody ProductUpdateDto productUpdateDto) {
-        return ResponseEntity.ok(productService.update(id, productUpdateDto));
-    }
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<ProductResponseDto> updateProduct(
+            @PathVariable UUID id,
+            @RequestPart("product") @Validated(OnUpdate.class) ProductRequestDto productRequestDto,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "cloudinaryFolder", required = false, defaultValue = "PRODUCTS") CloudinaryFolder cloudinaryFolder
+    );
 
-    @PreAuthorize("hasAnyRole('ADMIN','SUPER_ADMIN','ROOT')")
+
     @Operation(summary = "Eliminar un producto")
     @ApiResponse(responseCode = "204", description = "Producto eliminado correctamente")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> deleteProduct(@PathVariable Long id) {
-        productService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
+    ResponseEntity<ProductResponseDto> deleteProduct(@PathVariable UUID id);
+
 }

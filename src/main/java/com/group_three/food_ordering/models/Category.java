@@ -1,33 +1,39 @@
 package com.group_three.food_ordering.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.Table;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity (name = "categories")
-@Data
-@NoArgsConstructor
+@Entity
+@Table(name = "categories")
+@SQLDelete(sql = "UPDATE categories SET deleted = true WHERE id = ?")
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
+@ToString(exclude = {"childrenCategories", "foodVenue"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder
-public class Category {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@SuperBuilder
+public class Category extends BaseEntity {
 
     @Column
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "food_venue_id")
+    private FoodVenue foodVenue;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
 
-    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Builder.Default
     private List<Category> childrenCategories = new ArrayList<>();
 
 }
