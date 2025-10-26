@@ -64,15 +64,29 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e, HttpStatus.BAD_REQUEST, request);
     }
 
-    @ExceptionHandler(io.jsonwebtoken.ExpiredJwtException.class)
-    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("error", "EXPIRED_TOKEN");
-        error.put("message", "Access token has expired. Please use the refresh token.");
-        error.put("timestamp", Instant.now().toString());
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    // Error al almacenar imágenes con la librería Cloudinary
+    @ExceptionHandler(CloudinaryException.class)
+    public ResponseEntity<ErrorResponse> handleCloudinaryException(CloudinaryException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
+
+    // Error al generar código qr
+    @ExceptionHandler(QrCodeGeneratorException.class)
+    public ResponseEntity<ErrorResponse> handleQrCodeGeneratorException(QrCodeGeneratorException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    // Error de usuario iniciando sesión en una mesa teniendo otra en curso
+    @ExceptionHandler(UserSessionConflictException.class)
+    public ResponseEntity<ErrorResponse> handleUserSessionConflict(UserSessionConflictException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredJwt(ExpiredJwtException e, HttpServletRequest request) {
+        return buildErrorResponse(e, HttpStatus.UNAUTHORIZED, request);
+    }
+
 
     // Errores de validación de DTO (@Valid fallidos)
     @ExceptionHandler(MethodArgumentNotValidException.class)

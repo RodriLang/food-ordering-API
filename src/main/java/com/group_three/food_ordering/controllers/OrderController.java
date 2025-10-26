@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,7 +36,7 @@ public interface OrderController {
     })
     @PostMapping
     ResponseEntity<OrderResponseDto> createOrder(
-            @RequestBody @Validated(OnCreate.class) OrderRequestDto order);
+            @RequestBody @Valid OrderRequestDto order);
 
 
     @Operation(

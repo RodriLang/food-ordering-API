@@ -9,6 +9,7 @@ import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
 import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.InvalidTokenException;
+import com.group_three.food_ordering.exceptions.UserSessionConflictException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.*;
@@ -165,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
             } else {
                 log.warn("[AuthService] Conflict: user has active session {} but trying to log in from another session {}",
                         active.getPublicId(), guestSession.getPublicId());
-                throw new BadCredentialsException("El usuario ya tiene una sesión activa en otra mesa.");
+                throw new UserSessionConflictException("User already has an active session on another table.");
             }
         }
 

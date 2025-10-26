@@ -66,9 +66,10 @@ public class OrderServiceImpl implements OrderService {
                 .map(dto -> {
                     log.debug("[ProductService] Calling getEntityByNameAndContext for product: {}", dto.getProductName());
                     Product product = productService.getEntityByNameAndContext(dto.getProductName());
+                    productService.validateStock(product, dto.getQuantity());
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
                     detail.setProduct(product);
-                    detail.setQuantity(1);
+                    detail.setQuantity(dto.getQuantity());
                     detail.setPrice(product.getPrice());
                     return detail;
                 })
@@ -225,7 +226,6 @@ public class OrderServiceImpl implements OrderService {
         log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicId (unpaged) for currentClientId={}", currentClientId);
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, Pageable.unpaged()).toList();
     }
-
     @Override
     public Integer reassignOrdersToParticipant(Participant guest, Participant existing){
         List<Order> orders = orderRepository.findOrdersByParticipant_PublicId(guest.getPublicId(), Pageable.unpaged()).toList();
