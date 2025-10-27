@@ -78,7 +78,7 @@ Crea las Variables de entorno:
     DB_USER: usuario de la base de datos
     DB_PASSWORD: contraseña de la base de datos
     JWT_KEY: clave para la validación del token HS512
-    JWT_EXPIRATION: tiempo de expración en ms
+    JWT_EXPIRATION: tiempo de expiración en ms
 
 ---
 
