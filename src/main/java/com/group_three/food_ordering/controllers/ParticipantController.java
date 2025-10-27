@@ -57,7 +57,7 @@ public interface ParticipantController {
             @RequestParam PaymentStatus status,
             @Parameter Pageable pageable);
 
-    @Operation(summary = "Obtener ordenes por sesión de mesa actual y estado")
+    @Operation(summary = "Obtener órdenes por sesión de mesa actual y estado")
     @GetMapping("/table-sessions/orders")
     ResponseEntity<PageResponse<OrderResponseDto>> getAllOrdersByCurrentTableSessionAndStatus(
             @RequestParam OrderStatus status,
