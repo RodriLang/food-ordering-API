@@ -49,6 +49,8 @@ public interface OrderService {
 
     Page<OrderResponseDto> getOrdersByClientAndTableSessionAndStatus(UUID clientId, UUID tableSessionId, OrderStatus status, Pageable pageable);
 
+    Page<OrderResponseDto> getAllOrdersByCurrentTableSessionAndStatus(OrderStatus status, Pageable pageable);
+
     Page<OrderResponseDto> getOrdersByCurrentParticipant(Pageable pageable);
 
     List<Order> getOrderEntitiesByCurrentParticipant();
@@ -60,5 +62,4 @@ public interface OrderService {
     void addOrderDetailToOrder(UUID orderId, OrderDetail orderDetail);
 
     void removeOrderDetailFromOrder(UUID orderId, OrderDetail orderDetail);
-
 }
