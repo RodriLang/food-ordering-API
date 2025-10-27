@@ -66,9 +66,10 @@ public class OrderServiceImpl implements OrderService {
                 .map(dto -> {
                     log.debug("[ProductService] Calling getEntityByNameAndContext for product: {}", dto.getProductName());
                     Product product = productService.getEntityByNameAndContext(dto.getProductName());
+                    productService.validateStock(product, dto.getQuantity());
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
                     detail.setProduct(product);
-                    detail.setQuantity(1);
+                    detail.setQuantity(dto.getQuantity());
                     detail.setPrice(product.getPrice());
                     return detail;
                 })
@@ -204,9 +205,19 @@ public class OrderServiceImpl implements OrderService {
         UUID currentClientId = tenantContext.getParticipantId();
         UUID currentTableSessionId = tenantContext.getTableSessionId();
 
-        log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus for clientId={}, sessionId={}, status={}", currentClientId, currentTableSessionId, status);
+        log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus " +
+                "for clientId={}, sessionId={}, status={}", currentClientId, currentTableSessionId, status);
+
         return orderRepository.findOrdersByParticipant_PublicIdAndTableSession_PublicIdAndStatus(
                 currentClientId, currentTableSessionId, status, pageable).map(orderMapper::toDto);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getAllOrdersByCurrentTableSessionAndStatus(OrderStatus status, Pageable pageable) {
+
+        UUID currentTableSessionId = tenantContext.getTableSessionId();
+
+        return this.getOrdersByTableSessionAndStatus(currentTableSessionId, status, pageable);
     }
 
     @Override
@@ -225,7 +236,6 @@ public class OrderServiceImpl implements OrderService {
         log.debug("[OrderRepository] Calling findOrdersByParticipant_PublicId (unpaged) for currentClientId={}", currentClientId);
         return orderRepository.findOrdersByParticipant_PublicId(currentClientId, Pageable.unpaged()).toList();
     }
-
     @Override
     public Integer reassignOrdersToParticipant(Participant guest, Participant existing){
         List<Order> orders = orderRepository.findOrdersByParticipant_PublicId(guest.getPublicId(), Pageable.unpaged()).toList();

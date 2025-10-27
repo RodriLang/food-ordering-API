@@ -27,6 +27,8 @@ public class ItemMenuResponseDto {
 
     private String category;
 
+    private Boolean customizable;
+
     private List<TagResponseDto> tags;
 
 }

@@ -2,6 +2,7 @@ package com.group_three.food_ordering.controllers.impl;
 
 import com.group_three.food_ordering.controllers.ParticipantController;
 import com.group_three.food_ordering.dto.response.*;
+import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.ParticipantService;
@@ -54,6 +55,15 @@ public class ParticipantControllerImpl implements ParticipantController {
         Page<PaymentResponseDto> payments =
                 paymentService.getAllOwnPaymentsAndStatus(status, pageable);
         return ResponseEntity.ok(PageResponse.of(payments));    }
+
+
+    @Override
+    public ResponseEntity<PageResponse<OrderResponseDto>> getAllOrdersByCurrentTableSessionAndStatus(OrderStatus status, Pageable pageable) {
+        Page<OrderResponseDto> orders =
+                orderService.getAllOrdersByCurrentTableSessionAndStatus(status, pageable);
+        return ResponseEntity.ok(PageResponse.of(orders));
+    }
+
 
     @Override
     public ResponseEntity<TableSessionResponseDto> getCurrentTableSession() {

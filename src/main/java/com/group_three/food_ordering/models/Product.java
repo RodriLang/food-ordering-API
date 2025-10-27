@@ -45,6 +45,9 @@ public class Product extends BaseEntity {
     @Column
     private Integer stock;
 
+    @Column
+    private Boolean customizable;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "products_tags",
