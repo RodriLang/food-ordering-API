@@ -56,7 +56,7 @@ public class VenueStyleRequestDto {
     @Size(max = 200, message = "Whatsapp number must be 200 characters or less", groups = {OnCreate.class, OnUpdate.class})
     private String whatsappNumber;
 
-    @NotBlank(message = "Public menu status is required", groups = OnCreate.class)
+    @NotNull(message = "Public menu status is required", groups = OnCreate.class)
     private Boolean publicMenu;
 
 }
