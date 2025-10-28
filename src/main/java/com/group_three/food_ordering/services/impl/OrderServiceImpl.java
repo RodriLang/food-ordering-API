@@ -10,6 +10,8 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.mappers.OrderMapper;
+import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.ProductService;
@@ -40,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final TenantContext tenantContext;
     private final TableSessionRepository tableSessionRepository;
     private final OrderServiceHelper orderServiceHelper;
+    private final SseService sseService;
 
     @Override
     public OrderResponseDto create(OrderRequestDto orderRequestDto) {
@@ -78,7 +81,12 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderDetails(orderDetails);
         orderServiceHelper.updateTotalPrice(order);
         log.debug("[OrderRepository] Calling save to create new order for participant {}", participant.getPublicId());
-        return orderMapper.toDto(orderRepository.save(order));
+        OrderResponseDto savedOrder = orderMapper.toDto(orderRepository.save(order));
+
+        sseService.sendEventToTableSession(
+                order.getTableSession().getPublicId().toString(), SseEventType.NEW_ORDER, savedOrder);
+
+        return savedOrder;
     }
 
     @Override

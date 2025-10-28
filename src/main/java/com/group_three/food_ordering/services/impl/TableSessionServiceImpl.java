@@ -14,6 +14,8 @@ import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
+import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.services.DiningTableService;
@@ -46,6 +48,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final JwtService jwtService;
     private final DiningTableService diningTableService;
     private final ParticipantMapper participantMapper;
+    private final SseService sseService;
 
     // ===========================
     // Entrar / Asociarse a mesa
@@ -367,7 +370,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .filter(order -> order.getParticipant() != null && Objects.equals(order.getParticipant().getId(),
                         guest.getId()))
                 .forEach(order -> order.setParticipant(client));
-        
+
         // Remover guest de la sesión
         tableSession.getParticipants().remove(guest);
         participantService.softDelete(guest.getPublicId());
@@ -404,6 +407,19 @@ public class TableSessionServiceImpl implements TableSessionService {
         List<ParticipantResponseDto> participantsDto = tableSession.getParticipants().stream()
                 .map(participantMapper::toResponseDto)
                 .toList();
+
+        int newParticipantCount = tableSession.getParticipants().size();
+
+        sseService.sendEventToTableSession(
+                tableSession.getPublicId().toString(),
+                SseEventType.USER_JOINED,
+                tableSession
+        );
+        sseService.sendEventToTableSession(
+                tableSession.getPublicId().toString(),
+                SseEventType.COUNT_UPDATED,
+                Map.of("count", newParticipantCount)
+        );
 
         SessionInfo si = SessionInfo.builder()
                 .userId(participant.getUser() != null ? participant.getUser().getPublicId() : null)
