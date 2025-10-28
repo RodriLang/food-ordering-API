@@ -81,6 +81,14 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     }
 
     @Override
+    public FoodVenueAdminResponseDto getMyFoodVenue() {
+
+        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
+
+        return foodVenueMapper.toAdminDto(currentFoodVenue);
+    }
+
+    @Override
     public FoodVenueAdminResponseDto update(UUID foodVenueId, FoodVenueRequestDto foodVenueRequestDto) {
 
         FoodVenue foodVenue = findEntityById(foodVenueId);
@@ -91,14 +99,14 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     }
 
     @Override
-    public FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
+    public FoodVenueAdminResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
         log.debug("[FoodVenueService] Updating current food venue {}", foodVenueRequestDto);
         FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
         foodVenueMapper.updateEntity(foodVenueRequestDto, currentFoodVenue);
         FoodVenue updatedFoodVenue = foodVenueRepository.save(currentFoodVenue);
         log.debug("[FoodVenueService] Current food venue updated {}", updatedFoodVenue);
         log.debug("[FoodVenueRepository] Calling save to update current food venue {}", currentFoodVenue.getPublicId());
-        return foodVenueMapper.toPublicDto(updatedFoodVenue);
+        return foodVenueMapper.toAdminDto(updatedFoodVenue);
     }
 
     @Override

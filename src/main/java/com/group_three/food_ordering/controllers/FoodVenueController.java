@@ -122,6 +122,22 @@ public interface FoodVenueController {
     ResponseEntity<FoodVenuePublicResponseDto> getMyCurrentFoodVenue();
 
     @Operation(
+            summary = "Obtener el lugar de comida del admin asociado",
+            description = "Devuelve el lugar de comida asociado al admin registrado. accesible para admin",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Lugar de comida encontrado",
+                            content = @Content(schema = @Schema(implementation = FoodVenuePublicResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Lugar de comida no encontrado"),
+                    @ApiResponse(responseCode = "403", description = "Acceso denegado")
+            }
+    )
+    @GetMapping("/admin/current")
+    ResponseEntity<FoodVenueAdminResponseDto> getMyFoodVenue();
+
+
+
+
+    @Operation(
             summary = "Actualizar el lugar de comida actual",
             description = "Actualiza el lugar de comida asociado al usuario registrado. accesible para admin",
             responses = {
@@ -133,6 +149,6 @@ public interface FoodVenueController {
             }
     )
     @PatchMapping("/admin/current")
-    ResponseEntity<FoodVenuePublicResponseDto> updateMyCurrentFoodVenue(
+    ResponseEntity<FoodVenueAdminResponseDto> updateMyCurrentFoodVenue(
             @RequestBody @Validated(OnUpdate.class) FoodVenueRequestDto foodVenueRequestDto);
 }
