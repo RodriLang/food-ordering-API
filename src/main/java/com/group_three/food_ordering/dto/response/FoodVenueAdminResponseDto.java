@@ -34,4 +34,6 @@ public class FoodVenueAdminResponseDto {
 
     private Integer numberOfTables;
 
+    private VenueStyleResponseDto venueStyle;
+
 }

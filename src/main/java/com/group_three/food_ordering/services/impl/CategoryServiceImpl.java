@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dto.response.CategoryResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.CategoryMapper;
 import com.group_three.food_ordering.models.Category;
+import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.repositories.CategoryRepository;
 import com.group_three.food_ordering.services.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,9 @@ public class CategoryServiceImpl implements CategoryService {
             Category parent = getEntityById(categoryRequestDto.getParentCategoryId());
             category.setParentCategory(parent);
         }
+        FoodVenue foodVenue = tenantContext.requireFoodVenue();
+        category.setFoodVenue(foodVenue);
+
         log.debug("[CategoryRepository] Calling save to create new category: {}", category.getName());
         return categoryMapper.toDto(categoryRepository.save(category));
     }

@@ -25,9 +25,11 @@ public interface FoodVenueService {
 
     FoodVenuePublicResponseDto getMyCurrentFoodVenue();
 
+    FoodVenueAdminResponseDto getMyFoodVenue();
+
     FoodVenueAdminResponseDto update(UUID foodVenueId , FoodVenueRequestDto foodVenueUpdateDto);
 
-    FoodVenuePublicResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueUpdateDto);
+    FoodVenueAdminResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueUpdateDto);
 
     void softDelete(UUID id);
 }
