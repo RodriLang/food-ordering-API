@@ -70,14 +70,20 @@ public class ParticipantControllerImpl implements ParticipantController {
     }
 
     @Override
-    public ResponseEntity<Void> endYourOwnTableSession() {
-        tableSessionService.closeCurrentSession();
+    public ResponseEntity<AuthResponse> endYourOwnTableSession() {
+        AuthResponse authResponse = tableSessionService.closeCurrentSession();
+        if (authResponse != null) {
+            return ResponseEntity.ok(authResponse);
+        }
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<AuthResponse> leaveTableSession() {
-        tableSessionService.leaveCurrentSession();
+        AuthResponse authResponse = tableSessionService.leaveCurrentSession();
+        if (authResponse != null) {
+            return ResponseEntity.ok(authResponse);
+        }
         return ResponseEntity.noContent().build();
     }
 }

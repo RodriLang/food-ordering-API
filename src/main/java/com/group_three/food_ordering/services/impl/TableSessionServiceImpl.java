@@ -2,11 +2,9 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
-import com.group_three.food_ordering.dto.request.LoginRequest;
 import com.group_three.food_ordering.dto.request.TableSessionRequestDto;
 import com.group_three.food_ordering.dto.response.AuthResponse;
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
-import com.group_three.food_ordering.dto.response.RoleEmploymentResponseDto;
 import com.group_three.food_ordering.dto.response.TableSessionResponseDto;
 import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
@@ -14,7 +12,6 @@ import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
-import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.notifications.SseEventType;
@@ -22,7 +19,6 @@ import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.security.RefreshTokenService;
-import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.DiningTableService;
 import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.TableSessionService;
@@ -54,7 +50,6 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final DiningTableService diningTableService;
     private final ParticipantMapper participantMapper;
     private final SseService sseService;
-    private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
 
     // ===========================
@@ -288,9 +283,33 @@ public class TableSessionServiceImpl implements TableSessionService {
                 Map.of("count", newParticipantCount)
         );
 
-        User loggedUser = tenantContext.requireUser();
-        LoginRequest loginRequest = new LoginRequest(loggedUser.getEmail(), loggedUser.getPassword());
-        return authService.login(loginRequest);
+        return logoutSession();
+    }
+
+    private AuthResponse logoutSession() {
+        Optional<User> optionalUser = tenantContext.userOpt();
+        AuthResponse authResponse = null;
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            SessionInfo sessionInfo = SessionInfo.builder()
+                    .role(RoleType.ROLE_CLIENT.name())
+                    .subject(user.getEmail())
+                    .userId(user.getPublicId())
+                    .build();
+
+            String accessToken = jwtService.generateAccessToken(sessionInfo);
+            Instant expirationDate = jwtService.getExpirationDateFromToken(accessToken);
+            String refreshToken = refreshTokenService.generateRefreshToken(accessToken);
+
+            authResponse = AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .role(RoleType.ROLE_CLIENT.name())
+                    .expirationDate(expirationDate)
+                    .refreshToken(refreshToken)
+                    .build();
+        }
+        return authResponse;
     }
 
     // ===========================
@@ -306,12 +325,11 @@ public class TableSessionServiceImpl implements TableSessionService {
         if (!tableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
             throw new AccessDeniedException("Only the current host can end the session");
         }
-        User loggedUser = tenantContext.requireUser();
+
         tableSession.getParticipants().forEach(participant -> participant.setLeftAt(Instant.now()));
         closeSession(tableSession);
 
-        LoginRequest loginRequest = new LoginRequest(loggedUser.getEmail(), loggedUser.getPassword());
-        return authService.login(loginRequest);
+        return logoutSession();
     }
 
     @Transactional
