@@ -13,6 +13,8 @@ import com.group_three.food_ordering.exceptions.UserSessionConflictException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.*;
+import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.security.JwtService;
 import com.group_three.food_ordering.security.RefreshTokenService;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final TenantContext tenantContext;
     private final ParticipantService participantService;
     private final OrderService orderService;
-
+    private final SseService sseService;
     // =====================================
     // Public API
     // =====================================
@@ -197,13 +200,25 @@ public class AuthServiceImpl implements AuthService {
         Integer moved = orderService.reassignOrdersToParticipant(guest, existing);
 
         // Eliminar participante invitado
-        session.getParticipants().remove(guest);
+        boolean removed = session.getParticipants().remove(guest);
         participantService.softDelete(guest.getPublicId());
 
         log.debug("[AuthService] Merged guest {} into existing {}. Orders moved={}",
                 guest.getPublicId(), existing.getPublicId(), moved);
-    }
 
+        if(removed){
+            int newParticipantCount = session.getParticipants().size();
+            String tableSessionId = session.getPublicId().toString();
+            log.debug("[AuthService] Sending COUNT_UPDATED event after merge. Session: {}, New Count: {}",
+                    tableSessionId, newParticipantCount);
+
+            sseService.sendEventToTableSession(
+                    tableSessionId,
+                    SseEventType.COUNT_UPDATED,
+                    Map.of("count", newParticipantCount)
+            );
+        }
+    }
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());
