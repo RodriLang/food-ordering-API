@@ -54,8 +54,8 @@ public class ParticipantControllerImpl implements ParticipantController {
 
         Page<PaymentResponseDto> payments =
                 paymentService.getAllOwnPaymentsAndStatus(status, pageable);
-        return ResponseEntity.ok(PageResponse.of(payments));    }
-
+        return ResponseEntity.ok(PageResponse.of(payments));
+    }
 
     @Override
     public ResponseEntity<PageResponse<OrderResponseDto>> getAllOrdersByCurrentTableSessionAndStatus(OrderStatus status, Pageable pageable) {
@@ -63,7 +63,6 @@ public class ParticipantControllerImpl implements ParticipantController {
                 orderService.getAllOrdersByCurrentTableSessionAndStatus(status, pageable);
         return ResponseEntity.ok(PageResponse.of(orders));
     }
-
 
     @Override
     public ResponseEntity<TableSessionResponseDto> getCurrentTableSession() {
@@ -73,6 +72,12 @@ public class ParticipantControllerImpl implements ParticipantController {
     @Override
     public ResponseEntity<Void> endYourOwnTableSession() {
         tableSessionService.closeCurrentSession();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<AuthResponse> leaveTableSession() {
+        tableSessionService.leaveCurrentSession();
         return ResponseEntity.noContent().build();
     }
 }

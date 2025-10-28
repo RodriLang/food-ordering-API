@@ -10,6 +10,7 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mapper(componentModel = "spring", uses = {ParticipantMapper.class})
 public interface TableSessionMapper {
@@ -26,6 +27,9 @@ public interface TableSessionMapper {
 
     @Named("calculateNumberOfParticipants")
     default Integer calculateNumberOfParticipants(List<Participant> participants){
-        return participants.size();
+        return participants.stream()
+                .filter(participant -> Objects.isNull(participant.getLeftAt()))
+                .toList()
+                .size();
     }
 }

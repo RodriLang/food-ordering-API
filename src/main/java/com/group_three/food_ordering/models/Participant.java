@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "participants")
@@ -32,5 +35,12 @@ public class Participant extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private RoleType role;
+
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP") // O DATETIME(6)
+    @CreationTimestamp
+    private Instant joinedAt = Instant.now();
+
+    @Column
+    private Instant leftAt;
 
 }

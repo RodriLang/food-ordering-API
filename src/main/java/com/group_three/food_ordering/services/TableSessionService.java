@@ -14,6 +14,10 @@ public interface TableSessionService {
 
     AuthResponse enter(TableSessionRequestDto tableSessionRequestDto);
 
+    AuthResponse leaveCurrentSession();
+
+    AuthResponse closeCurrentSession();
+
     Page<TableSessionResponseDto> getAll(Pageable pageable);
 
     TableSessionResponseDto getById(UUID sessionId);
@@ -41,8 +45,6 @@ public interface TableSessionService {
     TableSessionResponseDto getLatestByTable(UUID tableId);
 
     TableSessionResponseDto addClient(UUID sessionId, UUID clientId);
-
-    void closeCurrentSession();
 
     void closeSessionByTable(UUID tableId);
 }
