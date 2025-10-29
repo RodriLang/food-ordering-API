@@ -238,6 +238,7 @@ public class AuthServiceImpl implements AuthService {
                 .hostClient(host)
                 .participants(participants)
                 .tableNumber(tableSession.getDiningTable().getNumber())
+                .tableCapacity(tableSession.getDiningTable().getCapacity())
                 .build();
     }
 
@@ -276,6 +277,8 @@ public class AuthServiceImpl implements AuthService {
 
         log.debug("[AuthService] Generating login response");
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
+        UUID currentParticipantId = tenantContext.getParticipantId();
+        Boolean isHostClient = sessionInfo.participantId().equals(currentParticipantId);
 
         List<RoleEmploymentResponseDto> employments =
                 (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
@@ -292,9 +295,9 @@ public class AuthServiceImpl implements AuthService {
                 .employments(employments)
                 .startTime(sessionInfo.startTime())
                 .endTime(sessionInfo.endTime())
-                .hostClient(sessionInfo.hostClient())
-                .participants(sessionInfo.participants())
+                .isHostClient(isHostClient)
                 .tableNumber(sessionInfo.tableNumber())
+                .tableCapacity(sessionInfo.tableCapacity())
                 .numberOfParticipants(sessionInfo.participants() != null ? sessionInfo.participants().size() : null)
                 .role(sessionInfo.role())
                 .build();

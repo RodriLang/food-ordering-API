@@ -25,6 +25,8 @@ public record SessionInfo(
 
         Integer tableNumber,
 
+        Integer tableCapacity,
+
         Instant startTime,
 
         Instant endTime,

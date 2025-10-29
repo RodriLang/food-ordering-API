@@ -142,12 +142,12 @@ public class TableSessionServiceImpl implements TableSessionService {
         UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[TableSessionRepository] Calling findByFoodVenuePublicId for venueId={}", foodVenueId);
         return tableSessionRepository.findByFoodVenuePublicId(foodVenueId, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
     public TableSessionResponseDto getById(UUID id) {
-        return tableSessionMapper.toDto(getEntityById(id));
+        return this.toDto(getEntityById(id));
     }
 
     @Override
@@ -156,7 +156,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSessionRepository] Calling findByParticipants for participantId={}", current.getPublicId());
         TableSession tableSession = tableSessionRepository.findByParticipantsContains(List.of(current))
                 .orElseThrow(() -> new EntityNotFoundException(PARTICIPANT));
-        return tableSessionMapper.toDto(tableSession);
+        return this.toDto(tableSession);
     }
 
     @Override
@@ -171,7 +171,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSessionRepository] Calling findByFoodVenueAndTableNumber for venueId={}, tableNumber={}",
                 foodVenueId, tableNumber);
         return tableSessionRepository.findByFoodVenuePublicIdAndDiningTableNumber(foodVenueId, tableNumber, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -197,7 +197,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         return tableSessionRepository
                 .findByFoodVenuePublicIdAndDiningTableNumberAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(
                         foodVenueId, tableNumber, start, effectiveEnd, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[TableSessionRepository] Calling findByFoodVenueAndEndTimeIsNull for venueId={}", foodVenueId);
         return tableSessionRepository.findByFoodVenuePublicIdAndEndTimeIsNull(foodVenueId, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -214,7 +214,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSessionRepository] Calling findByFoodVenueAndSessionHost for venueId={}, clientId={}",
                 foodVenueId, clientId);
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(foodVenueId, clientId, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[TableSessionRepository] Calling findByFoodVenuePublicIdAndSessionHostPublicId for venueId={}, hostParticipantId={}", foodVenueId, hostParticipantId);
         return tableSessionRepository.findByFoodVenuePublicIdAndSessionHostPublicId(foodVenueId, hostParticipantId, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -234,7 +234,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 foodVenueId, participantId);
 
         return tableSessionRepository.findPastSessionsByParticipantIdAndDeletedFalse(foodVenueId, participantId, pageable)
-                .map(tableSessionMapper::toDto);
+                .map(this::toDto);
     }
 
     @Override
@@ -247,7 +247,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     public TableSessionResponseDto getLatestByTable(UUID tableId) {
         TableSession tableSession = getTableSessionActiveByTable(tableId)
                 .orElseThrow(() -> new EntityNotFoundException(TABLE_SESSION));
-        return tableSessionMapper.toDto(tableSession);
+        return this.toDto(tableSession);
     }
 
     @Override
@@ -257,7 +257,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         tableSession.getParticipants().add(participant);
         updateDiningTableStatus(tableSession.getDiningTable(), calculateParticipantsCount(tableSession));
         log.debug("[TableSessionRepository] Calling save to add client to session {}", sessionId);
-        return tableSessionMapper.toDto(tableSessionRepository.save(tableSession));
+        return this.toDto(tableSessionRepository.save(tableSession));
     }
 
     @Transactional
@@ -510,20 +510,23 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .hostClient(participantMapper.toResponseDto(tableSession.getSessionHost()))
                 .participants(participantsDto)
                 .tableNumber(tableSession.getDiningTable().getNumber())
+                .tableCapacity(tableSession.getDiningTable().getCapacity())
                 .build();
 
         String access = jwtService.generateAccessToken(si);
         Instant exp = jwtService.getExpirationDateFromToken(access);
+        UUID currentParticipantId = tenantContext.getParticipantId();
+        Boolean isHostClient = participant.getPublicId().equals(currentParticipantId);
 
         log.debug("[TableSessionService] Number of participants={}", calculateParticipantsCount(tableSession));
         return AuthResponse.builder()
                 .accessToken(access)
                 .expirationDate(exp)
                 .tableNumber(si.tableNumber())
+                .tableCapacity(si.tableCapacity())
                 .startTime(si.startTime())
                 .endTime(si.endTime())
-                .participants(si.participants())
-                .hostClient(si.hostClient())
+                .isHostClient(isHostClient)
                 .numberOfParticipants(calculateParticipantsCount(tableSession))
                 .role(role)
                 .build();
@@ -558,5 +561,10 @@ public class TableSessionServiceImpl implements TableSessionService {
             diningTableService.updateStatus(newStatus, diningTable.getPublicId());
         }
         log.debug("[DiningTableService] Current Dining Table Status={}", diningTable.getStatus());
+    }
+
+    private TableSessionResponseDto toDto (TableSession tableSession) {
+        UUID currentParticipantId = tenantContext.getParticipantId();
+        return tableSessionMapper.toDto(tableSession, currentParticipantId);
     }
 }
