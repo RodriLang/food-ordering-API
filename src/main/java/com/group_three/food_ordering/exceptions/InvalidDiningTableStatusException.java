@@ -1,28 +1,19 @@
 package com.group_three.food_ordering.exceptions;
 
 import com.group_three.food_ordering.enums.DiningTableStatus;
-import com.group_three.food_ordering.enums.PaymentStatus;
+import lombok.Getter;
 
 import java.util.UUID;
 
+@Getter
 public class InvalidDiningTableStatusException extends RuntimeException {
 
     private static final String MESSAGE = "Invalid table status: ";
+    private DiningTableStatus diningTableStatus;
 
     public InvalidDiningTableStatusException(UUID diningTableId, DiningTableStatus status) {
         super(MESSAGE + diningTableId + ", " + status);
-    }
-
-    public InvalidDiningTableStatusException(String message) {
-        super(message);
-    }
-
-    public InvalidDiningTableStatusException(UUID diningTableId, DiningTableStatus status, Throwable cause) {
-        super(MESSAGE + diningTableId + ", " + status, cause);
-    }
-
-    public InvalidDiningTableStatusException(UUID diningTableId, DiningTableStatus status, String message) {
-        super(MESSAGE + diningTableId + ", " + status + ", " + message);
+        diningTableStatus = status;
     }
 }
 
