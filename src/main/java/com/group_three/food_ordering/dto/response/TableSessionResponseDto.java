@@ -25,6 +25,8 @@ public class TableSessionResponseDto {
 
     private String tableStatus;
 
+    private Integer tableCapacity;
+
     private Integer numberOfParticipants;
 
     private ParticipantResponseDto hostClient;

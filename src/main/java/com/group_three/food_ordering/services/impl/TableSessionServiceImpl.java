@@ -10,6 +10,7 @@ import com.group_three.food_ordering.enums.DiningTableStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.exceptions.InvalidDiningTableStatusException;
 import com.group_three.food_ordering.exceptions.InvalidPaymentStatusException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.TableSessionMapper;
@@ -61,7 +62,9 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSession] Processing table session entry for tableId={}", dto.getTableId());
 
         DiningTable diningTable = diningTableService.getEntityById(dto.getTableId());
-        FoodVenue venue = diningTable.getFoodVenue();
+        validateAllowedTableStatusToEnter(diningTable);
+
+        FoodVenue foodVenueFromTable = diningTable.getFoodVenue();
 
         log.debug("[TableSession] Getting context info");
 
@@ -107,24 +110,24 @@ public class TableSessionServiceImpl implements TableSessionService {
                 return signForParticipant(userActive, p);
             }
 
-            TableSession ts = activeForTableOpt.orElseGet(() -> createNewSession(diningTable, venue));
-            Participant client = findOrCreateParticipantForUser(ts, user);
+            TableSession tableSession = activeForTableOpt.orElseGet(() -> createNewSession(diningTable, foodVenueFromTable));
+            Participant participant = findOrCreateParticipantForUser(tableSession, user);
 
             // Migración guest→client solo si ese guest pertenece a ESTA sesión
             partOpt.filter(g -> g.getRole() == RoleType.ROLE_GUEST)
-                    .filter(g -> g.getTableSession() != null && ts.getId().equals(g.getTableSession().getId()))
-                    .ifPresent(guest -> migrateGuestToClient(ts, guest, client));
+                    .filter(g -> g.getTableSession() != null && tableSession.getId().equals(g.getTableSession().getId()))
+                    .ifPresent(guest -> migrateGuestToClient(tableSession, guest, participant));
 
-            if (client.getJoinedAt() == null) {
-                client.setJoinedAt(Instant.now());
+            if (participant.getJoinedAt() == null) {
+                participant.setJoinedAt(Instant.now());
             }
 
-            return signForParticipant(ts, client);
+            return signForParticipant(tableSession, participant);
         }
 
         // 4) Invitado / anónimo
         log.debug("[TableSession]  User is GUEST or anonymous, proceeding with guest flow");
-        TableSession ts = activeForTableOpt.orElseGet(() -> createNewSession(diningTable, venue));
+        TableSession ts = activeForTableOpt.orElseGet(() -> createNewSession(diningTable, foodVenueFromTable));
         Participant guest = findOrCreateGuestParticipant(ts, partOpt.orElse(null));
         return signForParticipant(ts, guest);
     }
@@ -252,7 +255,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         TableSession tableSession = getEntityById(sessionId);
         Participant participant = participantService.getEntityById(clientId);
         tableSession.getParticipants().add(participant);
-        determineTableStatusPostSessionCreation(tableSession.getDiningTable(), tableSession);
+        updateDiningTableStatus(tableSession.getDiningTable(), calculateParticipantsCount(tableSession));
         log.debug("[TableSessionRepository] Calling save to add client to session {}", sessionId);
         return tableSessionMapper.toDto(tableSessionRepository.save(tableSession));
     }
@@ -272,16 +275,15 @@ public class TableSessionServiceImpl implements TableSessionService {
         leavingParticipant.setLeftAt(Instant.now());
         tableSessionRepository.save(tableSession);
 
-        int newParticipantCount = tableSession.getParticipants().stream()
-                .filter(p -> Objects.isNull(p.getLeftAt()))
-                .toList()
-                .size();
+        int newParticipantCount = calculateParticipantsCount(tableSession);
+        log.debug("[TableSessionService] Number of participants who still in session={}", newParticipantCount);
 
         sseService.sendEventToTableSession(
                 tableSession.getPublicId().toString(),
                 SseEventType.COUNT_UPDATED,
                 Map.of("count", newParticipantCount)
         );
+
         return logoutSession();
     }
 
@@ -380,7 +382,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .build();
 
         log.debug("[TableSessionRepository] Calling save to create new session for table {}", table.getPublicId());
-        updateTableStatusIfNeeded(table, 0 /*participantsCountAfter*/);
+        updateDiningTableStatus(table, 0 /*participantsCountAfter*/);
 
         return tableSessionRepository.save(tableSession);
     }
@@ -396,7 +398,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                     ts.getParticipants().add(p);
 
                     // calcular status con el tamaño definitivo
-                    updateTableStatusIfNeeded(ts.getDiningTable(), ts.getParticipants().size());
+                    updateDiningTableStatus(ts.getDiningTable(), ts.getParticipants().size());
 
                     log.debug("[TableSessionRepository] Calling save to persist new client participant {} and update session {}", p.getPublicId(), ts.getPublicId());
                     tableSessionRepository.save(ts);
@@ -420,7 +422,7 @@ public class TableSessionServiceImpl implements TableSessionService {
 
         tableSession.getParticipants().add(participant);
 
-        updateTableStatusIfNeeded(tableSession.getDiningTable(), tableSession.getParticipants().size());
+        updateDiningTableStatus(tableSession.getDiningTable(), calculateParticipantsCount(tableSession));
 
         log.debug("[TableSessionRepository] Calling save to update session {} after adding guest participant {}",
                 tableSession.getPublicId(), participant.getPublicId());
@@ -440,9 +442,16 @@ public class TableSessionServiceImpl implements TableSessionService {
         tableSession.getParticipants().remove(guest);
         participantService.softDelete(guest.getPublicId());
 
-        updateTableStatusIfNeeded(tableSession.getDiningTable(), tableSession.getParticipants().size());
+        updateDiningTableStatus(tableSession.getDiningTable(), calculateParticipantsCount(tableSession));
         log.debug("[TableSessionRepository] Calling save to update session {} after guest migration", tableSession.getPublicId());
         tableSessionRepository.save(tableSession);
+    }
+
+    private Integer calculateParticipantsCount(TableSession tableSession) {
+        return tableSession.getParticipants().stream()
+                .filter(participant -> Objects.isNull(participant.getLeftAt()))
+                .toList()
+                .size();
     }
 
     private Optional<TableSession> getTableSessionActiveByTable(UUID tableId) {
@@ -506,6 +515,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         String access = jwtService.generateAccessToken(si);
         Instant exp = jwtService.getExpirationDateFromToken(access);
 
+        log.debug("[TableSessionService] Number of participants={}", calculateParticipantsCount(tableSession));
         return AuthResponse.builder()
                 .accessToken(access)
                 .expirationDate(exp)
@@ -514,35 +524,39 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .endTime(si.endTime())
                 .participants(si.participants())
                 .hostClient(si.hostClient())
-                .numberOfParticipants(si.participants() != null ? si.participants().size() : null)
+                .numberOfParticipants(calculateParticipantsCount(tableSession))
                 .role(role)
                 .build();
     }
 
-    private void determineTableStatusPostSessionCreation(DiningTable diningTable, TableSession tableSession) {
+    private void validateAllowedTableStatusToEnter(DiningTable diningTable) {
 
-        Integer participantCount = tableSession.getParticipants().stream()
-                .filter(participant -> Objects.isNull(participant.getLeftAt()))
-                .toList()
-                .size();
-
-        if (diningTable.getCapacity().equals(participantCount)) {
-            diningTableService.updateStatus(DiningTableStatus.COMPLETE, diningTable.getPublicId());
-        } else {
-            diningTableService.updateStatus(DiningTableStatus.IN_SESSION, diningTable.getPublicId());
+        if (diningTable.getStatus() == DiningTableStatus.OUT_OF_SERVICE
+                || diningTable.getStatus() == DiningTableStatus.COMPLETE
+                || diningTable.getStatus() == DiningTableStatus.WAITING_RESET) {
+            throw new InvalidDiningTableStatusException(diningTable.getPublicId(), diningTable.getStatus());
         }
     }
 
-    private void updateTableStatusIfNeeded(DiningTable table, int participantsCount) {
-        DiningTableStatus newStatus =
-                table.getCapacity().equals(participantsCount)
-                        ? DiningTableStatus.COMPLETE
-                        : DiningTableStatus.IN_SESSION;
+    private void updateDiningTableStatus(DiningTable diningTable, int participantsCount) {
+        DiningTableStatus newStatus;
 
-        if (table.getStatus() != newStatus) {
-            table.setStatus(newStatus);
-            log.debug("[DiningTableService] Calling save to update status to {} for table {}", newStatus, table.getPublicId());
-            diningTableService.save(table);
+        if (diningTable.getCapacity().equals(participantsCount)) {
+            newStatus = DiningTableStatus.COMPLETE;
+        } else if (diningTable.getCapacity() > participantsCount) {
+            newStatus = DiningTableStatus.IN_SESSION;
+        } else {
+            throw new InvalidDiningTableStatusException(diningTable.getPublicId(), diningTable.getStatus());
         }
+
+        //Solo se actualiza si realmente cambió el estado
+        if (diningTable.getStatus() != newStatus) {
+            diningTable.setStatus(newStatus);
+            log.debug("[DiningTableService] Calling save to update status to {} for table {}",
+                    newStatus, diningTable.getPublicId());
+
+            diningTableService.updateStatus(newStatus, diningTable.getPublicId());
+        }
+        log.debug("[DiningTableService] Current Dining Table Status={}", diningTable.getStatus());
     }
 }

@@ -20,6 +20,7 @@ public interface TableSessionMapper {
             @Mapping(source = "diningTable.status", target = "tableStatus"),
             @Mapping(source = "sessionHost", target = "hostClient"),
             @Mapping(source = "participants", target = "numberOfParticipants", qualifiedByName = "calculateNumberOfParticipants"),
+            @Mapping(source = "diningTable.capacity", target = "tableCapacity")
     })
     TableSessionResponseDto toDto(TableSession tableSession);
 
