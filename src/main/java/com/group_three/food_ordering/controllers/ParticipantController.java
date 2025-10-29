@@ -86,7 +86,9 @@ public interface ParticipantController {
             }
     )
     @PatchMapping("/end")
-    ResponseEntity<Void> endYourOwnTableSession();
+    ResponseEntity<AuthResponse> endYourOwnTableSession();
 
-
+    @Operation(summary = "Abandonar la sesión de mesa")
+    @PatchMapping("/leave")
+    ResponseEntity<AuthResponse> leaveTableSession();
 }

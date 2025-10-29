@@ -18,6 +18,7 @@ import com.group_three.food_ordering.notifications.SseEventType;
 import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.TableSessionRepository;
 import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.security.RefreshTokenService;
 import com.group_three.food_ordering.services.DiningTableService;
 import com.group_three.food_ordering.services.ParticipantService;
 import com.group_three.food_ordering.services.TableSessionService;
@@ -49,6 +50,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     private final DiningTableService diningTableService;
     private final ParticipantMapper participantMapper;
     private final SseService sseService;
+    private final RefreshTokenService refreshTokenService;
 
     // ===========================
     // Entrar / Asociarse a mesa
@@ -112,6 +114,10 @@ public class TableSessionServiceImpl implements TableSessionService {
             partOpt.filter(g -> g.getRole() == RoleType.ROLE_GUEST)
                     .filter(g -> g.getTableSession() != null && ts.getId().equals(g.getTableSession().getId()))
                     .ifPresent(guest -> migrateGuestToClient(ts, guest, client));
+
+            if (client.getJoinedAt() == null) {
+                client.setJoinedAt(Instant.now());
+            }
 
             return signForParticipant(ts, client);
         }
@@ -251,12 +257,68 @@ public class TableSessionServiceImpl implements TableSessionService {
         return tableSessionMapper.toDto(tableSessionRepository.save(tableSession));
     }
 
+    @Transactional
+    @Override
+    public AuthResponse leaveCurrentSession() {
+        log.debug("[TableSessionRepository] Calling leaveCurrentSession");
+        Participant leavingParticipant = tenantContext.requireParticipant();
+        TableSession tableSession = tenantContext.requireTableSession();
+
+        List<Order> participantOrders = tableSession.getOrders().stream()
+                .filter(order -> order.getParticipant().getPublicId().equals(leavingParticipant.getPublicId()))
+                .toList();
+
+        validatePaymentsForOrders(participantOrders);
+        leavingParticipant.setLeftAt(Instant.now());
+        tableSessionRepository.save(tableSession);
+
+        int newParticipantCount = tableSession.getParticipants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .toList()
+                .size();
+
+        sseService.sendEventToTableSession(
+                tableSession.getPublicId().toString(),
+                SseEventType.COUNT_UPDATED,
+                Map.of("count", newParticipantCount)
+        );
+        return logoutSession();
+    }
+
+    private AuthResponse logoutSession() {
+        Optional<User> optionalUser = tenantContext.userOpt();
+        AuthResponse authResponse = null;
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+
+            SessionInfo sessionInfo = SessionInfo.builder()
+                    .role(RoleType.ROLE_CLIENT.name())
+                    .subject(user.getEmail())
+                    .userId(user.getPublicId())
+                    .build();
+            log.debug("[TableSessionService] SessionInfo for leave participant {}", sessionInfo);
+            String accessToken = jwtService.generateAccessToken(sessionInfo);
+            Instant expirationDate = jwtService.getExpirationDateFromToken(accessToken);
+            String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
+
+            authResponse = AuthResponse.builder()
+                    .accessToken(accessToken)
+                    .role(RoleType.ROLE_CLIENT.name())
+                    .expirationDate(expirationDate)
+                    .refreshToken(refreshToken)
+                    .build();
+        }
+
+        log.debug("[TableSessionService] AuthResponse for leave participant {}", authResponse);
+        return authResponse;
+    }
+
     // ===========================
     // Cierre de sesión
     // ===========================
     @Transactional
     @Override
-    public void closeCurrentSession() {
+    public AuthResponse closeCurrentSession() {
         log.debug("[TableSessionService] Closing current session by current host");
         Participant currentHost = tenantContext.requireParticipant();
         TableSession tableSession = tenantContext.requireTableSession();
@@ -264,7 +326,11 @@ public class TableSessionServiceImpl implements TableSessionService {
         if (!tableSession.getSessionHost().getPublicId().equals(currentHost.getPublicId())) {
             throw new AccessDeniedException("Only the current host can end the session");
         }
+
+        tableSession.getParticipants().forEach(participant -> participant.setLeftAt(Instant.now()));
         closeSession(tableSession);
+
+        return logoutSession();
     }
 
     @Transactional
@@ -325,14 +391,13 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .filter(p -> p.getUser() != null && Objects.equals(p.getUser().getId(), user.getId()))
                 .findFirst()
                 .orElseGet(() -> {
-                    Participant p = participantService.create(user, ts); // ROLE_CLIENT, nickname, etc.
+                    Participant p = participantService.create(user, ts);
                     if (ts.getSessionHost() == null) ts.setSessionHost(p);
                     ts.getParticipants().add(p);
 
                     // calcular status con el tamaño definitivo
                     updateTableStatusIfNeeded(ts.getDiningTable(), ts.getParticipants().size());
 
-                    // un solo save
                     log.debug("[TableSessionRepository] Calling save to persist new client participant {} and update session {}", p.getPublicId(), ts.getPublicId());
                     tableSessionRepository.save(ts);
                     return p;
@@ -408,7 +473,10 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .map(participantMapper::toResponseDto)
                 .toList();
 
-        int newParticipantCount = tableSession.getParticipants().size();
+        int newParticipantCount = tableSession.getParticipants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .toList()
+                .size();
 
         sseService.sendEventToTableSession(
                 tableSession.getPublicId().toString(),
@@ -453,7 +521,12 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private void determineTableStatusPostSessionCreation(DiningTable diningTable, TableSession tableSession) {
 
-        if (diningTable.getCapacity().equals(tableSession.getParticipants().size())) {
+        Integer participantCount = tableSession.getParticipants().stream()
+                .filter(participant -> Objects.isNull(participant.getLeftAt()))
+                .toList()
+                .size();
+
+        if (diningTable.getCapacity().equals(participantCount)) {
             diningTableService.updateStatus(DiningTableStatus.COMPLETE, diningTable.getPublicId());
         } else {
             diningTableService.updateStatus(DiningTableStatus.IN_SESSION, diningTable.getPublicId());
