@@ -282,7 +282,6 @@ public class TableSessionServiceImpl implements TableSessionService {
                 SseEventType.COUNT_UPDATED,
                 Map.of("count", newParticipantCount)
         );
-
         return logoutSession();
     }
 
@@ -297,10 +296,10 @@ public class TableSessionServiceImpl implements TableSessionService {
                     .subject(user.getEmail())
                     .userId(user.getPublicId())
                     .build();
-
+            log.debug("[TableSessionService] SessionInfo for leave participant {}", sessionInfo);
             String accessToken = jwtService.generateAccessToken(sessionInfo);
             Instant expirationDate = jwtService.getExpirationDateFromToken(accessToken);
-            String refreshToken = refreshTokenService.generateRefreshToken(accessToken);
+            String refreshToken = refreshTokenService.generateRefreshToken(user.getEmail());
 
             authResponse = AuthResponse.builder()
                     .accessToken(accessToken)
@@ -309,6 +308,8 @@ public class TableSessionServiceImpl implements TableSessionService {
                     .refreshToken(refreshToken)
                     .build();
         }
+
+        log.debug("[TableSessionService] AuthResponse for leave participant {}", authResponse);
         return authResponse;
     }
 
