@@ -284,6 +284,8 @@ public class TableSessionServiceImpl implements TableSessionService {
                 Map.of("count", newParticipantCount)
         );
 
+        updateDiningTableStatus(tableSession.getDiningTable(), newParticipantCount);
+
         return logoutSession();
     }
 
@@ -478,8 +480,7 @@ public class TableSessionServiceImpl implements TableSessionService {
     private AuthResponse signForParticipant(TableSession tableSession, Participant participant) {
         // SessionInfo completa para el token
         String role = participant.getRole().name();
-        List<ParticipantResponseDto> participantsDto = tableSession.getParticipants().stream()
-                .map(participantMapper::toResponseDto)
+        List<Participant> participants = tableSession.getParticipants().stream()
                 .toList();
 
         int newParticipantCount = tableSession.getParticipants().stream()
@@ -508,7 +509,7 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .startTime(tableSession.getStartTime())
                 .endTime(tableSession.getEndTime())
                 .hostClient(participantMapper.toResponseDto(tableSession.getSessionHost()))
-                .participants(participantsDto)
+                .participants(participants)
                 .tableNumber(tableSession.getDiningTable().getNumber())
                 .tableCapacity(tableSession.getDiningTable().getCapacity())
                 .build();
@@ -517,6 +518,16 @@ public class TableSessionServiceImpl implements TableSessionService {
         Instant exp = jwtService.getExpirationDateFromToken(access);
         UUID currentParticipantId = tenantContext.getParticipantId();
         Boolean isHostClient = participant.getPublicId().equals(currentParticipantId);
+
+        List<ParticipantResponseDto> activeParticipants = tableSession.getParticipants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .map(participantMapper::toResponseDto)
+                .toList();
+
+        List<ParticipantResponseDto> previousParticipants = tableSession.getParticipants().stream()
+                .filter(p -> Objects.nonNull(p.getLeftAt()))
+                .map(participantMapper::toResponseDto)
+                .toList();
 
         log.debug("[TableSessionService] Number of participants={}", calculateParticipantsCount(tableSession));
         return AuthResponse.builder()
@@ -528,6 +539,8 @@ public class TableSessionServiceImpl implements TableSessionService {
                 .endTime(si.endTime())
                 .isHostClient(isHostClient)
                 .numberOfParticipants(calculateParticipantsCount(tableSession))
+                .activeParticipants(activeParticipants)
+                .previousParticipants(previousParticipants)
                 .role(role)
                 .build();
     }
@@ -565,6 +578,18 @@ public class TableSessionServiceImpl implements TableSessionService {
 
     private TableSessionResponseDto toDto (TableSession tableSession) {
         UUID currentParticipantId = tenantContext.getParticipantId();
-        return tableSessionMapper.toDto(tableSession, currentParticipantId);
+        TableSessionResponseDto dto = tableSessionMapper.toDto(tableSession, currentParticipantId);
+
+        dto.setActiveParticipants(tableSession.getParticipants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .map(participantMapper::toResponseDto)
+                .toList());
+
+        dto.setPreviousParticipants(tableSession.getParticipants().stream()
+                .filter(p -> Objects.nonNull(p.getLeftAt()))
+                .map(participantMapper::toResponseDto)
+                .toList());
+
+        return dto;
     }
 }

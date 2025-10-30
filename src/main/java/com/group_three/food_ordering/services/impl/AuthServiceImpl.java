@@ -29,10 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -207,7 +204,11 @@ public class AuthServiceImpl implements AuthService {
                 guest.getPublicId(), existing.getPublicId(), moved);
 
         if(removed){
-            int newParticipantCount = session.getParticipants().size();
+            int newParticipantCount = session.getParticipants().stream()
+                    .filter(p -> Objects.isNull(p.getLeftAt()))
+                    .toList()
+                    .size();
+
             String tableSessionId = session.getPublicId().toString();
             log.debug("[AuthService] Sending COUNT_UPDATED event after merge. Session: {}, New Count: {}",
                     tableSessionId, newParticipantCount);
@@ -222,8 +223,7 @@ public class AuthServiceImpl implements AuthService {
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());
-        List<ParticipantResponseDto> participants = tableSession.getParticipants().stream()
-                .map(participantMapper::toResponseDto)
+        List<Participant> participants = tableSession.getParticipants().stream()
                 .toList();
 
         return SessionInfo.builder()
@@ -278,7 +278,8 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Generating login response");
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
         UUID currentParticipantId = tenantContext.getParticipantId();
-        Boolean isHostClient = sessionInfo.participantId().equals(currentParticipantId);
+        Boolean isHostClient = Objects.nonNull(sessionInfo.participantId())
+                && sessionInfo.participantId().equals(currentParticipantId);
 
         List<RoleEmploymentResponseDto> employments =
                 (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
@@ -287,6 +288,29 @@ public class AuthServiceImpl implements AuthService {
                         .filter(e -> Boolean.TRUE.equals(e.getActive()))
                         .map(roleEmploymentMapper::toResponseDto)
                         .toList();
+        List<ParticipantResponseDto> activeParticipants;
+        List<ParticipantResponseDto> previousParticipants;
+
+        if(sessionInfo.participants() != null) {
+            activeParticipants = sessionInfo.participants().stream()
+                    .filter(p -> Objects.isNull(p.getLeftAt()))
+                    .map(participantMapper::toResponseDto)
+                    .toList();
+
+            previousParticipants = sessionInfo.participants().stream()
+                    .filter(p -> Objects.nonNull(p.getLeftAt()))
+                    .map(participantMapper::toResponseDto)
+                    .toList();
+        } else {
+            activeParticipants = Collections.emptyList();
+            previousParticipants = Collections.emptyList();
+        }
+        Integer participantsCount = sessionInfo.participants() != null
+                ? sessionInfo.participants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .toList()
+                .size()
+                : null;
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
@@ -298,7 +322,9 @@ public class AuthServiceImpl implements AuthService {
                 .isHostClient(isHostClient)
                 .tableNumber(sessionInfo.tableNumber())
                 .tableCapacity(sessionInfo.tableCapacity())
-                .numberOfParticipants(sessionInfo.participants() != null ? sessionInfo.participants().size() : null)
+                .numberOfParticipants(participantsCount)
+                .activeParticipants(activeParticipants)
+                .previousParticipants(previousParticipants)
                 .role(sessionInfo.role())
                 .build();
 
