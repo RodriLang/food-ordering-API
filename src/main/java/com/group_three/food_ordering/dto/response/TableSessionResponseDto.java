@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -29,5 +30,9 @@ public class TableSessionResponseDto {
     private Integer numberOfParticipants;
 
     private Boolean isHostClient;
+
+    private List<ParticipantResponseDto> activeParticipants;
+
+    private List<ParticipantResponseDto> previousParticipants;
 
 }

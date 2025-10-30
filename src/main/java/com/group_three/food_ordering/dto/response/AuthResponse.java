@@ -27,6 +27,10 @@ public class AuthResponse {
 
     private Boolean isHostClient;
 
+    private List<ParticipantResponseDto> activeParticipants;
+
+    private List<ParticipantResponseDto> previousParticipants;
+
     //Datos de autenticación
     private String accessToken;
 

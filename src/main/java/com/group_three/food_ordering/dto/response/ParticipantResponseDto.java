@@ -15,8 +15,6 @@ public class ParticipantResponseDto {
 
     private UUID publicId;
 
-    private UserCardResponseDto user;
-
     private String nickname;
 
 }

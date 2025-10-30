@@ -1,6 +1,7 @@
 package com.group_three.food_ordering.dto;
 
 import com.group_three.food_ordering.dto.response.ParticipantResponseDto;
+import com.group_three.food_ordering.models.Participant;
 import lombok.Builder;
 
 import java.time.Instant;
@@ -33,6 +34,6 @@ public record SessionInfo(
 
         ParticipantResponseDto hostClient,
 
-        List<ParticipantResponseDto> participants) {
+        List<Participant> participants) {
 }
 
