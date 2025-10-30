@@ -41,7 +41,7 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
 
             } catch (io.jsonwebtoken.ExpiredJwtException ex) {
                 // Si el token está vencido, extrae los claims para inicializar el contexto.
-                log.warn("[ContextInitializationFilter] Access token expired, setting context from expired claims.");
+                log.warn("[ContextInitializationFilter] Access token EXPIRED, setting context from expired claims.");
 
                 // Se obtienen los claims de la excepción
                 var claims = ex.getClaims();
@@ -62,7 +62,7 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
         SessionInfo sessionInfo = jwtService.getSessionInfoFromClaims(claims);
         tenantContext.setSessionInfo(sessionInfo);
 
-        log.debug("[ContextInitializationFilter] Session info from EXPIRED token: user={}, participant={}, tableSession={}, foodVenue={}",
+        log.debug("[ContextInitializationFilter] Session info from token: user={}, participant={}, tableSession={}, foodVenue={}",
                 sessionInfo != null ? sessionInfo.userId() : null,
                 sessionInfo != null ? sessionInfo.participantId() : null,
                 sessionInfo != null ? sessionInfo.tableSessionId() : null,

@@ -54,8 +54,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        log.debug("[JwtAuthenticationFilter] Token extracted (first 20 chars): {}...",
-                token.length() > 20 ? token.substring(0, 20) : token);
 
         try {
             log.debug("[JwtAuthenticationFilter] Verifying token expiration");
