@@ -1,9 +1,13 @@
 package com.group_three.food_ordering.notifications;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,74 +17,109 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service
 public class SseService {
 
-    private final Map<String, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    private static final long TIMEOUT = 600_000L; // 10 minutos
+    private static final int MAX_EMITTERS_PER_SESSION = 20;
+
+    private final Map<String, List<EmitterWrapper>> emitters = new ConcurrentHashMap<>();
 
     public SseEmitter subscribe(String tableSessionId) {
         log.debug("[SseService] Subscribing to table session {}", tableSessionId);
-        SseEmitter emitter = new SseEmitter(600_000L);
+        SseEmitter emitter = new SseEmitter(TIMEOUT);
 
-        List<SseEmitter> sessionEmitters = this.emitters.computeIfAbsent(
+        List<EmitterWrapper> sessionEmitters = emitters.computeIfAbsent(
                 tableSessionId,
                 k -> new CopyOnWriteArrayList<>()
         );
 
-        sessionEmitters.add(emitter);
+        if (sessionEmitters.size() >= MAX_EMITTERS_PER_SESSION) {
+            log.warn("[SseService] Max emitters reached for session {}. Rejecting new subscription.", tableSessionId);
+            throw new IllegalStateException("Too many clients subscribed");
+        }
 
-        // 👇 ESTA LÓGICA DE LIMPIEZA ES LA QUE DEBE ENCARGARSE DE REMOVER
-        Runnable cleanupCallback = () -> {
-            log.debug("[SseService] Emitter cleaning up for session {}", tableSessionId);
-            sessionEmitters.remove(emitter);
-            if (sessionEmitters.isEmpty()) {
-                this.emitters.remove(tableSessionId);
-                log.debug("[SseService] No emitters left for session {}, removing map entry", tableSessionId);
-            }
-        };
+        EmitterWrapper wrapper = new EmitterWrapper(emitter);
+        sessionEmitters.add(wrapper);
+
+        Runnable cleanupCallback = () -> removeEmitter(tableSessionId, wrapper);
 
         emitter.onCompletion(cleanupCallback);
         emitter.onTimeout(cleanupCallback);
-        emitter.onError((e) -> {
-            log.warn("[SseService] SseEmitter error callback triggered for session {}: {}", tableSessionId, e.getMessage());
-            cleanupCallback.run(); // Llama a la limpieza cuando el emitter MISMO reporta un error irrecuperable
+        emitter.onError(e -> {
+            log.warn("[SseService] Emitter error for session {}: {}", tableSessionId, e.getMessage());
+            cleanupCallback.run();
         });
 
-        // ... (envío del evento de conexión) ...
         try {
             emitter.send(SseEmitter.event()
                     .name(SseEventType.CONNECTION_SUCCESSFUL.getEventName())
                     .data("Connected to Table session " + tableSessionId));
-            log.debug("[SseService] SseEmitter established for session {}", tableSessionId);
         } catch (IOException e) {
-            log.warn("[SseService] SseEmitter failed to send initial connection event: {}", e.getMessage());
-            // Si falla el envío INICIAL, sí lo limpiamos porque la conexión ni siquiera empezó bien.
+            log.warn("[SseService] Failed initial send: {}", e.getMessage());
             cleanupCallback.run();
         }
 
         return emitter;
     }
 
-    /**
-     * Envía un evento a TODOS los clientes suscritos.
-     * MODIFICADO: Ya no elimina emitters si falla el envío. Confía en los callbacks.
-     */
     public void sendEventToTableSession(String tableSessionId, SseEventType eventType, Object data) {
-        log.debug("[SseService] Sending event {} to all emitters for table session {}", eventType.getEventName(), tableSessionId);
+        List<EmitterWrapper> sessionEmitters = emitters.get(tableSessionId);
+        if (sessionEmitters == null || sessionEmitters.isEmpty()) return;
 
-        List<SseEmitter> sessionEmitters = emitters.get(tableSessionId);
+        log.debug("[SseService] Sending event {} to {} clients for session {}",
+                eventType.getEventName(), sessionEmitters.size(), tableSessionId);
 
-        if (sessionEmitters == null || sessionEmitters.isEmpty()) {
-            log.debug("[SseService] No active emitters found for session {}", tableSessionId);
-            return;
+        for (EmitterWrapper wrapper : sessionEmitters) {
+            try {
+                wrapper.getEmitter().send(SseEmitter.event()
+                        .name(eventType.getEventName())
+                        .data(data));
+                wrapper.refreshLastActive();
+            } catch (Exception e) {
+                log.warn("[SseService] Failed to send to one emitter: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void removeEmitter(String sessionId, EmitterWrapper wrapper) {
+        List<EmitterWrapper> list = emitters.get(sessionId);
+        if (list != null) {
+            list.remove(wrapper);
+            if (list.isEmpty()) {
+                emitters.remove(sessionId);
+                log.debug("[SseService] Removed empty session {}", sessionId);
+            }
+        }
+    }
+
+    /** Limpieza periódica de conexiones muertas o inactivas */
+    @Scheduled(fixedRate = 60_000)
+    public void cleanInactiveEmitters() {
+        emitters.forEach((sessionId, list) -> {
+            list.removeIf(EmitterWrapper::isExpired);
+            if (list.isEmpty()) emitters.remove(sessionId);
+        });
+    }
+
+    private static class EmitterWrapper {
+        @Getter
+        private final SseEmitter emitter;
+        private Instant lastActive;
+
+        public EmitterWrapper(SseEmitter emitter) {
+            this.emitter = emitter;
+            this.lastActive = Instant.now();
         }
 
-        for (SseEmitter emitter : sessionEmitters) {
+        public void refreshLastActive() {
+            this.lastActive = Instant.now();
             try {
-                emitter.send(SseEmitter.event().name(eventType.getEventName()).data(data));
-            } catch (Exception e) {
-                // Si la conexión está realmente rota, el onError/onCompletion/onTimeout
-                // del emitter se encargará de llamar a cleanupCallback.
-                log.warn("[SseService] Failed to send event {} to one emitter for session {}: {}. Emitter might be disconnected.",
-                        eventType.getEventName(), tableSessionId, e.getMessage());
+                emitter.send(SseEmitter.event().name("ping").data("keep-alive"));
+            } catch (IOException e) {
+                log.trace("[SseService] Ping failed: {}", e.getMessage());
             }
+        }
+
+        public boolean isExpired() {
+            return Instant.now().minusMillis(TIMEOUT).isAfter(lastActive);
         }
     }
 }
