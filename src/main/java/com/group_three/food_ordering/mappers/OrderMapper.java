@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public interface OrderMapper {
 
     @Mapping(source = "participant.nickname", target = "clientAlias")
+    @Mapping(source = "participant.publicId", target = "participantId")
     @Mapping(source = "orderNumber", target = "orderNumber", qualifiedByName = "formatOrderNumber")
     OrderResponseDto toDto(Order order);
 
