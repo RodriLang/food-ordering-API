@@ -270,8 +270,8 @@ public class TableSessionServiceImpl implements TableSessionService {
         List<Order> participantOrders = tableSession.getOrders().stream()
                 .filter(order -> order.getParticipant().getPublicId().equals(leavingParticipant.getPublicId()))
                 .toList();
-
-        validatePaymentsForOrders(participantOrders);
+        //Comentado hasta que se implementen los pagos, sino no se puede salir de la sesion
+        //validatePaymentsForOrders(participantOrders);
         leavingParticipant.setLeftAt(Instant.now());
         tableSessionRepository.save(tableSession);
 
@@ -350,7 +350,8 @@ public class TableSessionServiceImpl implements TableSessionService {
         // La entidad TableSession es 'managed' dentro de esta @Transactional,
         // por lo que cualquier cambio se persistirá automáticamente (dirty-checking) al final.
 
-        validatePaymentsForOrders(tableSession.getOrders());
+        //Se comenta hasta que se implementen los pagos
+        //validatePaymentsForOrders(tableSession.getOrders());
         log.debug("[TableSessionService] All payments are COMPLETED for tableSessionId={}",
                 tableSession.getPublicId());
 
@@ -365,7 +366,7 @@ public class TableSessionServiceImpl implements TableSessionService {
         log.debug("[TableSessionService] Validating payment status for {} orders", orders.size());
 
         if (!orders.stream()
-                .map(o -> o.getPayment().getStatus())
+                .map(o -> o.getPayment() != null ? o.getPayment().getStatus() : null)
                 .allMatch(PaymentStatus.COMPLETED::equals)) {
             throw new InvalidPaymentStatusException("All payments must be paid to finish table session");
         }
