@@ -1,7 +1,9 @@
-package com.group_three.food_ordering.security;
+package com.group_three.food_ordering.configs.filters;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
+import com.group_three.food_ordering.configs.security.CustomUserPrincipal;
+import com.group_three.food_ordering.configs.security.JwtService;
 import com.group_three.food_ordering.dto.SessionInfo;
 import com.group_three.food_ordering.enums.RoleType;
 import jakarta.servlet.FilterChain;
@@ -14,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -22,7 +23,6 @@ import java.time.Instant;
 import java.util.*;
 
 @Slf4j
-@Component
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 

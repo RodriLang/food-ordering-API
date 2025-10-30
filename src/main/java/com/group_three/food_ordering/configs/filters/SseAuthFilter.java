@@ -1,14 +1,14 @@
-package com.group_three.food_ordering.security;
+package com.group_three.food_ordering.configs.filters;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 /**
@@ -16,7 +16,6 @@ import java.io.IOException;
  * para la conexión SSE (EventSource), ya que no puede
  * enviar cabeceras de autorización.
  */
-@Component
 public class SseAuthFilter extends OncePerRequestFilter {
 
     @Override

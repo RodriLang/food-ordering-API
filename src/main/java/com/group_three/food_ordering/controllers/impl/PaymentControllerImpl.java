@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers.impl;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import com.group_three.food_ordering.controllers.PaymentController;
 import com.group_three.food_ordering.dto.request.PaymentRequestDto;
 import com.group_three.food_ordering.dto.response.PageResponse;

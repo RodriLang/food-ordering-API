@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import com.group_three.food_ordering.dto.request.ProductRequestDto;
 import com.group_three.food_ordering.dto.response.ItemMenuResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;

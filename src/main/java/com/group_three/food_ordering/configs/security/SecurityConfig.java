@@ -1,8 +1,10 @@
-package com.group_three.food_ordering.configs;
+package com.group_three.food_ordering.configs.security;
 
-import com.group_three.food_ordering.context.ContextInitializationFilter;
-import com.group_three.food_ordering.security.JwtAuthenticationFilter;
-import com.group_three.food_ordering.security.SseAuthFilter;
+import com.group_three.food_ordering.context.TenantContext;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
+import com.group_three.food_ordering.configs.filters.ContextInitializationFilter;
+import com.group_three.food_ordering.configs.filters.JwtAuthenticationFilter;
+import com.group_three.food_ordering.configs.filters.SseAuthFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +13,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,9 +28,23 @@ import java.util.List;
 @AllArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ContextInitializationFilter contextInitializationFilter;
-    private final SseAuthFilter sseAuthFilter;
+    private final JwtService jwtService;
+    private final TenantContext tenantContext;
+
+    @Bean
+    public SseAuthFilter sseAuthFilter() {
+        return new SseAuthFilter();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter(jwtService);
+    }
+
+    @Bean
+    public ContextInitializationFilter contextInitializationFilter() {
+        return new ContextInitializationFilter(tenantContext, jwtService);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -44,19 +59,18 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        .requestMatchers(ApiPaths.AUTH_URI+"/**").permitAll()
+                        .requestMatchers(ApiPaths.AUTH_URI + "/**").permitAll()
                         .requestMatchers(ApiPaths.MENU_URI).permitAll()
-                        .requestMatchers(ApiPaths.PUBLIC_URI +"/**").permitAll()
-                        .requestMatchers(ApiPaths.TABLE_SESSION_URI +"/scan-qr").permitAll()
+                        .requestMatchers(ApiPaths.PUBLIC_URI + "/**").permitAll()
+                        .requestMatchers(ApiPaths.TABLE_SESSION_URI + "/scan-qr").permitAll()
                         .requestMatchers(ApiPaths.ROLE_SELECTOR_URI + "/**").authenticated()
                         .requestMatchers(ApiPaths.CURRENT_URI + "/**").authenticated()
                         .requestMatchers(ApiPaths.PRODUCT_URI + "/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(sseAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(contextInitializationFilter, JwtAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(sseAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter(), SseAuthFilter.class)
+                .addFilterAfter(contextInitializationFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
 

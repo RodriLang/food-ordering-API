@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.configs;
+package com.group_three.food_ordering.utils.constants;
 
 public class ApiPaths {
 

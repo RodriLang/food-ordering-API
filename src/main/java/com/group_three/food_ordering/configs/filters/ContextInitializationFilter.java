@@ -1,7 +1,8 @@
-package com.group_three.food_ordering.context;
+package com.group_three.food_ordering.configs.filters;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
-import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.configs.security.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,13 +11,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class ContextInitializationFilter extends OncePerRequestFilter {
 
@@ -57,7 +56,7 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
         log.debug("[ContextInitializationFilter] End filter");
     }
 
-    private void setContext(Claims claims){
+    private void setContext(Claims claims) {
 
         SessionInfo sessionInfo = jwtService.getSessionInfoFromClaims(claims);
         tenantContext.setSessionInfo(sessionInfo);

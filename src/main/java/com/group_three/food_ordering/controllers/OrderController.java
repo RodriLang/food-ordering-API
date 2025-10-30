@@ -1,11 +1,10 @@
 package com.group_three.food_ordering.controllers;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import com.group_three.food_ordering.dto.request.OrderRequestDto;
 import com.group_three.food_ordering.dto.response.OrderResponseDto;
 import com.group_three.food_ordering.dto.response.PageResponse;
 import com.group_three.food_ordering.enums.OrderStatus;
-import com.group_three.food_ordering.utils.OnCreate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,7 +15,6 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;

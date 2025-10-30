@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.repositories;
 
-import com.group_three.food_ordering.security.RefreshToken;
+import com.group_three.food_ordering.configs.security.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

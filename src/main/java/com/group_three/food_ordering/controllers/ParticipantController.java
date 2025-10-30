@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.controllers;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import com.group_three.food_ordering.dto.response.*;
 import com.group_three.food_ordering.enums.OrderStatus;
 import com.group_three.food_ordering.enums.PaymentStatus;

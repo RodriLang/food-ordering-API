@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.security;
+package com.group_three.food_ordering.configs.security;
 
 import jakarta.persistence.*;
 import lombok.*;
