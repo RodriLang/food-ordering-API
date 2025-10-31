@@ -5,6 +5,7 @@ import com.group_three.food_ordering.enums.EmploymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.DuplicatedEmploymentException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
+import com.group_three.food_ordering.exceptions.InactiveEmploymentStatusException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.FoodVenue;
@@ -41,7 +42,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     @Override
     public EmploymentResponseDto create(FoodVenue foodVenue, User user, RoleType role) {
 
-        resolveEmployment(user.getEmail(), foodVenue.getPublicId(), role);
+        checkIfEmploymentExists(user.getEmail(), foodVenue.getPublicId(), role);
 
         Instant tokenExpiration = Instant.now().plusSeconds(259200); // Corresponde a 72 horas
 
@@ -125,15 +126,17 @@ public class EmploymentServiceImpl implements EmploymentService {
         return employmentRepository.findAll(spec, pageable);
     }
 
-    private void resolveEmployment(String userEmail, UUID foodVenueId, RoleType role){
-        Optional<Employment> optionalEmployment = employmentRepository.findByUser_EmailAndFoodVenue_PublicIdAndRoleAndDeletedFalse(
-                userEmail, foodVenueId, role);
+    private void checkIfEmploymentExists(String userEmail, UUID foodVenueId, RoleType role){
+        Optional<Employment> optionalEmployment = employmentRepository
+                .findByUser_EmailAndFoodVenue_PublicIdAndRoleAndDeletedFalse(userEmail, foodVenueId, role);
+
         if (optionalEmployment.isPresent()) {
             Employment employment = optionalEmployment.get();
             if (employment.getActive().equals(Boolean.TRUE)) {
                 throw new DuplicatedEmploymentException(userEmail, foodVenueId.toString(), role.name());
+            } else {
+                throw new InactiveEmploymentStatusException(userEmail, foodVenueId.toString(), role.name());
             }
         }
     }
-
 }

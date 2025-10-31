@@ -15,12 +15,14 @@ public class ErrorResponse {
     private String error;
     private String message;
     private String path;
+    private String appCode;
 
-    public ErrorResponse(int status, String error, String message, String path) {
+    public ErrorResponse(int status, String error, String message, String path, String appCode) {
         this.timestamp = Instant.now();
         this.status = status;
         this.error = error;
         this.message = message;
         this.path = path;
+        this.appCode = appCode;
     }
 }
