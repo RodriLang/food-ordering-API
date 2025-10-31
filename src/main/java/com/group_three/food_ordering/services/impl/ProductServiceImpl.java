@@ -235,7 +235,6 @@ public class ProductServiceImpl implements ProductService {
             int newStock = product.getStock() + quantity;
             product.setStock(newStock);
             product.setAvailable(newStock > 0);
-            // productRepository.save(product);
         }
     }
 
@@ -246,7 +245,6 @@ public class ProductServiceImpl implements ProductService {
         int newStock = product.getStock() - quantity;
         product.setStock(newStock);
         product.setAvailable(newStock > 0);
-        // productRepository.save(product);
     }
 
     private Set<Tag> findTags(List<String> tagLabels) {
