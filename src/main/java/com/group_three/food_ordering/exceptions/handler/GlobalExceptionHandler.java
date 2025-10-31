@@ -95,6 +95,10 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(e.getMessage(), HttpStatus.UNAUTHORIZED, request);
     }
 
+    @ExceptionHandler(InvalidInvitationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidInvitation(InvalidInvitationException e, HttpServletRequest request) {
+        return buildErrorResponse(e.getMessage(), HttpStatus.UNAUTHORIZED, request);
+    }
 
     // Errores de validación de DTO (@Valid fallidos)
     @ExceptionHandler(MethodArgumentNotValidException.class)

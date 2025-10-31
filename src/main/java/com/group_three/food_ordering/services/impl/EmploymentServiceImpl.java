@@ -1,7 +1,9 @@
 package com.group_three.food_ordering.services.impl;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
+import com.group_three.food_ordering.enums.EmploymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
@@ -10,6 +12,7 @@ import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
+import com.group_three.food_ordering.services.EmploymentInvitationService;
 import com.group_three.food_ordering.services.EmploymentService;
 import com.group_three.food_ordering.services.UserService;
 import jakarta.persistence.criteria.Join;
@@ -21,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -37,20 +41,30 @@ public class EmploymentServiceImpl implements EmploymentService {
     private final UserService userService;
     private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
+    private final EmploymentInvitationService employmentInvitationService;
+    private final TenantContext tenantContext;
 
     @Override
     public EmploymentResponseDto create(EmploymentRequestDto dto) {
         User user = userService.getEntityByEmail(dto.getUserEmail());
         FoodVenue foodVenue = findFoodVenueById(dto.getFoodVenueId());
+        Instant tokenExpiration = Instant.now().plusSeconds(259200); // Corresponde a 72 horas
 
         Employment employment = Employment.builder()
                 .user(user)
                 .foodVenue(foodVenue)
                 .role(dto.getRole())
+                .status(EmploymentStatus.PENDING)
+                .invitationToken(UUID.randomUUID().toString())
+                .tokenExpiration(tokenExpiration)
                 .build();
 
         Employment saved = employmentRepository.save(employment);
-        log.info("Created new employment for user {} in venue {} with role {}", user.getEmail(), foodVenue.getName(), dto.getRole());
+        log.info("Created new employment for user {} in venue {} with role {}",
+                user.getEmail(), foodVenue.getName(), dto.getRole());
+
+        employmentInvitationService.createInvitation(employment);
+
         return employmentMapper.toResponseDto(saved);
     }
 

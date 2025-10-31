@@ -42,7 +42,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .userEmail(dto.getUserEmail())
                 .build();
 
-        // Delegación al servicio central
         return employmentService.create(employmentDto);
     }
 
