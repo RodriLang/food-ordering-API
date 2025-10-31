@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.notifications.services;
 
-import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.enums.SseEventType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

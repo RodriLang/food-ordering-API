@@ -10,7 +10,7 @@ import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.OrderDetailMapper;
 import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.mappers.OrderMapper;
-import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.enums.SseEventType;
 import com.group_three.food_ordering.notifications.services.SseService;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.services.OrderService;

@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.notifications;
+package com.group_three.food_ordering.notifications.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

@@ -1,8 +1,9 @@
-package com.group_three.food_ordering.notifications;
+package com.group_three.food_ordering.notifications.models;
 
 import java.time.LocalDateTime;
 
 import com.group_three.food_ordering.models.User;
+import com.group_three.food_ordering.notifications.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -25,10 +26,10 @@ public class Notification {
     @Column(length = 100)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 500)
     private String mensaje;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false)
     private boolean unread = true;
 
     @Column

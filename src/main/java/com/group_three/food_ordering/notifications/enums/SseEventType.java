@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.notifications;
+package com.group_three.food_ordering.notifications.enums;
 
 import lombok.Getter;
 
