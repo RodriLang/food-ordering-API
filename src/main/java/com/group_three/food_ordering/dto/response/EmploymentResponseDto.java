@@ -19,5 +19,8 @@ public class EmploymentResponseDto {
     private String role;
 
     private String foodVenue;
+
+    private Boolean active;
+
 }
 
