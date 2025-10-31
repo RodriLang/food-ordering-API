@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -90,8 +91,8 @@ public class NotificationService {
     }
 
     @Transactional
-    public NotificationResponseDto markAsRead(Long notificationId, String userEmail) {
-        Notification notification = notificationRepository.findById(notificationId)
+    public NotificationResponseDto markAsRead(UUID notificationId, String userEmail) {
+        Notification notification = notificationRepository.findByPublicId(notificationId)
                 .orElseThrow(() -> new EntityNotFoundException("Notification", notificationId.toString()));
 
         // Verifica que el usuario que hace el request sea el dueño de la notificación.

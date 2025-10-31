@@ -1,12 +1,15 @@
 package com.group_three.food_ordering.notifications.models;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.notifications.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "notifications")
@@ -22,6 +25,10 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "public_id", length = 36, unique = true, nullable = false, updatable = false)
+    private UUID publicId;
 
     @Column(length = 100)
     private String title;

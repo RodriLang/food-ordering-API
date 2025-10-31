@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
@@ -46,7 +48,7 @@ public class NotificationController {
 
     @PatchMapping("/{id}/read")
     public ResponseEntity<NotificationResponseDto> markNotificationAsRead(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal CustomUserPrincipal principal) {
 
         NotificationResponseDto updatedNotification = notificationService.markAsRead(id, principal.getEmail());
