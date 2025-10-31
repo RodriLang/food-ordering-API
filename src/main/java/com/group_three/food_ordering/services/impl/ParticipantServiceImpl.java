@@ -11,6 +11,7 @@ import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.repositories.ParticipantRepository;
 import com.group_three.food_ordering.services.ParticipantService;
+import com.group_three.food_ordering.utils.NicknameGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,7 +38,7 @@ public class ParticipantServiceImpl implements ParticipantService {
         Participant participant = Participant.builder()
                 .publicId(UUID.randomUUID())
                 .tableSession(tableSession)
-                .nickname((user != null) ? user.getName() : "Guest" + System.nanoTime())
+                .nickname((user != null) ? user.getName() : NicknameGenerator.generateRandomNickname())
                 .role(user != null ? RoleType.ROLE_CLIENT : RoleType.ROLE_GUEST)
                 .user(user)
                 .build();
