@@ -26,6 +26,7 @@ public class ApiPaths {
     public static final String ADMIN_URI = ROOT_ACCESS_URI + "/admins";
     public static final String ROOT_USER_URI = ROOT_ACCESS_URI + "/users";
     public static final String EVENTS_SUBSCRIPTIONS = URI_BASE_V1 + "/events-subscriptions";
+    public static final String EMPLOYMENT_INVITATION = URI_BASE_V1 + "/invitations";
 
 }
 

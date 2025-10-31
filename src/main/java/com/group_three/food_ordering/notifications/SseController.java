@@ -1,5 +1,6 @@
 package com.group_three.food_ordering.notifications;
 
+import com.group_three.food_ordering.notifications.services.SseService;
 import com.group_three.food_ordering.utils.constants.ApiPaths;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

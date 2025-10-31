@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(ApiPaths.ROLE_SELECTOR_URI + "/**").authenticated()
                         .requestMatchers(ApiPaths.CURRENT_URI + "/**").authenticated()
                         .requestMatchers(ApiPaths.PRODUCT_URI + "/**").permitAll()
+                        .requestMatchers(ApiPaths.EMPLOYMENT_INVITATION + "/respond").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(sseAuthFilter(), UsernamePasswordAuthenticationFilter.class)
