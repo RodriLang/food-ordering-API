@@ -135,4 +135,9 @@ public class UserServiceImpl implements UserService {
         log.info("[UserRepository] Searching user by email: {}", email);
         return userRepository.findByEmailAndDeletedFalse(email)
                 .orElseThrow(() -> new EntityNotFoundException(USER));    }
+
+    @Override
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmailAndDeletedFalse(email);
+    }
 }

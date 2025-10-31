@@ -47,4 +47,9 @@ public class EmployeeControllerImpl implements EmployeeController {
     public ResponseEntity<PageResponse<EmploymentResponseDto>> getEmployees(String email, Boolean active, Pageable pageable) {
         return ResponseEntity.ok(PageResponse.of(employeeService.getFilteredEmployments(email, active, pageable)));
     }
+
+    @Override
+    public ResponseEntity<Boolean> existsByEmail(String email) {
+        return ResponseEntity.ok(employeeService.exsistsUserByEmail(email));
+    }
 }

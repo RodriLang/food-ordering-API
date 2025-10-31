@@ -69,4 +69,12 @@ public interface EmployeeController {
 
             @Parameter(hidden = true)
             Pageable pageable);
+
+    @Operation(summary = "Verificar si ya existe un usuario con un email específico")
+    @ApiResponse(responseCode = "200", description = "Devuelve 'true' si el email existe, 'false' si no.")
+    @GetMapping("/exists-by-email")
+    ResponseEntity<Boolean> existsByEmail(
+            @Parameter(description = "El email a verificar.")
+            @RequestParam String email);
+
 }
