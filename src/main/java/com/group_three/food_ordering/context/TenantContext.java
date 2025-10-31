@@ -62,7 +62,7 @@ public class TenantContext {
     // Setters de contexto/IDs
     // =========================
 
-    void setSessionInfo(SessionInfo s) {
+    public void setSessionInfo(SessionInfo s) {
         this.sessionInfo = s;
         // poblar IDs si vienen en el token
         if (s != null) {

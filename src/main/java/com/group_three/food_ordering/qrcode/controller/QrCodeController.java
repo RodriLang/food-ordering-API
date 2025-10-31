@@ -1,6 +1,6 @@
 package com.group_three.food_ordering.qrcode.controller;
 
-import com.group_three.food_ordering.configs.ApiPaths;
+import com.group_three.food_ordering.utils.constants.ApiPaths;
 import com.group_three.food_ordering.qrcode.dto.request.GenerateQrCodeRequestDto;
 import com.group_three.food_ordering.qrcode.dto.response.GenerateQrCodeResponseDto;
 import io.swagger.v3.oas.annotations.Operation;

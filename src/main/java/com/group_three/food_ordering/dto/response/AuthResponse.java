@@ -17,15 +17,19 @@ public class AuthResponse {
     //Datos de la TableSession
     private Integer tableNumber;
 
+    private Integer tableCapacity;
+
     private Instant startTime;
 
     private Instant endTime;
 
     private Integer numberOfParticipants;
 
-    private ParticipantResponseDto hostClient;
+    private Boolean isHostClient;
 
-    private List<ParticipantResponseDto> participants;
+    private List<ParticipantResponseDto> activeParticipants;
+
+    private List<ParticipantResponseDto> previousParticipants;
 
     //Datos de autenticación
     private String accessToken;

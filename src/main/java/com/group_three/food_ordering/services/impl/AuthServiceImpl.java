@@ -16,8 +16,8 @@ import com.group_three.food_ordering.models.*;
 import com.group_three.food_ordering.notifications.SseEventType;
 import com.group_three.food_ordering.notifications.SseService;
 import com.group_three.food_ordering.repositories.*;
-import com.group_three.food_ordering.security.JwtService;
-import com.group_three.food_ordering.security.RefreshTokenService;
+import com.group_three.food_ordering.configs.security.JwtService;
+import com.group_three.food_ordering.configs.security.RefreshTokenService;
 import com.group_three.food_ordering.services.AuthService;
 import com.group_three.food_ordering.services.OrderService;
 import com.group_three.food_ordering.services.ParticipantService;
@@ -29,10 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -206,8 +203,12 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Merged guest {} into existing {}. Orders moved={}",
                 guest.getPublicId(), existing.getPublicId(), moved);
 
-        if(removed){
-            int newParticipantCount = session.getParticipants().size();
+        if (removed) {
+            int newParticipantCount = session.getParticipants().stream()
+                    .filter(p -> Objects.isNull(p.getLeftAt()))
+                    .toList()
+                    .size();
+
             String tableSessionId = session.getPublicId().toString();
             log.debug("[AuthService] Sending COUNT_UPDATED event after merge. Session: {}, New Count: {}",
                     tableSessionId, newParticipantCount);
@@ -222,8 +223,7 @@ public class AuthServiceImpl implements AuthService {
 
     private SessionInfo createSessionInfoFromActiveSession(TableSession tableSession, User loggedUser) {
         ParticipantResponseDto host = participantMapper.toResponseDto(tableSession.getSessionHost());
-        List<ParticipantResponseDto> participants = tableSession.getParticipants().stream()
-                .map(participantMapper::toResponseDto)
+        List<Participant> participants = tableSession.getParticipants().stream()
                 .toList();
 
         return SessionInfo.builder()
@@ -238,6 +238,7 @@ public class AuthServiceImpl implements AuthService {
                 .hostClient(host)
                 .participants(participants)
                 .tableNumber(tableSession.getDiningTable().getNumber())
+                .tableCapacity(tableSession.getDiningTable().getCapacity())
                 .build();
     }
 
@@ -276,14 +277,34 @@ public class AuthServiceImpl implements AuthService {
 
         log.debug("[AuthService] Generating login response");
         Instant expiration = jwtService.getExpirationDateFromToken(accessToken);
+        UUID currentParticipantId = tenantContext.getParticipantId();
+        Boolean isHostClient = Objects.nonNull(sessionInfo.participantId())
+                && sessionInfo.participantId().equals(currentParticipantId);
 
-        List<RoleEmploymentResponseDto> employments =
-                (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
-                        ? null
-                        : loggedUser.getEmployments().stream()
-                        .filter(e -> Boolean.TRUE.equals(e.getActive()))
-                        .map(roleEmploymentMapper::toResponseDto)
-                        .toList();
+        List<RoleEmploymentResponseDto> employments = resolveEmployments(loggedUser);
+        List<ParticipantResponseDto> activeParticipants;
+        List<ParticipantResponseDto> previousParticipants;
+
+        if (sessionInfo.participants() != null) {
+            activeParticipants = sessionInfo.participants().stream()
+                    .filter(p -> Objects.isNull(p.getLeftAt()))
+                    .map(participantMapper::toResponseDto)
+                    .toList();
+
+            previousParticipants = sessionInfo.participants().stream()
+                    .filter(p -> Objects.nonNull(p.getLeftAt()))
+                    .map(participantMapper::toResponseDto)
+                    .toList();
+        } else {
+            activeParticipants = Collections.emptyList();
+            previousParticipants = Collections.emptyList();
+        }
+        Integer participantsCount = sessionInfo.participants() != null
+                ? sessionInfo.participants().stream()
+                .filter(p -> Objects.isNull(p.getLeftAt()))
+                .toList()
+                .size()
+                : null;
 
         AuthResponse authResponse = AuthResponse.builder()
                 .accessToken(accessToken)
@@ -292,14 +313,30 @@ public class AuthServiceImpl implements AuthService {
                 .employments(employments)
                 .startTime(sessionInfo.startTime())
                 .endTime(sessionInfo.endTime())
-                .hostClient(sessionInfo.hostClient())
-                .participants(sessionInfo.participants())
+                .isHostClient(isHostClient)
                 .tableNumber(sessionInfo.tableNumber())
-                .numberOfParticipants(sessionInfo.participants() != null ? sessionInfo.participants().size() : null)
+                .tableCapacity(sessionInfo.tableCapacity())
+                .numberOfParticipants(participantsCount)
+                .activeParticipants(activeParticipants)
+                .previousParticipants(previousParticipants)
                 .role(sessionInfo.role())
                 .build();
 
         log.debug("[AuthService] Auth response generated");
         return authResponse;
+    }
+
+    private List<RoleEmploymentResponseDto> resolveEmployments(User loggedUser) {
+        Optional<Participant> guestOpt = tenantContext.participantOpt();
+        if (guestOpt.isEmpty()) {
+            return (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
+                    ? null
+                    : loggedUser.getEmployments().stream()
+                    .filter(e -> Boolean.TRUE.equals(e.getActive()))
+                    .map(roleEmploymentMapper::toResponseDto)
+                    .toList();
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

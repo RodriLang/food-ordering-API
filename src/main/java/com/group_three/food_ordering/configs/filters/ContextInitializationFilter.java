@@ -1,7 +1,8 @@
-package com.group_three.food_ordering.context;
+package com.group_three.food_ordering.configs.filters;
 
+import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.SessionInfo;
-import com.group_three.food_ordering.security.JwtService;
+import com.group_three.food_ordering.configs.security.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,13 +11,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class ContextInitializationFilter extends OncePerRequestFilter {
 
@@ -41,7 +40,7 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
 
             } catch (io.jsonwebtoken.ExpiredJwtException ex) {
                 // Si el token está vencido, extrae los claims para inicializar el contexto.
-                log.warn("[ContextInitializationFilter] Access token expired, setting context from expired claims.");
+                log.warn("[ContextInitializationFilter] Access token EXPIRED, setting context from expired claims.");
 
                 // Se obtienen los claims de la excepción
                 var claims = ex.getClaims();
@@ -57,12 +56,12 @@ public class ContextInitializationFilter extends OncePerRequestFilter {
         log.debug("[ContextInitializationFilter] End filter");
     }
 
-    private void setContext(Claims claims){
+    private void setContext(Claims claims) {
 
         SessionInfo sessionInfo = jwtService.getSessionInfoFromClaims(claims);
         tenantContext.setSessionInfo(sessionInfo);
 
-        log.debug("[ContextInitializationFilter] Session info from EXPIRED token: user={}, participant={}, tableSession={}, foodVenue={}",
+        log.debug("[ContextInitializationFilter] Session info from token: user={}, participant={}, tableSession={}, foodVenue={}",
                 sessionInfo != null ? sessionInfo.userId() : null,
                 sessionInfo != null ? sessionInfo.participantId() : null,
                 sessionInfo != null ? sessionInfo.tableSessionId() : null,

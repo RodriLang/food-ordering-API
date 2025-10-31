@@ -22,6 +22,8 @@ public class OrderResponseDto {
 
     private String specialRequirements;
 
+    private UUID participantId;
+
     private String clientAlias;
 
     private BigDecimal totalPrice;
