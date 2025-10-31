@@ -50,6 +50,6 @@ public class EmployeeControllerImpl implements EmployeeController {
 
     @Override
     public ResponseEntity<Boolean> existsByEmail(String email) {
-        return ResponseEntity.ok(employeeService.exsistsUserByEmail(email));
+        return ResponseEntity.ok(employeeService.existsUserByEmail(email));
     }
 }

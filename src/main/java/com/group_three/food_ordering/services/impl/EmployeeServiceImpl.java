@@ -83,7 +83,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Boolean exsistsUserByEmail(String email) {
+    public Boolean existsUserByEmail(String email) {
         return userService.existsByEmail(email);
     }
 
