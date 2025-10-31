@@ -2,9 +2,9 @@ package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.context.TenantContext;
 import com.group_three.food_ordering.dto.request.EmployeeRequestDto;
-import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.mappers.EmploymentMapper;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
@@ -28,21 +28,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmploymentService employmentService;
     private final TenantContext tenantContext;
     private final UserService userService;
+    private final EmploymentMapper employmentMapper;
 
     @Override
     public EmploymentResponseDto createEmployeeUser(EmployeeRequestDto dto) {
         log.info("Creating a new employment with role {} for user {}", dto.getRole(), dto.getUserEmail());
         validateAllowedRole(dto.getRole());
 
-        UUID foodVenueId = tenantContext.getFoodVenueId();
+        FoodVenue foodVenue = tenantContext.requireFoodVenue();
+        User user = userService.getEntityByEmail(dto.getUserEmail());
 
-        EmploymentRequestDto employmentDto = EmploymentRequestDto.builder()
-                .foodVenueId(foodVenueId)
-                .role(dto.getRole())
-                .userEmail(dto.getUserEmail())
-                .build();
-
-        return employmentService.create(employmentDto);
+        return employmentService.create(foodVenue, user, dto.getRole());
     }
 
     @Override
@@ -78,7 +74,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         log.debug("Fetching filtered employees for food venue {}", foodVenueId);
 
-        return employmentService.findByFilters(foodVenueId, allowedRoles, active, pageable);
+        return employmentService.findByFilters(foodVenueId, allowedRoles, active, pageable)
+                .map(employmentMapper::toResponseDto);
     }
 
     @Override

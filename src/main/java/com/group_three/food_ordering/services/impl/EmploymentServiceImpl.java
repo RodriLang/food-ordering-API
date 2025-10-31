@@ -1,20 +1,17 @@
 package com.group_three.food_ordering.services.impl;
 
-import com.group_three.food_ordering.context.TenantContext;
-import com.group_three.food_ordering.dto.request.EmploymentRequestDto;
 import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import com.group_three.food_ordering.enums.EmploymentStatus;
 import com.group_three.food_ordering.enums.RoleType;
+import com.group_three.food_ordering.exceptions.DuplicatedEmploymentException;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.EmploymentMapper;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
-import com.group_three.food_ordering.repositories.FoodVenueRepository;
 import com.group_three.food_ordering.services.EmploymentInvitationService;
 import com.group_three.food_ordering.services.EmploymentService;
-import com.group_three.food_ordering.services.UserService;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +24,10 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
-import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 
 @Slf4j
 @Service
@@ -38,30 +35,32 @@ import static com.group_three.food_ordering.utils.EntityName.FOOD_VENUE;
 public class EmploymentServiceImpl implements EmploymentService {
 
     private final EmploymentRepository employmentRepository;
-    private final UserService userService;
-    private final FoodVenueRepository foodVenueRepository;
     private final EmploymentMapper employmentMapper;
     private final EmploymentInvitationService employmentInvitationService;
-    private final TenantContext tenantContext;
 
     @Override
-    public EmploymentResponseDto create(EmploymentRequestDto dto) {
-        User user = userService.getEntityByEmail(dto.getUserEmail());
-        FoodVenue foodVenue = findFoodVenueById(dto.getFoodVenueId());
+    public EmploymentResponseDto create(FoodVenue foodVenue, User user, RoleType role) {
+
+        resolveEmployment(user.getEmail(), foodVenue.getPublicId(), role);
+
         Instant tokenExpiration = Instant.now().plusSeconds(259200); // Corresponde a 72 horas
 
         Employment employment = Employment.builder()
                 .user(user)
                 .foodVenue(foodVenue)
-                .role(dto.getRole())
+                .role(role)
+                .active(Boolean.FALSE)
                 .status(EmploymentStatus.PENDING)
                 .invitationToken(UUID.randomUUID().toString())
                 .tokenExpiration(tokenExpiration)
                 .build();
 
+        log.debug("[EmploymentRepository] Calling save to create new {} employment for user {} in venue {}",
+                role, user.getPublicId(), foodVenue.getPublicId());
         Employment saved = employmentRepository.save(employment);
+
         log.info("Created new employment for user {} in venue {} with role {}",
-                user.getEmail(), foodVenue.getName(), dto.getRole());
+                user.getEmail(), foodVenue.getName(), role);
 
         employmentInvitationService.createInvitation(employment);
 
@@ -103,7 +102,7 @@ public class EmploymentServiceImpl implements EmploymentService {
     }
 
     @Override
-    public Page<EmploymentResponseDto> findByFilters(UUID foodVenueId, List<RoleType> roles, Boolean active, Pageable pageable) {
+    public Page<Employment> findByFilters(UUID foodVenueId, List<RoleType> roles, Boolean active, Pageable pageable) {
 
         Specification<Employment> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -123,13 +122,18 @@ public class EmploymentServiceImpl implements EmploymentService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<Employment> employmentPage = employmentRepository.findAll(spec, pageable);
-
-        return employmentPage.map(employmentMapper::toResponseDto);
+        return employmentRepository.findAll(spec, pageable);
     }
 
-    private FoodVenue findFoodVenueById(UUID id) {
-        return foodVenueRepository.findByPublicIdAndDeletedFalse(id)
-                .orElseThrow(() -> new EntityNotFoundException(FOOD_VENUE, id.toString()));
+    private void resolveEmployment(String userEmail, UUID foodVenueId, RoleType role){
+        Optional<Employment> optionalEmployment = employmentRepository.findByUser_EmailAndFoodVenue_PublicIdAndRoleAndDeletedFalse(
+                userEmail, foodVenueId, role);
+        if (optionalEmployment.isPresent()) {
+            Employment employment = optionalEmployment.get();
+            if (employment.getActive().equals(Boolean.TRUE)) {
+                throw new DuplicatedEmploymentException(userEmail, foodVenueId.toString(), role.name());
+            }
+        }
     }
+
 }
