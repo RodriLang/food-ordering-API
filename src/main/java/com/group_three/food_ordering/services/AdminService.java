@@ -5,13 +5,14 @@ import com.group_three.food_ordering.dto.response.EmploymentResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface AdminService {
 
     EmploymentResponseDto createAdminUser(EmploymentRequestDto dto);
 
-    EmploymentResponseDto findByEmail(String email);
+    List<EmploymentResponseDto> findByEmail(String email);
 
     EmploymentResponseDto findById(UUID id);
 

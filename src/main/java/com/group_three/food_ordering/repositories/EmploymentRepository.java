@@ -20,6 +20,8 @@ public interface EmploymentRepository extends JpaRepository<Employment, UUID>, J
 
     Optional<Employment> findByPublicIdAndFoodVenue_PublicIdAndActiveAndDeletedFalse(UUID publicId, UUID foodVenueId, Boolean active);
 
+    Optional<Employment> findByUser_EmailAndFoodVenue_PublicIdAndRoleAndDeletedFalse(String userEmail, UUID foodVenuePublicId, RoleType role);
+
     Optional<Employment> findByInvitationToken(String invitationToken);
 
     Page<Employment> findByUser_PublicIdAndDeletedFalseAndDeletedFalse(UUID userPublicId, Pageable pageable);
@@ -45,4 +47,5 @@ public interface EmploymentRepository extends JpaRepository<Employment, UUID>, J
     List<Employment> findByUser_PublicIdAndRoleAndActiveTrueAndFoodVenue_PublicIdAndDeletedFalse(UUID userPublicId, RoleType role, UUID foodVenuePublicId);
 
     List<Employment> findByStatusAndTokenExpirationBefore(EmploymentStatus status, Instant now);
+
 }
