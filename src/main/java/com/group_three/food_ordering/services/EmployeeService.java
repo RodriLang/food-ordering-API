@@ -19,4 +19,5 @@ public interface EmployeeService {
 
     Page<EmploymentResponseDto> getFilteredEmployments(String email, Boolean active, Pageable pageable);
 
+    Boolean exsistsUserByEmail(String email);
 }

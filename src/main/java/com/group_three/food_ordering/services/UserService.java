@@ -32,5 +32,9 @@ public interface UserService {
 
     User getEntityByEmail(String email);
 
+    Boolean existsByEmail(String email);
+
     UserDetailResponseDto getAuthenticatedUser();
+
+
 }

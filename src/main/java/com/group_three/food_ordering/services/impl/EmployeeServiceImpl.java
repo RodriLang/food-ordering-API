@@ -82,6 +82,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employmentService.findByFilters(foodVenueId, allowedRoles, active, pageable);
     }
 
+    @Override
+    public Boolean exsistsUserByEmail(String email) {
+        return userService.existsByEmail(email);
+    }
+
     private void validateAllowedRole(RoleType role) {
         if (!role.equals(RoleType.ROLE_STAFF) && !role.equals(RoleType.ROLE_MANAGER)) {
             throw new IllegalArgumentException("Invalid role for employee. Only ROLE_STAFF or ROLE_MANAGER are allowed.");
