@@ -48,6 +48,7 @@ public interface TableSessionRepository extends JpaRepository<TableSession, Long
     @Query("SELECT ts FROM TableSession ts " +
             "JOIN ts.participants p " +
             "WHERE p.user.email = :userEmail " +
+            "AND p.leftAt IS NULL " +
             "AND ts.endTime IS NULL ")
     Optional<TableSession> findActiveSessionByUserEmailAndDeletedFalse(@Param("userEmail") String userEmail);
 }

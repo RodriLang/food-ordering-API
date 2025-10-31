@@ -203,7 +203,7 @@ public class AuthServiceImpl implements AuthService {
         log.debug("[AuthService] Merged guest {} into existing {}. Orders moved={}",
                 guest.getPublicId(), existing.getPublicId(), moved);
 
-        if(removed){
+        if (removed) {
             int newParticipantCount = session.getParticipants().stream()
                     .filter(p -> Objects.isNull(p.getLeftAt()))
                     .toList()
@@ -281,17 +281,11 @@ public class AuthServiceImpl implements AuthService {
         Boolean isHostClient = Objects.nonNull(sessionInfo.participantId())
                 && sessionInfo.participantId().equals(currentParticipantId);
 
-        List<RoleEmploymentResponseDto> employments =
-                (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
-                        ? null
-                        : loggedUser.getEmployments().stream()
-                        .filter(e -> Boolean.TRUE.equals(e.getActive()))
-                        .map(roleEmploymentMapper::toResponseDto)
-                        .toList();
+        List<RoleEmploymentResponseDto> employments = resolveEmployments(loggedUser);
         List<ParticipantResponseDto> activeParticipants;
         List<ParticipantResponseDto> previousParticipants;
 
-        if(sessionInfo.participants() != null) {
+        if (sessionInfo.participants() != null) {
             activeParticipants = sessionInfo.participants().stream()
                     .filter(p -> Objects.isNull(p.getLeftAt()))
                     .map(participantMapper::toResponseDto)
@@ -330,5 +324,19 @@ public class AuthServiceImpl implements AuthService {
 
         log.debug("[AuthService] Auth response generated");
         return authResponse;
+    }
+
+    private List<RoleEmploymentResponseDto> resolveEmployments(User loggedUser) {
+        Optional<Participant> guestOpt = tenantContext.participantOpt();
+        if (guestOpt.isEmpty()) {
+            return (loggedUser.getEmployments() == null || loggedUser.getEmployments().isEmpty())
+                    ? null
+                    : loggedUser.getEmployments().stream()
+                    .filter(e -> Boolean.TRUE.equals(e.getActive()))
+                    .map(roleEmploymentMapper::toResponseDto)
+                    .toList();
+        } else {
+            return Collections.emptyList();
+        }
     }
 }
