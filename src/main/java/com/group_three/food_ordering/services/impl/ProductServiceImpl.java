@@ -239,7 +239,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Transactional
-    public void decrementStockProduct(Product product, Integer quantity) {
+    public void decreaseStock(Product product, Integer quantity) {
         validateStock(product, quantity);
         log.debug("[ProductService] Decrementing stock for product {} by {}", product.getPublicId(), quantity);
         int newStock = product.getStock() - quantity;

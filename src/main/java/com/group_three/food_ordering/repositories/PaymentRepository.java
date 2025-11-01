@@ -20,6 +20,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Page<Payment> findByOrders(List<Order> orders, Pageable pageable);
 
+    Page<Payment> findByOrdersAndStatus(List<Order> orders, PaymentStatus status, Pageable pageable);
+
     Page<Payment> findByOrdersAndStatusAndCreationDateBetween(List<Order> orders, PaymentStatus status, Instant from, Instant to, Pageable pageable);
 
     boolean existsByPublicId(UUID publicId);
