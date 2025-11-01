@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,10 +37,10 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentMapper paymentMapper;
     private final TenantContext tenantContext;
 
+    // Revisar muy muy MUY bien lo que se hace aca porque es muy importante
     @Transactional
     @Override
     public PaymentResponseDto create(PaymentRequestDto dto) {
-
         List<UUID> orderIds = dto.getOrderIds();
         orderIds.forEach(order -> log.debug("[PaymentService] Generating payment for order={}", order));
         List<Order> orders = findAndVerifyOrders(orderIds);
@@ -50,24 +49,17 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("Algunas órdenes no fueron encontradas.");
         }
 
-        List<Long> sessionIds = orders.stream()
-                .map(o -> o.getTableSession().getId())
-                .distinct().toList();
-        if (sessionIds.size() > 1) {
-            throw new IllegalArgumentException("No se permite pagar órdenes de distintas sesiones en un mismo pago.");
-        }
 
         Payment payment = paymentMapper.toEntity(dto);
         payment.setOrders(orders);
         payment.setAmount(calculateAmount(orders));
         payment.setPublicId(UUID.randomUUID());
         payment.setStatus(PaymentStatus.PENDING);
-
+        // Asignar el payment a cada orden
         log.debug("[PaymentService] Assigning payment to orders");
         orders.forEach(order -> {
             log.debug("[PaymentService] Assigning payment={} to order={}", payment.getPublicId(), order.getPublicId());
             order.setPayment(payment);
-            payment.setOrders(orders);
         });
         log.debug("[PaymentRepository] Calling save to create new payment");
         Payment paymentSaved = paymentRepository.save(payment);
@@ -84,10 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.debug("[OrderService] Calling getOrderEntitiesByFilters for date range: {} to {}",
                 from, to);
 
-        ZoneId zone = ZoneId.systemDefault();
-        LocalDate fromDate = Instant.ofEpochMilli(from.toEpochMilli()).atZone(zone).toLocalDate();
-        LocalDate toDate   = Instant.ofEpochMilli(to.toEpochMilli()).atZone(zone).toLocalDate();
-        List<Order> orders = orderService.getOrderEntitiesByFilters(fromDate, toDate, null);
+        List<Order> orders = orderService.getOrderEntitiesByFilters(LocalDate.from(from), LocalDate.from(to), null);
         log.debug("[PaymentRepository] Calling findByOrdersAndStatusAndCreationDateBetween for {} orders, status {}",
                 orders.size(), status);
 
@@ -96,10 +85,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Page<PaymentResponseDto> getAllByTableSessionAndStatus(UUID tableSessionId, PaymentStatus status, Pageable pageable) {
-        log.debug("[OrderService] Calling getOrderEntitiesByTableSessionAndStatus for tableSession {}", tableSessionId);
-        List<Order> orders = orderService.getOrderEntitiesByTableSessionAndStatus(tableSessionId, null);
-        return findByOrdersAndStatusOptional(orders, status, pageable);
+    public Page<PaymentResponseDto> getAllByTableSessionAndStatus(UUID tableSession, PaymentStatus status, Pageable pageable) {
+        log.debug("[OrderService] Calling getOrderEntitiesByTableSessionAndStatus for tableSession {}", tableSession);
+        List<Order> orders = orderService.getOrderEntitiesByTableSessionAndStatus(tableSession, null);
+        log.debug("[PaymentRepository] Calling findByOrders for {} orders (table session)", orders.size());
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
@@ -112,7 +103,9 @@ public class PaymentServiceImpl implements PaymentService {
     public Page<PaymentResponseDto> getAllOwnPaymentsAndStatus(PaymentStatus status, Pageable pageable) {
         log.debug("[OrderService] Calling getOrderEntitiesByCurrentParticipant");
         List<Order> orders = orderService.getOrderEntitiesByCurrentParticipant();
-        return findByOrdersAndStatusOptional(orders, status, pageable);
+        log.debug("[PaymentRepository] Calling findByOrders for {} own orders", orders.size());
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
@@ -121,14 +114,19 @@ public class PaymentServiceImpl implements PaymentService {
         List<Order> orders = orderIds.stream()
                 .map(orderService::getEntityById)
                 .toList();
-        return findByOrdersAndStatusOptional(orders, status, pageable);
+
+        log.debug("[PaymentRepository] Calling findByOrders for {} specified orders", orders.size());
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
     public Page<PaymentResponseDto> findAllPaymentsForToday(PaymentStatus status, Pageable pageable) {
         log.debug("[OrderService] Calling getOrderEntitiesForToday");
         List<Order> orders = orderService.getOrderEntitiesForToday(null);
-        return findByOrdersAndStatusOptional(orders, status, pageable);
+        log.debug("[PaymentRepository] Calling findByOrders for {} orders today", orders.size());
+        Page<Payment> payments = paymentRepository.findByOrders(orders, pageable);
+        return payments.map(paymentMapper::toDto);
     }
 
     @Override
@@ -241,19 +239,5 @@ public class PaymentServiceImpl implements PaymentService {
         }
         log.debug("[PaymentService] Amount calculated={}", amount);
         return amount;
-    }
-
-    private Page<PaymentResponseDto> findByOrdersAndStatusOptional(
-            List<Order> orders, PaymentStatus status, Pageable pageable) {
-
-        if (orders.isEmpty()) {
-            return Page.empty(pageable);
-        }
-        log.debug("[PaymentRepository] Calling findByOrders for {} specified orders", orders.size());
-        Page<Payment> payments = (status != null)
-                ? paymentRepository.findByOrdersAndStatus(orders, status, pageable)
-                : paymentRepository.findByOrders(orders, pageable);
-
-        return payments.map(paymentMapper::toDto);
     }
 }

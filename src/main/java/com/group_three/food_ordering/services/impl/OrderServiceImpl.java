@@ -62,6 +62,7 @@ public class OrderServiceImpl implements OrderService {
         order.setTableSession(tableSession);
         order.setOrderDate(Instant.now());
 
+        // Revisar porque no permite cantidad de productos mayor a 1 como regla de negocio pero se puede evaluar
         order.setFoodVenue(currentFoodVenue);
         List<OrderDetail> orderDetails = orderRequestDto.getOrderDetails()
                 .stream()
@@ -69,7 +70,6 @@ public class OrderServiceImpl implements OrderService {
                     log.debug("[ProductService] Calling getEntityByNameAndContext for product: {}", dto.getProductName());
                     Product product = productService.getEntityByNameAndContext(dto.getProductName());
                     productService.validateStock(product, dto.getQuantity());
-                    productService.decreaseStock(product, dto.getQuantity());
                     OrderDetail detail = orderDetailMapper.toEntity(dto);
                     detail.setProduct(product);
                     detail.setQuantity(dto.getQuantity());
