@@ -23,7 +23,6 @@ public class UserRequestDto {
     private String lastName;
 
     @Valid
-    @NotNull(message = "Address is required", groups = OnCreate.class)
     private AddressRequestDto address;
 
     @NotBlank(message = "Email is required", groups = OnCreate.class)
@@ -34,11 +33,9 @@ public class UserRequestDto {
     @Size(min = 8, message = "Password must be at least 8 characters", groups = {OnCreate.class, OnUpdate.class})
     private String password;
 
-    @NotNull(message = "The birthdate is required", groups = OnCreate.class)
     @Past(message = "The date of birth must be in the past", groups = {OnCreate.class, OnUpdate.class})
     private LocalDate birthDate;
 
-    @NotBlank(message = "Phone is required", groups = OnCreate.class)
     @Pattern(
             regexp = "^(?:\\+54\\s?9?\\s?)?\\(?\\d{2,4}\\)?[\\s\\-]?\\d{3,4}[\\s\\-]?\\d{3,4}$",
             message = "The phone number must be a valid Argentine phone number",
