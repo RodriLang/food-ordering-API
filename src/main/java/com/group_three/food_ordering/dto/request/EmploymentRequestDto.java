@@ -22,5 +22,7 @@ public class EmploymentRequestDto {
     @NotBlank(message = "Position is required", groups = OnCreate.class)
     private RoleType role;
 
+    private Boolean active;
+
 }
 
