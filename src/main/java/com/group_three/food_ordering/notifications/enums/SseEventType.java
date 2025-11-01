@@ -12,6 +12,8 @@ public enum SseEventType {
     ORDER_CANCELLED("order-cancelled"),
     SPECIAL_OFFER("special-offer"),
     NEW_MESSAGE("new-message"),
+    ORDER_PAID("order-paid"),
+    SESSION_PAID("session-paid"),
 
     // --- Table Session Events ---
     USER_JOINED("user-joined"),
