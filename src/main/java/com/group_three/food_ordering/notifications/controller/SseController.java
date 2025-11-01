@@ -1,4 +1,4 @@
-package com.group_three.food_ordering.notifications;
+package com.group_three.food_ordering.notifications.controller;
 
 import com.group_three.food_ordering.notifications.services.SseService;
 import com.group_three.food_ordering.utils.constants.ApiPaths;

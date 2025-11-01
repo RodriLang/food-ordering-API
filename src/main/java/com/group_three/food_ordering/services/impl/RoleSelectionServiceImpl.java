@@ -36,7 +36,7 @@ public class RoleSelectionServiceImpl implements RoleSelectionService {
     public AuthResponse selectRole(RoleSelectionRequestDto request) {
         User authenticatedUser = tenantContext.requireUser();
         log.debug("[EmploymentService] Calling getEntityByIdAndActiveTrue for employmentId={}", request.employmentId());
-        Employment employment = employmentService.getEmploymentEntityById(request.employmentId(), Boolean.TRUE);
+        Employment employment = employmentService.getEmploymentEntityByIdAndActive(request.employmentId(), Boolean.TRUE);
         log.debug("[RoleSelection] Role selected={}", employment.getRole());
         return generateLoginResponse(authenticatedUser, employment.getFoodVenue().getPublicId(), employment.getRole().name());
     }

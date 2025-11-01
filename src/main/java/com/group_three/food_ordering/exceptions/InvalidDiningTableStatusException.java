@@ -9,7 +9,7 @@ import java.util.UUID;
 public class InvalidDiningTableStatusException extends RuntimeException {
 
     private static final String MESSAGE = "Invalid table status: ";
-    private DiningTableStatus diningTableStatus;
+    private final DiningTableStatus diningTableStatus;
 
     public InvalidDiningTableStatusException(UUID diningTableId, DiningTableStatus status) {
         super(MESSAGE + diningTableId + ", " + status);

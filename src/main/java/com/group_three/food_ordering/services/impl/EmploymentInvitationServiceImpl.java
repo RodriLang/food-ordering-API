@@ -1,30 +1,22 @@
 package com.group_three.food_ordering.services.impl;
 
 import com.group_three.food_ordering.enums.EmploymentStatus;
-import com.group_three.food_ordering.enums.RoleType;
 import com.group_three.food_ordering.exceptions.InvalidInvitationException;
 import com.group_three.food_ordering.models.Employment;
-import com.group_three.food_ordering.models.FoodVenue;
-import com.group_three.food_ordering.models.User;
 import com.group_three.food_ordering.notifications.services.EmailService;
 import com.group_three.food_ordering.repositories.EmploymentRepository;
-import com.group_three.food_ordering.repositories.FoodVenueRepository;
-import com.group_three.food_ordering.repositories.UserRepository;
 import com.group_three.food_ordering.services.EmploymentInvitationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class EmploymentInvitationServiceImpl implements EmploymentInvitationService {
 
     private final EmploymentRepository employmentRepository;
-    private final UserRepository userRepository;
-    private final FoodVenueRepository foodVenueRepository;
     private final EmailService emailService;
 
     /**

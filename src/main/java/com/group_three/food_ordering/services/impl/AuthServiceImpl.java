@@ -13,7 +13,7 @@ import com.group_three.food_ordering.exceptions.UserSessionConflictException;
 import com.group_three.food_ordering.mappers.ParticipantMapper;
 import com.group_three.food_ordering.mappers.RoleEmploymentMapper;
 import com.group_three.food_ordering.models.*;
-import com.group_three.food_ordering.notifications.SseEventType;
+import com.group_three.food_ordering.notifications.enums.SseEventType;
 import com.group_three.food_ordering.notifications.services.SseService;
 import com.group_three.food_ordering.repositories.*;
 import com.group_three.food_ordering.configs.security.JwtService;

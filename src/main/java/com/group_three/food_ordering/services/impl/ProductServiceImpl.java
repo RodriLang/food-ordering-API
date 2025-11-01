@@ -235,18 +235,16 @@ public class ProductServiceImpl implements ProductService {
             int newStock = product.getStock() + quantity;
             product.setStock(newStock);
             product.setAvailable(newStock > 0);
-            // productRepository.save(product);
         }
     }
 
     @Transactional
-    public void decrementStockProduct(Product product, Integer quantity) {
+    public void decreaseStock(Product product, Integer quantity) {
         validateStock(product, quantity);
         log.debug("[ProductService] Decrementing stock for product {} by {}", product.getPublicId(), quantity);
         int newStock = product.getStock() - quantity;
         product.setStock(newStock);
         product.setAvailable(newStock > 0);
-        // productRepository.save(product);
     }
 
     private Set<Tag> findTags(List<String> tagLabels) {

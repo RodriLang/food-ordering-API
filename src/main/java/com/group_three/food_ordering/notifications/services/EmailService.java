@@ -3,7 +3,6 @@ package com.group_three.food_ordering.notifications.services;
 import com.group_three.food_ordering.models.Employment;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.User;
-import com.group_three.food_ordering.notifications.AsyncEmailSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
