@@ -25,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.deleted = true")
     Page<User> findAllDeleted(Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.employments WHERE u.email = :email")
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.employments WHERE u.email = :email")
     Optional<User> findByEmailWithEmployments(@Param("email") String email);
 
 }
