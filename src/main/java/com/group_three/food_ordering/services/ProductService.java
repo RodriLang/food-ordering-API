@@ -36,7 +36,7 @@ public interface ProductService {
 
     void incrementStockProduct(Product product, Integer quantity);
 
-    void decreaseStock(Product product, Integer quantity);
+    void decrementStockProduct(Product product, Integer quantity);
 
     Page<ItemMenuResponseDto> getTopSellingProducts(int limit, int days, Pageable pageable);
 }
