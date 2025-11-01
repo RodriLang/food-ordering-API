@@ -16,6 +16,9 @@ import java.util.UUID;
 
 @Repository
 public interface EmploymentRepository extends JpaRepository<Employment, UUID>, JpaSpecificationExecutor<Employment> {
+
+    Optional<Employment> findByPublicIdAndDeletedFalse(UUID publicId);
+
     Optional<Employment> findByPublicIdAndActiveAndDeletedFalse(UUID publicId, Boolean active);
 
     Optional<Employment> findByPublicIdAndFoodVenue_PublicIdAndActiveAndDeletedFalse(UUID publicId, UUID foodVenueId, Boolean active);

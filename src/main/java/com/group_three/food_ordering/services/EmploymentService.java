@@ -13,7 +13,9 @@ import java.util.UUID;
 
 public interface EmploymentService {
 
-    Employment getEmploymentEntityById(UUID publicId, Boolean active);
+    Employment getEmploymentEntityByIdAndActive(UUID publicId, Boolean active);
+
+    Employment getEmploymentEntityById(UUID publicId);
 
     EmploymentResponseDto create(FoodVenue foodVenue, User user, RoleType role);
 
