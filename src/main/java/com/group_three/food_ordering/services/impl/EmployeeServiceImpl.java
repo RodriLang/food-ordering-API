@@ -45,9 +45,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmploymentResponseDto updateEmployee(UUID publicId, EmployeeRequestDto dto) {
         log.info("Updating employee with id {}", publicId);
         validateAllowedRole(dto.getRole());
+        User user = userService.getEntityByEmail(dto.getUserEmail());
         FoodVenue foodVenue = tenantContext.requireFoodVenue();
         Employment employmentToUpdate = Employment.builder()
                 .role(dto.getRole())
+                .user(user)
                 .foodVenue(foodVenue)
                 .build();
         return employmentService.update(publicId, employmentToUpdate);

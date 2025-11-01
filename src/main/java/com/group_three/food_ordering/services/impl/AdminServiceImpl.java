@@ -100,7 +100,7 @@ public class AdminServiceImpl implements AdminService {
     private Employment getEmploymentByPublicId(UUID publicId) {
         UUID foodVenueId = tenantContext.getFoodVenueId();
         log.debug("[EmploymentRepository] Calling findByPublicIdAndFoodVenueAndActive for ADMIN employment {}", publicId);
-        Employment employment = employmentService.getEmploymentEntityByIdAndActive(publicId, Boolean.TRUE);
+        Employment employment = employmentService.getEmploymentEntityById(publicId, Boolean.TRUE);
 
         if (!employment.getFoodVenue().getPublicId().equals(foodVenueId)) {
             throw new EntityNotFoundException(ADMIN_EMPLOYMENT, publicId.toString());

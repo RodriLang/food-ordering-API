@@ -23,7 +23,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.group_three.food_ordering.utils.EntityName.EMPLOYMENT;
 
@@ -66,20 +69,14 @@ public class EmploymentServiceImpl implements EmploymentService {
     }
 
     @Override
-    public Employment getEmploymentEntityByIdAndActive(UUID publicId, Boolean active) {
+    public Employment getEmploymentEntityById(UUID publicId, Boolean active) {
         return employmentRepository.findByPublicIdAndActiveAndDeletedFalse(publicId, active)
                 .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT, publicId.toString()));
     }
 
     @Override
-    public Employment getEmploymentEntityById(UUID publicId) {
-        return employmentRepository.findByPublicIdAndDeletedFalse(publicId)
-                .orElseThrow(() -> new EntityNotFoundException(EMPLOYMENT, publicId.toString()));
-    }
-
-    @Override
     public EmploymentResponseDto getEmploymentDtoById(UUID publicId) {
-        return employmentMapper.toResponseDto(getEmploymentEntityByIdAndActive(publicId, Boolean.TRUE));
+        return employmentMapper.toResponseDto(getEmploymentEntityById(publicId, Boolean.TRUE));
     }
 
     @Override
@@ -89,16 +86,17 @@ public class EmploymentServiceImpl implements EmploymentService {
 
     @Override
     public EmploymentResponseDto update(UUID publicId, Employment newEmployment) {
-        Employment employment = getEmploymentEntityById(publicId);
+        Employment employment = getEmploymentEntityById(publicId, null);
         employment.setRole(newEmployment.getRole());
-        employment.setActive(newEmployment.getActive());
+        employment.setUser(newEmployment.getUser());
+        employment.setFoodVenue(newEmployment.getFoodVenue());
         Employment updated = employmentRepository.save(employment);
         return employmentMapper.toResponseDto(updated);
     }
 
     @Override
     public void softDelete(UUID publicId) {
-        Employment employment = getEmploymentEntityByIdAndActive(publicId, Boolean.TRUE);
+        Employment employment = getEmploymentEntityById(publicId, Boolean.TRUE);
         employment.setDeleted(true);
         employmentRepository.save(employment);
         log.info("Soft-deleted employment with id {}", publicId);
@@ -113,7 +111,6 @@ public class EmploymentServiceImpl implements EmploymentService {
             Join<Employment, FoodVenue> foodVenueJoin = root.join("foodVenue");
 
             predicates.add(criteriaBuilder.equal(foodVenueJoin.get("publicId"), foodVenueId));
-            predicates.add(criteriaBuilder.equal(root.get("deleted"), Boolean.FALSE));
 
             if (roles != null && !roles.isEmpty()) {
                 predicates.add(root.get("role").in(roles));
@@ -129,7 +126,7 @@ public class EmploymentServiceImpl implements EmploymentService {
         return employmentRepository.findAll(spec, pageable);
     }
 
-    private void checkIfEmploymentExists(String userEmail, UUID foodVenueId, RoleType role) {
+    private void checkIfEmploymentExists(String userEmail, UUID foodVenueId, RoleType role){
         Optional<Employment> optionalEmployment = employmentRepository
                 .findByUser_EmailAndFoodVenue_PublicIdAndRoleAndDeletedFalse(userEmail, foodVenueId, role);
 
