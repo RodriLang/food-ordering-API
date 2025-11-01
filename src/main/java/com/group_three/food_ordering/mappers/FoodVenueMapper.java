@@ -28,8 +28,8 @@ public interface FoodVenueMapper {
     FoodVenuePublicResponseDto toPublicDto(FoodVenue foodVenue);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "venueStyle", source = "styleRequestDto")
-    @Mapping(target = "diningTables", source = "tables")
+    @Mapping(target = "venueStyle", ignore = true)
+    @Mapping(target = "diningTables", ignore = true)
     void updateEntity(FoodVenueRequestDto dto, @MappingTarget FoodVenue entity);
 
     @Named("flatAddress")

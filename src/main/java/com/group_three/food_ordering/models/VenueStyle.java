@@ -12,7 +12,7 @@ import org.hibernate.annotations.SQLDelete;
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class VenueStyle {
@@ -51,7 +51,7 @@ public class VenueStyle {
     @Column(length = 1000)
     private String description;
 
-    @Column(length = 100)
+    @Column
     private Boolean publicMenu;
 
     @Column(length = 200)

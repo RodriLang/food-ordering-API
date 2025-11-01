@@ -6,6 +6,7 @@ import com.group_three.food_ordering.dto.response.FoodVenueAdminResponseDto;
 import com.group_three.food_ordering.dto.response.FoodVenuePublicResponseDto;
 import com.group_three.food_ordering.exceptions.EntityNotFoundException;
 import com.group_three.food_ordering.mappers.FoodVenueMapper;
+import com.group_three.food_ordering.mappers.VenueStyleMapper;
 import com.group_three.food_ordering.models.FoodVenue;
 import com.group_three.food_ordering.models.VenueStyle;
 import com.group_three.food_ordering.repositories.FoodVenueRepository;
@@ -28,6 +29,7 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     private final FoodVenueRepository foodVenueRepository;
     private final FoodVenueMapper foodVenueMapper;
     private final TenantContext tenantContext;
+    private final VenueStyleMapper venueStyleMapper;
 
     @Override
     public FoodVenueAdminResponseDto create(FoodVenueRequestDto foodVenueRequestDto) {
@@ -99,15 +101,27 @@ public class FoodVenueServiceImpl implements FoodVenueService {
     }
 
     @Override
-    public FoodVenueAdminResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto foodVenueRequestDto) {
-        log.debug("[FoodVenueService] Updating current food venue {}", foodVenueRequestDto);
-        FoodVenue currentFoodVenue = tenantContext.requireFoodVenue();
-        foodVenueMapper.updateEntity(foodVenueRequestDto, currentFoodVenue);
-        FoodVenue updatedFoodVenue = foodVenueRepository.save(currentFoodVenue);
-        log.debug("[FoodVenueService] Current food venue updated {}", updatedFoodVenue);
-        log.debug("[FoodVenueRepository] Calling save to update current food venue {}", currentFoodVenue.getPublicId());
-        return foodVenueMapper.toAdminDto(updatedFoodVenue);
+    public FoodVenueAdminResponseDto updateMyCurrentFoodVenue(FoodVenueRequestDto dto) {
+
+        FoodVenue entity = tenantContext.requireFoodVenue();
+
+        foodVenueMapper.updateEntity(dto, entity);
+
+        if (dto.getStyleRequestDto() != null) {
+            VenueStyle style = entity.getVenueStyle();
+            if (style == null) {
+                style = new VenueStyle();
+                style.setColorsComplete(false);
+                entity.setVenueStyle(style);
+            }
+            venueStyleMapper.updateEntity(dto.getStyleRequestDto(), style);
+        }
+
+        entity = foodVenueRepository.save(entity);
+
+        return foodVenueMapper.toAdminDto(entity);
     }
+
 
     @Override
     public void softDelete(UUID id) {
